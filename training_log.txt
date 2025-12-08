@@ -1,0 +1,311 @@
+2025-11-28 13:43:26.814 | INFO     | __main__:train:167 - Val Accuracy: 0.781
+2025-11-28 13:43:26.814 | INFO     | __main__:train:168 - Val Log Loss: 0.4463
+2025-11-28 13:43:26.814 | INFO     | __main__:train:169 - Val AUC: 0.847
+2025-11-28 13:43:27.032 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1488 (lower is better)
+
+
+2025-11-28 13:48:11.568 | INFO     | __main__:train:167 - Val Accuracy: 0.784
+2025-11-28 13:48:11.568 | INFO     | __main__:train:168 - Val Log Loss: 0.4453
+2025-11-28 13:48:11.568 | INFO     | __main__:train:169 - Val AUC: 0.848
+2025-11-28 13:48:11.776 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1480 (lower is better)
+2025-11-28 13:48:11.776 | SUCCESS  | __main__:main:555 - Done!
+
+-11-28 13:51:18.235 | INFO     | __main__:train:167 - Val Accuracy: 0.793
+2025-11-28 13:51:18.235 | INFO     | __main__:train:168 - Val Log Loss: 0.4365
+2025-11-28 13:51:18.235 | INFO     | __main__:train:169 - Val AUC: 0.857
+2025-11-28 13:51:18.463 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1447 (lower is better)
+
+
+2025-11-28 15:44:14.793 | INFO     | __main__:train:167 - Val Accuracy: 0.776
+2025-11-28 15:44:14.793 | INFO     | __main__:train:168 - Val Log Loss: 0.4541
+2025-11-28 15:44:14.793 | INFO     | __main__:train:169 - Val AUC: 0.844
+2025-11-28 15:44:15.035 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1509 (lower is better)
+
+Khamzat Chimaev: 57.5% chance to win
+Dricus Du Plessis: 42.5% chance to win
+
+
+feature,importance
+round_3_win_rate_diff,121.0
+f2_win_rate_last_5,115.0
+f1_win_rate_last_5,93.0
+f1_age,85.0
+age_difference,69.0
+f2_age,65.0
+
+   python -m models.xgboost_model \
+     --train --evaluate --check-calibration --save-plots \
+     --data-path data/processed/training_data.csv \
+     --n-estimators 200 --max-depth 4 --learning-rate 0.05 \
+     --subsample 0.8 --colsample-bytree 0.8
+
+
+
+python -m models.xgboost_model \
+--train --evaluate --check-calibration --save-plots \
+--data-path data/processed/training_data.csv \
+--n-estimators 200 --max-depth 4 --learning-rate 0.05 \
+--subsample 0.8 --colsample-bytree 0.8
+
+
+Edson Barboza
+Jalin Turner
+
+python xgboost_predict.py --fighter-1 "Edson Barboza" --fighter-2 "Jalin Turner"
+
+ok with the new win loss
+
+we have the best #'s yet
+
+2025-11-28 16:01:17.369 | INFO     | __main__:train:167 - Val Accuracy: 0.796
+2025-11-28 16:01:17.369 | INFO     | __main__:train:168 - Val Log Loss: 0.4253
+2025-11-28 16:01:17.369 | INFO     | __main__:train:169 - Val AUC: 0.866
+2025-11-28 16:01:17.593 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1403 (lower is better)
+
+
+the chimaev thing is 60.9% vs 39.1% so I would say that is right around perfect
+
+and here is the debug output for jalin turner vs barboza,
+
+[DEBUG] Key features for this matchup:
+  f1_wins: 21
+  f1_losses: 10
+  f2_wins: 7
+  f2_losses: 6
+  f1_win_rate_last_10: 0.5
+  f2_win_rate_last_10: 0.4
+  f1_win_rate_last_5: 0.4
+  f2_win_rate_last_5: 0.4
+  f1_age: 39
+  f2_age: 30
+  round_3_win_rate_diff: -0.07575757575757569
+  takedown_matchup: -0.25
+  striking_differential: 3.7299999999999995
+  recent_form_diff: 0.6666666666666666
+
+I am thinking this may be one of the times where age, and camp and recent form have things to do with it ? I know jalin turner is coming off of a retirement type loss maybe we simply do not have the same data? 
+
+
+
+
+
+----
+
+2025-11-29 13:13:57.759 | INFO     | __main__:train:167 - Val Accuracy: 0.805
+2025-11-29 13:13:57.759 | INFO     | __main__:train:168 - Val Log Loss: 0.3901
+2025-11-29 13:13:57.759 | INFO     | __main__:train:169 - Val AUC: 0.902
+2025-11-29 13:13:58.022 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1280 (lower is better)
+
+
+(ufc_analysis_v2) ➜  ufc_analysis_v2 git:(main) ✗ python xgboost_predict.py --fighter-1 "Khamzat Chimaev" --fighter-2 "Dricus Du Plessis" --title-fight
+2025-11-29 13:14:11.144 | INFO     | __main__:xgboost_predict:24 - Loading XGBoost model...
+2025-11-29 13:14:11.157 | SUCCESS  | models.xgboost_model:load_model:444 - Loaded model from models/saved/xgboost_model.json
+2025-11-29 13:14:11.158 | SUCCESS  | features.feature_pipeline:load_pipeline:138 - Loaded feature pipeline from models/saved
+2025-11-29 13:14:11.170 | INFO     | database.db_manager:__init__:64 - Database initialized: sqlite:///data/ufc_database.db
+2025-11-29 13:14:11.186 | INFO     | __main__:xgboost_predict:54 - Matched: Khamzat Chimaev vs Dricus Du Plessis
+
+[DEBUG] Key features for this matchup:
+  f1_wins: 9
+  f1_losses: 0
+  f2_wins: 9
+  f2_losses: 1
+  f1_win_rate_last_10: 1.0
+  f2_win_rate_last_10: 0.9
+  f1_win_rate_last_5: 1.0
+  f2_win_rate_last_5: 0.8
+  f1_age: 31
+  f2_age: 31
+  round_3_win_rate_diff: 0.16666666666666663
+  takedown_matchup: 0.21000000000000002
+  striking_differential: 3.52
+  recent_form_diff: 0.33333333333333337
+
+2025-11-29 13:14:11.220 | INFO     | features.feature_pipeline:prepare_features:66 - Preparing features for training...
+2025-11-29 13:14:11.221 | SUCCESS  | features.feature_pipeline:prepare_features:95 - Prepared 140 features
+
+============================================================
+PREDICTION: Khamzat Chimaev vs Dricus Du Plessis
+Fight Type: TITLE FIGHT (5 rounds)
+============================================================
+Khamzat Chimaev: 94.7% chance to win
+Dricus Du Plessis: 5.3% chance to win
+
+⭐ Predicted Winner: Khamzat Chimaev
+============================================================
+
+Top 5 Most Important Features in Model:
+  108. opponent_quality_score_diff
+  88. f2_avg_beaten_opponent_total_fights
+  30. f1_win_rate_last_10
+  73. f2_win_rate_last_10
+  44. f1_avg_beaten_opponent_total_fights
+
+  ---
+
+
+  1-29 13:22:02.648 | INFO     | __main__:train:167 - Val Accuracy: 0.812
+2025-11-29 13:22:02.648 | INFO     | __main__:train:168 - Val Log Loss: 0.3900
+2025-11-29 13:22:02.648 | INFO     | __main__:train:169 - Val AUC: 0.903
+2025-11-29 13:22:02.888 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1275 (lower is better)
+
+
+(ufc_analysis_v2) ➜  ufc_analysis_v2 git:(main) ✗ python xgboost_predict.py --fighter-1 "Khamzat Chimaev" --fighter-2 "Dricus Du Plessis" --title-fight
+2025-11-29 13:22:10.686 | INFO     | __main__:xgboost_predict:24 - Loading XGBoost model...
+2025-11-29 13:22:10.697 | SUCCESS  | models.xgboost_model:load_model:444 - Loaded model from models/saved/xgboost_model.json
+2025-11-29 13:22:10.698 | SUCCESS  | features.feature_pipeline:load_pipeline:138 - Loaded feature pipeline from models/saved
+2025-11-29 13:22:10.710 | INFO     | database.db_manager:__init__:64 - Database initialized: sqlite:///data/ufc_database.db
+2025-11-29 13:22:10.723 | INFO     | __main__:xgboost_predict:54 - Matched: Khamzat Chimaev vs Dricus Du Plessis
+
+[DEBUG] Key features for this matchup:
+  f1_wins: 9
+  f1_losses: 0
+  f2_wins: 9
+  f2_losses: 1
+  f1_win_rate_last_10: 1.0
+  f2_win_rate_last_10: 0.9
+  f1_win_rate_last_5: 1.0
+  f2_win_rate_last_5: 0.8
+  f1_age: 31
+  f2_age: 31
+  round_3_win_rate_diff: 0.16666666666666663
+  takedown_matchup: 0.21000000000000002
+  striking_differential: 3.52
+  recent_form_diff: 0.33333333333333337
+
+2025-11-29 13:22:10.752 | INFO     | features.feature_pipeline:prepare_features:66 - Preparing features for training...
+2025-11-29 13:22:10.753 | SUCCESS  | features.feature_pipeline:prepare_features:95 - Prepared 140 features
+
+============================================================
+PREDICTION: Khamzat Chimaev vs Dricus Du Plessis
+Fight Type: TITLE FIGHT (5 rounds)
+============================================================
+Khamzat Chimaev: 94.9% chance to win
+Dricus Du Plessis: 5.1% chance to win
+
+⭐ Predicted Winner: Khamzat Chimaev
+============================================================
+
+Top 5 Most Important Features in Model:
+  114. opponent_quality_score_diff
+  79. f2_win_rate_last_10
+  45. f1_avg_beaten_opponent_total_fights
+  31. f1_win_rate_last_10
+  94. f2_avg_beaten_opponent_total_fights
+
+
+
+  opponent_quality_score_diff,141.0
+f2_win_rate_last_10,141.0
+f1_avg_beaten_opponent_total_fights,118.0
+f1_win_rate_last_10,117.0
+f2_avg_beaten_opponent_total_fights,113.0
+avg_beaten_opponent_win_rate_diff,97.0
+f1_wins,79.0
+avg_opponent_win_rate_diff,74.0
+f1_avg_opponent_total_fights,72.0
+f2_avg_lost_to_opponent_win_rate,71.0
+f2_wins,69.0
+win_streak_diff,68.0
+f2_avg_opponent_total_fights,65.0
+f1_avg_lost_to_opponent_win_rate,59.0
+f2_opponent_quality_score,57.0
+experience_difference,54.0
+age_difference,46.0
+f1_opponent_quality_score,45.0
+round_3_win_rate_diff,42.0
+f1_avg_fight_duration_rounds,41.0
+f2_avg_fight_duration_rounds,40.0
+striking_output_diff,35.0
+recent_form_diff,31.0
+f2_avg_beaten_opponent_win_rate,30.0
+f2_win_rate_last_5,28.0
+f1_win_rate_last_5,28.0
+
+----
+
+
+2025-11-29 13:32:29.479 | INFO     | __main__:train:167 - Val Accuracy: 0.814
+2025-11-29 13:32:29.479 | INFO     | __main__:train:168 - Val Log Loss: 0.3897
+2025-11-29 13:32:29.480 | INFO     | __main__:train:169 - Val AUC: 0.904
+2025-11-29 13:32:29.739 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1272 (lower is better)
+
+ost_predict:24 - Loading XGBoost model...
+2025-11-29 13:32:42.315 | SUCCESS  | models.xgboost_model:load_model:444 - Loaded model from models/saved/xgboost_model.json
+2025-11-29 13:32:42.315 | SUCCESS  | features.feature_pipeline:load_pipeline:138 - Loaded feature pipeline from models/saved
+2025-11-29 13:32:42.329 | INFO     | database.db_manager:__init__:64 - Database initialized: sqlite:///data/ufc_database.db
+2025-11-29 13:32:42.344 | INFO     | __main__:xgboost_predict:54 - Matched: Khamzat Chimaev vs Dricus Du Plessis
+
+[DEBUG] Key features for this matchup:
+  f1_wins: 9
+  f1_losses: 0
+  f2_wins: 9
+  f2_losses: 1
+  f1_win_rate_last_5: 1.0
+  f2_win_rate_last_5: 0.8
+  f1_age: 31
+  f2_age: 31
+  round_3_win_rate_diff: 0.16666666666666663
+  takedown_matchup: 0.21000000000000002
+  striking_differential: 3.52
+  recent_form_diff: 0.33333333333333337
+
+2025-11-29 13:32:42.378 | INFO     | features.feature_pipeline:prepare_features:66 - Preparing features for training...
+2025-11-29 13:32:42.379 | SUCCESS  | features.feature_pipeline:prepare_features:95 - Prepared 134 features
+
+============================================================
+PREDICTION: Khamzat Chimaev vs Dricus Du Plessis
+Fight Type: TITLE FIGHT (5 rounds)
+============================================================
+Khamzat Chimaev: 95.1% chance to win
+Dricus Du Plessis: 4.9% chance to win
+
+⭐ Predicted Winner: Khamzat Chimaev
+============================================================
+
+Top 5 Most Important Features in Model:
+  102. opponent_quality_score_diff
+  82. f2_avg_beaten_opponent_total_fights
+  41. f1_avg_beaten_opponent_total_fights
+  8. f1_wins
+  49. f2_wins
+
+
+  feature,importance
+opponent_quality_score_diff,152.0
+f2_avg_beaten_opponent_total_fights,143.0
+f1_avg_beaten_opponent_total_fights,127.0
+f1_wins,117.0
+f2_wins,115.0
+avg_beaten_opponent_win_rate_diff,100.0
+f1_win_rate_last_5,73.0
+win_streak_diff,70.0
+avg_opponent_win_rate_diff,69.0
+f2_avg_lost_to_opponent_win_rate,69.0
+f2_win_rate_last_5,66.0
+f2_avg_opponent_total_fights,66.0
+f1_opponent_quality_score,66.0
+f1_avg_opponent_total_fights,66.0
+f1_avg_lost_to_opponent_win_rate,58.0
+f1_losses,55.0
+recent_form_diff,50.0
+f2_opponent_quality_score,45.0
+f2_losses,45.0
+age_difference,44.0
+round_3_win_rate_diff,41.0
+f2_avg_fight_duration_rounds,40.0
+experience_difference,33.0
+
+
+
+----
+
+
+2025-12-01 11:21:37.921 | INFO     | __main__:train:167 - Val Accuracy: 0.822
+2025-12-01 11:21:37.921 | INFO     | __main__:train:168 - Val Log Loss: 0.3875
+2025-12-01 11:21:37.921 | INFO     | __main__:train:169 - Val AUC: 0.906
+2025-12-01 11:21:37.926 | INFO     | __main__:save_model:409 - Saved model to models/saved/xgboost_model.json
+2025-12-01 11:21:37.929 | SUCCESS  | __main__:save_model:426 - Model saved to models/saved
+2025-12-01 11:21:37.931 | SUCCESS  | features.feature_pipeline:save_pipeline:124 - Saved feature pipeline to models/saved
+2025-12-01 11:21:38.286 | INFO     | __main__:check_calibration:280 - Saved calibration curve to models/saved/calibration_curve.png
+2025-12-01 11:21:38.287 | INFO     | __main__:check_calibration:288 - Calibration Metrics:
+2025-12-01 11:21:38.287 | INFO     | __main__:check_calibration:289 -   Brier Score: 0.1258 (lower is better)

@@ -1,0 +1,9 @@
+curl --path-as-is -i -k --compressed -X GET \
+  -H 'Host: ufcstats.com' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0' \
+  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+  -H 'Accept-Language: en-US,en;q=0.5' \
+  -H 'Referer: http://ufcstats.com/statistics/fighters/search?query=barboza' \
+  -H 'Connection: keep-alive' \
+  -o 'index.html' \
+  http://ufcstats.com/fighter-details/64a50dad704d1d49
