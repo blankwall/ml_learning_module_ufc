@@ -413,8 +413,14 @@ class XGBoostModel:
         
         return results
     
-    def save_model(self, name: str = "xgboost_model"):
-        """Save model and metadata"""
+    def save_model(self, name: str = "xgboost_model", export_schema: bool = False):
+        """
+        Save model and metadata
+        
+        Args:
+            name: Model name
+            export_schema: If True, also export feature schema to schema/feature_schema.json
+        """
         if self.model is None:
             raise ValueError("No model to save")
         
@@ -438,6 +444,10 @@ class XGBoostModel:
         importance_path = self.model_dir / f"{name}_feature_importance.csv"
         importance_df.to_csv(importance_path, index=False)
         
+        # Optionally export feature schema
+        if export_schema:
+            self.export_feature_schema()
+        
         logger.success(f"Model saved to {self.model_dir}")
     
     def load_model(self, name: str = "xgboost_model"):
@@ -457,6 +467,46 @@ class XGBoostModel:
                 self.feature_names = json.load(f)
         
         logger.success(f"Loaded model from {model_path}")
+    
+    def export_feature_schema(
+        self,
+        version: str = "1.0.0",
+        output_path: str = "schema/feature_schema.json"
+    ) -> Dict:
+        """
+        Export feature schema to JSON file.
+        
+        This creates the canonical feature schema that becomes the master contract
+        between training, prediction, Excel export, and API usage.
+        
+        Args:
+            version: Schema version string
+            output_path: Path to save the schema file
+            
+        Returns:
+            Schema dictionary
+        """
+        if self.feature_names is None:
+            raise ValueError("No feature names available. Train or load a model first.")
+        
+        schema = {
+            "version": version,
+            "num_features": len(self.feature_names),
+            "features": self.feature_names
+        }
+        
+        # Save to file
+        schema_path = Path(output_path)
+        schema_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(schema_path, 'w') as f:
+            json.dump(schema, f, indent=2)
+        
+        logger.success(f"Exported feature schema to {schema_path}")
+        logger.info(f"Schema version: {version}")
+        logger.info(f"Total features: {len(self.feature_names)}")
+        
+        return schema
     
     def predict(self, X: pd.DataFrame, use_calibrated: bool = False) -> np.ndarray:
         """

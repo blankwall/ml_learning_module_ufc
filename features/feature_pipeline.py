@@ -189,6 +189,48 @@ class FeaturePipeline:
         logger.info("\n" + importance_df.head(top_n).to_string())
         
         return importance_df
+    
+    def export_feature_schema(
+        self,
+        version: str = "1.0.0",
+        output_path: str = "schema/feature_schema.json"
+    ) -> dict:
+        """
+        Export feature schema to JSON file.
+        
+        This creates the canonical feature schema that becomes the master contract
+        between training, prediction, Excel export, and API usage.
+        
+        Args:
+            version: Schema version string
+            output_path: Path to save the schema file
+            
+        Returns:
+            Schema dictionary
+        """
+        if self.feature_names is None:
+            raise ValueError("No feature names available. Prepare features first.")
+        
+        import json
+        
+        schema = {
+            "version": version,
+            "num_features": len(self.feature_names),
+            "features": self.feature_names
+        }
+        
+        # Save to file
+        schema_path = Path(output_path)
+        schema_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(schema_path, 'w') as f:
+            json.dump(schema, f, indent=2)
+        
+        logger.success(f"Exported feature schema to {schema_path}")
+        logger.info(f"Schema version: {version}")
+        logger.info(f"Total features: {len(self.feature_names)}")
+        
+        return schema
 
 
 def main():
