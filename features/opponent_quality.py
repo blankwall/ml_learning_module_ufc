@@ -81,18 +81,41 @@ def extract_opponent_quality_features(
             lost_to_opp_win_rates.append(wr)
     
     avg_opp_wr = safe_mean(all_opp_win_rates)
-    avg_lost_opp_wr = safe_mean(lost_to_opp_win_rates)
+    avg_lost_opp_wr = safe_mean(lost_to_opp_win_rates) if lost_to_opp_win_rates else 0.0
     avg_beaten_opp_wr = safe_mean(beaten_opp_win_rates)
     
     num_beaten_opponents = len(beaten_opp_win_rates)
+    num_losses = len(lost_to_opp_win_rates)
     
-    # Shrink avg_lost_to_opponent_win_rate penalty when sample is tiny
-    if num_beaten_opponents < 3:
-        avg_lost_opp_wr_adjusted = safe_mean([avg_lost_opp_wr * (num_beaten_opponents / 3.0)])
+    # FIXED: Properly account for elite losses
+    # The key insight: losing to elite fighters (high win rate) shouldn't hurt as much
+    # as losing to weak fighters (low win rate)
+    # 
+    # Old formula: raw_score = avg_beaten_opp_wr - avg_lost_opp_wr
+    # Problem: Losing to 0.8 win rate opponent = -0.8 penalty (bad!)
+    #
+    # New formula: raw_score = avg_beaten_opp_wr - (1 - avg_lost_opp_wr)
+    # Result: Losing to 0.8 win rate opponent = -0.2 penalty (small)
+    #         Losing to 0.3 win rate opponent = -0.7 penalty (large)
+    #
+    # This properly rewards beating good opponents while penalizing losses to weak ones
+    
+    if num_losses > 0:
+        # Penalty is inverse of opponent quality: losing to elite = small penalty
+        # losing to weak = large penalty
+        loss_penalty = 1.0 - avg_lost_opp_wr
+        
+        # Shrink penalty when sample is tiny (few losses)
+        if num_beaten_opponents < 3:
+            loss_penalty = loss_penalty * (num_beaten_opponents / 3.0)
+        
+        raw_score = avg_beaten_opp_wr - loss_penalty
     else:
-        avg_lost_opp_wr_adjusted = avg_lost_opp_wr
+        # No losses = no penalty, just reward for beating good opponents
+        raw_score = avg_beaten_opp_wr
     
-    raw_score = avg_beaten_opp_wr - avg_lost_opp_wr_adjusted
+    # Keep avg_lost_opp_wr_adjusted for backward compatibility (used in other features)
+    avg_lost_opp_wr_adjusted = avg_lost_opp_wr
     
     avg_opp_total_fights = safe_mean(all_opp_total_fights)
     avg_beaten_opp_total_fights = safe_mean(beaten_opp_total_fights)
@@ -106,8 +129,12 @@ def extract_opponent_quality_features(
     sample_factor = min(1.0, num_beaten_opponents / 5.0) if num_beaten_opponents > 0 else 0.0
     
     opponent_quality_score = raw_score * strength_factor * sample_factor
+    
     # Clamp to reasonable range
-    opponent_quality_score = max(min(opponent_quality_score, 0.35), -0.35)
+    # Note: With the fixed formula, scores can legitimately be higher
+    # (e.g., beating 0.8 win rate opponents with no losses = 0.8 score)
+    # Old clamp of 0.35 was too restrictive. New range allows full expression.
+    opponent_quality_score = max(min(opponent_quality_score, 1.0), -1.0)
     
     return {
         "avg_opponent_win_rate": float(avg_opp_wr),

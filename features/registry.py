@@ -4,7 +4,7 @@ Central system for assembling and managing feature sets
 """
 
 import pandas as pd
-from typing import Dict, List, Callable, Optional, Any
+from typing import Dict, List, Callable, Optional, Any, Tuple, Union
 from datetime import datetime
 from loguru import logger
 
@@ -27,8 +27,12 @@ from .time_based import (
     extract_decline_features,
     extract_recent_damage_features,
     extract_time_decayed_features,
+    extract_opponent_quality_adjusted_time_decayed_features,
     extract_age_interactions,
     extract_youth_form_score,
+    extract_prospect_momentum_score,
+    extract_early_finish_advantage,
+    extract_power_striker_score,
 )
 from .opponent_quality import extract_opponent_quality_features
 
@@ -70,6 +74,7 @@ class FeatureRegistry:
         "decline",
         "recent_damage",
         "time_decayed",
+        "time_decayed_adj_opp_quality",
     ]
     
     FEATURE_SET_OPPONENT_QUALITY = [
@@ -79,6 +84,9 @@ class FeatureRegistry:
     FEATURE_SET_INTERACTIONS = [
         "age_interactions",
         "youth_form",
+        "prospect_momentum",
+        "early_finish_advantage",
+        "power_striker",
     ]
     
     FEATURE_SET_RECENT_STATS = [
@@ -130,9 +138,13 @@ class FeatureRegistry:
             "decline": cls._extract_decline,
             "recent_damage": cls._extract_recent_damage,
             "time_decayed": cls._extract_time_decayed,
+            "time_decayed_adj_opp_quality": cls._extract_time_decayed_adj_opp_quality,
             "opponent_quality": cls._extract_opponent_quality,
             "age_interactions": cls._extract_age_interactions,
             "youth_form": cls._extract_youth_form,
+            "prospect_momentum": cls._extract_prospect_momentum,
+            "early_finish_advantage": cls._extract_early_finish_advantage,
+            "power_striker": cls._extract_power_striker,
             "recent_striking": cls._extract_recent_striking,
             "recent_grappling": cls._extract_recent_grappling,
         }
@@ -215,6 +227,16 @@ class FeatureRegistry:
         return extract_time_decayed_features(fight_history, lambda_decay)
     
     @staticmethod
+    def _extract_time_decayed_adj_opp_quality(context: Dict) -> Dict[str, float]:
+        """Extract opponent-quality-adjusted time-decayed features"""
+        fight_history = context["fight_history"]
+        get_fighter_record = context["get_fighter_record"]
+        lambda_decay = context.get("lambda_decay", 0.3)
+        return extract_opponent_quality_adjusted_time_decayed_features(
+            fight_history, get_fighter_record, lambda_decay
+        )
+    
+    @staticmethod
     def _extract_opponent_quality(context: Dict) -> Dict[str, float]:
         """Extract opponent quality features"""
         fight_history = context["fight_history"]
@@ -243,6 +265,65 @@ class FeatureRegistry:
         
         score = extract_youth_form_score(age, win_rate_last_5, finish_rate_last_5)
         return {"youth_form_score": score}
+    
+    @staticmethod
+    def _extract_prospect_momentum(context: Dict) -> Dict[str, float]:
+        """Extract prospect momentum score"""
+        physical_features = context.get("physical_features", {})
+        rolling_features = context.get("rolling_features", {})
+        
+        age = physical_features.get("age", 0.0)
+        win_rate_last_5 = rolling_features.get("win_rate_last_5", 0.0)
+        finish_rate_last_5 = rolling_features.get("finish_rate_last_5", 0.0)
+        
+        score = extract_prospect_momentum_score(age, win_rate_last_5, finish_rate_last_5)
+        return {"prospect_momentum_score": score}
+    
+    @staticmethod
+    def _extract_early_finish_advantage(context: Dict) -> Dict[str, float]:
+        """Extract early finish advantage score"""
+        early_finishing_features = context.get("early_finishing_features", {})
+        time_decayed_features = context.get("time_decayed_features", {})
+        
+        first_round_finish_rate = early_finishing_features.get("first_round_finish_rate", 0.0)
+        early_finish_rate_last_3 = early_finishing_features.get("early_finish_rate_last_3", 0.0)
+        time_decayed_ko_rate = time_decayed_features.get("time_decayed_ko_rate", 0.0)
+        
+        score = extract_early_finish_advantage(
+            first_round_finish_rate,
+            early_finish_rate_last_3,
+            time_decayed_ko_rate
+        )
+        return {"early_finish_advantage": score}
+    
+    @staticmethod
+    def _extract_power_striker(context: Dict) -> Dict[str, float]:
+        """Extract power striker score"""
+        rolling_features = context.get("rolling_features", {})
+        early_finishing_features = context.get("early_finishing_features", {})
+        striking_features = context.get("striking_features", {})
+        career_stats = context.get("career_stats", {})
+        
+        ko_rate_last_5 = rolling_features.get("ko_rate_last_5", 0.0)
+        first_round_ko_rate = early_finishing_features.get("first_round_ko_rate", 0.0)
+        
+        # Calculate knockdowns_per_fight from striking features
+        knockdowns_lifetime = striking_features.get("knockdowns_lifetime", 0.0)
+        total_fights = career_stats.get("total_fights", 0.0)
+        knockdowns_per_fight = knockdowns_lifetime / total_fights if total_fights > 0 else 0.0
+        
+        # Use lifetime head strike rate (or last_3 if available)
+        head_strike_rate = striking_features.get("head_strike_rate_lifetime", 0.0)
+        if head_strike_rate == 0.0:
+            head_strike_rate = striking_features.get("head_strike_rate_last_3", 0.0)
+        
+        score = extract_power_striker_score(
+            ko_rate_last_5,
+            first_round_ko_rate,
+            knockdowns_per_fight,
+            head_strike_rate
+        )
+        return {"power_striker_score": score}
     
     @staticmethod
     def _extract_recent_striking(context: Dict) -> Dict[str, float]:
@@ -290,46 +371,73 @@ class FeatureBuilder:
         self.session = session
         self.rolling_windows = rolling_windows
         self.lambda_decay = lambda_decay
-        self._fighter_record_cache: Dict[int, Dict] = {}
+        # Cache key is (fighter_id, as_of_date_iso_or_none)
+        self._fighter_record_cache: Dict[Tuple[int, Optional[str]], Dict] = {}
     
-    def get_fighter_record(self, fighter_id: int) -> Optional[Dict]:
+    def get_fighter_record(
+        self,
+        fighter_id: int,
+        as_of_date: Optional[Union[datetime, str]] = None
+    ) -> Optional[Dict]:
         """
-        Get fighter record with caching.
+        Get fighter record with optional point-in-time calculation.
         
         Args:
             fighter_id: Fighter database ID
+            as_of_date: Calculate record as of this date (None = all time)
             
         Returns:
             Dictionary with wins, losses, draws, total_fights, win_rate
         """
-        if fighter_id in self._fighter_record_cache:
-            return self._fighter_record_cache[fighter_id]
+        # Create cache key that includes as_of_date
+        # Handle both datetime objects and strings
+        if as_of_date is None:
+            cache_key_date = None
+        elif isinstance(as_of_date, str):
+            cache_key_date = as_of_date
+        else:
+            cache_key_date = as_of_date.isoformat()
         
-        from database.schema import Fighter
-        fighter = self.session.query(Fighter).filter_by(id=fighter_id).first()
-        if not fighter:
-            return None
+        cache_key = (fighter_id, cache_key_date)
         
-        wins = fighter.wins or 0
-        losses = fighter.losses or 0
-        draws = fighter.draws or 0
-        total_fights = wins + losses + draws
+        if cache_key in self._fighter_record_cache:
+            return self._fighter_record_cache[cache_key]
+        
+        # Calculate from fight history to respect as_of_date
+        fight_history = self.get_fight_history(fighter_id, as_of_date)
+        
+        if len(fight_history) == 0:
+            # No fight history available
+            record = {
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "total_fights": 0,
+                "win_rate": 0.0,
+            }
+            self._fighter_record_cache[cache_key] = record
+            return record
+        
+        wins = (fight_history["result"] == "win").sum()
+        losses = (fight_history["result"] == "loss").sum()
+        draws = (fight_history["result"] == "draw").sum()
+        total_fights = len(fight_history)
         win_rate = wins / total_fights if total_fights > 0 else 0.0
         
         record = {
-            "wins": wins,
-            "losses": losses,
-            "draws": draws,
+            "wins": int(wins),
+            "losses": int(losses),
+            "draws": int(draws),
             "total_fights": total_fights,
-            "win_rate": win_rate,
+            "win_rate": float(win_rate),
         }
-        self._fighter_record_cache[fighter_id] = record
+        self._fighter_record_cache[cache_key] = record
         return record
     
     def get_fight_history(
         self,
         fighter_id: int,
-        as_of_date: Optional[datetime] = None
+        as_of_date: Optional[Union[datetime, str]] = None
     ) -> pd.DataFrame:
         """
         Get fight history for a fighter.
@@ -384,7 +492,14 @@ class FeatureBuilder:
             df['event_date_parsed'] = pd.to_datetime(df['event_date'])
             
             if as_of_date is not None:
-                df = df[df['event_date_parsed'] <= as_of_date]
+                # Ensure as_of_date is a datetime for comparison
+                if isinstance(as_of_date, str):
+                    as_of_date_dt = pd.to_datetime(as_of_date)
+                else:
+                    as_of_date_dt = as_of_date
+                
+                # CRITICAL: Use < not <= to exclude the fight we're predicting
+                df = df[df['event_date_parsed'] < as_of_date_dt]
             
             df = df.sort_values('event_date_parsed', ascending=False).reset_index(drop=True)
         
@@ -414,7 +529,7 @@ class FeatureBuilder:
         self,
         fighter_id: int,
         feature_set: List[str],
-        as_of_date: Optional[datetime] = None
+        as_of_date: Optional[Union[datetime, str]] = None
     ) -> Dict[str, float]:
         """
         Build features for a fighter using specified feature set.
@@ -448,6 +563,10 @@ class FeatureBuilder:
                 ]
                 fight_stats_by_fight_id = self.get_fight_stats(fight_ids)
         
+        # Create a wrapped get_fighter_record that includes as_of_date
+        def get_fighter_record_as_of(fid: int) -> Optional[Dict]:
+            return self.get_fighter_record(fid, as_of_date)
+        
         # Build context for feature extraction
         context = {
             "fighter": fighter,
@@ -455,7 +574,7 @@ class FeatureBuilder:
             "fight_history": fight_history,
             "rolling_windows": self.rolling_windows,
             "lambda_decay": self.lambda_decay,
-            "get_fighter_record": self.get_fighter_record,
+            "get_fighter_record": get_fighter_record_as_of,  # Pass wrapped version
             "fight_stats_by_fight_id": fight_stats_by_fight_id,
         }
         
@@ -482,6 +601,14 @@ class FeatureBuilder:
                     context["decline_features"] = features
                 elif feature_name == "momentum":
                     context["momentum_features"] = features
+                elif feature_name == "striking":
+                    context["striking_features"] = features
+                elif feature_name == "career_stats":
+                    context["career_stats"] = features
+                elif feature_name == "early_finishing":
+                    context["early_finishing_features"] = features
+                elif feature_name == "time_decayed":
+                    context["time_decayed_features"] = features
             except Exception as e:
                 logger.error(f"Error extracting feature {feature_name}: {e}")
                 continue

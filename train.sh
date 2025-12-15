@@ -12,17 +12,18 @@ echo "Starting feature generation with '${FEATURE_SET}' feature set..."
 # Create training dataset using the new modular feature system
 # This internally generates fighter features and creates matchup features
 # The feature pipeline handles everything: fighter features -> matchup features -> training dataset
-python -m features.feature_pipeline --create --feature-set "${FEATURE_SET}"
+python3 -m features.feature_pipeline --create --feature-set "${FEATURE_SET}"
 echo "✔ Training dataset created with modular feature system"
 
 echo "Starting model training & evaluation..."
 
 # Train & evaluate XGBoost model
-python -m models.xgboost_model \
+python3 -m models.xgboost_model \
   --train \
   --evaluate \
   --check-calibration \
   --save-plots \
+  --export-schema \
   --data-path data/processed/training_data.csv \
   --n-estimators 200 \
   --max-depth 4 \

@@ -41,6 +41,9 @@ def quick_predict(fighter_1_name: str, fighter_2_name: str, title_fight: bool = 
     logger.info(f"Using ensemble/best model for prediction: {best_model}")
     
     # Load feature pipeline (skip DB initialization for faster inference)
+    # NOTE: AutoGluon models are trained on a specific feature set + scaler; if you retrain
+    # XGBoost and overwrite the legacy pipeline artifacts, this can drift. Consider saving
+    # per-model pipeline artifacts for AutoGluon as well if you hit mismatches.
     pipeline = FeaturePipeline(initialize_db=False)
     pipeline.load_pipeline()
     

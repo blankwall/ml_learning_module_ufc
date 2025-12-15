@@ -199,18 +199,22 @@ def dump_feature_names(prefix, feature_vector):
     print("\n")
 
 
-def add_model_predictions(df: pd.DataFrame) -> pd.DataFrame:
+def add_model_predictions(df: pd.DataFrame, model_name: str = "xgboost_model") -> pd.DataFrame:
     """
     For each row in the input DataFrame, add model probabilities and edges
     vs. the provided American odds.
+    
+    Args:
+        df: DataFrame with upcoming fights and odds
+        model_name: Name of the model to use (default: "xgboost_model")
     """
     # Load model + feature pipeline once
-    logger.info("Loading XGBoost model and feature pipeline...")
+    logger.info(f"Loading XGBoost model '{model_name}' and feature pipeline...")
     xgb_model = XGBoostModel()
-    xgb_model.load_model("xgboost_model")
+    xgb_model.load_model(model_name)
 
     pipeline = FeaturePipeline(initialize_db=False)
-    pipeline.load_pipeline()
+    pipeline.load_pipeline(model_name=model_name)
 
     # DB + feature extractor
     db = DatabaseManager()
@@ -246,6 +250,9 @@ def add_model_predictions(df: pd.DataFrame) -> pd.DataFrame:
             f2 = resolve_fighter(session, f2_name)
 
             # Build features
+            # NOTE: as_of_date=None (default) uses ALL available data up to today.
+            # This is correct for upcoming predictions. Point-in-time filtering
+            # (as_of_date != None) is only used for historical training data.
             features = matchup_extractor.extract_matchup_features(f1.id, f2.id)
             features["is_title_fight"] = 1 if is_title else 0
 
@@ -414,9 +421,18 @@ def add_model_predictions(df: pd.DataFrame) -> pd.DataFrame:
 def export_to_excel(
     input_path: str = "data/predictions/upcoming_fights.xlsx",
     output_path: str = "data/predictions/model_vs_market.xlsx",
+    model_name: str = "xgboost_model",
 ) -> Tuple[Path, int]:
     """
     High-level helper: read fights+odds, add model info, write Excel.
+    
+    Args:
+        input_path: Path to input Excel/CSV with fights and odds
+        output_path: Path to output Excel file
+        model_name: Name of the model to use (default: "xgboost_model")
+    
+    Returns:
+        Tuple of (output_path, number_of_rows_written)
     """
     in_path = Path(input_path)
     out_path = Path(output_path)
@@ -425,8 +441,8 @@ def export_to_excel(
     logger.info(f"Loading upcoming fights from {in_path} ...")
     df_in = load_input(in_path)
 
-    logger.info("Adding model probabilities and edges...")
-    df_out = add_model_predictions(df_in)
+    logger.info(f"Adding model probabilities and edges using '{model_name}'...")
+    df_out = add_model_predictions(df_in, model_name=model_name)
 
     # Cap total exposure across all fights to a maximum stake (e.g. $500)
     max_total_stake = 500.0
@@ -504,9 +520,15 @@ def main():
         default="data/predictions/model_vs_market.xlsx",
         help="Path to output Excel file",
     )
+    parser.add_argument(
+        "--model-name",
+        type=str,
+        default="xgboost_model",
+        help="Model name to use (default: xgboost_model, e.g., xgboost_model_with_2025)",
+    )
 
     args = parser.parse_args()
-    export_to_excel(args.input, args.output)
+    export_to_excel(args.input, args.output, model_name=args.model_name)
 
 
 if __name__ == "__main__":

@@ -18,16 +18,16 @@ from loguru import logger
 from datetime import datetime
 
 
-def compare_predictions(fighter_1_name: str, fighter_2_name: str, title_fight: bool = False):
+def compare_predictions(fighter_1_name: str, fighter_2_name: str, title_fight: bool = False, model_name: str = "xgboost_model"):
     """Compare predictions using both methods"""
     
     # Load model and pipeline
     logger.info("Loading XGBoost model and feature pipeline...")
     xgb_model = XGBoostModel()
-    xgb_model.load_model('xgboost_model')
+    xgb_model.load_model(model_name)
     
     pipeline = FeaturePipeline(initialize_db=False)
-    pipeline.load_pipeline()
+    pipeline.load_pipeline(model_name=model_name)
     
     # Get database session
     db = DatabaseManager()
@@ -215,8 +215,9 @@ if __name__ == '__main__':
     parser.add_argument('--fighter-1', type=str, required=True, help='First fighter name')
     parser.add_argument('--fighter-2', type=str, required=True, help='Second fighter name')
     parser.add_argument('--title-fight', action='store_true', help='Is this a title fight?')
+    parser.add_argument('--model-name', type=str, default='xgboost_model', help='XGBoost model name (default: xgboost_model)')
     
     args = parser.parse_args()
     
-    compare_predictions(args.fighter_1, args.fighter_2, args.title_fight)
+    compare_predictions(args.fighter_1, args.fighter_2, args.title_fight, model_name=args.model_name)
 

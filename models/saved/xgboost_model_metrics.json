@@ -1,11 +1,11 @@
 {
-  "train_accuracy": 0.8237832109605632,
-  "train_log_loss": 0.37674010156795856,
-  "train_auc": 0.9107390386506611,
+  "train_accuracy": 0.7588897827835881,
+  "train_log_loss": 0.49844950237904473,
+  "train_auc": 0.8447084590844691,
   "n_estimators": 200,
   "best_iteration": null,
-  "val_accuracy": 0.8113835906751438,
-  "val_log_loss": 0.4021490022591928,
-  "val_auc": 0.8975796824288751,
-  "val_brier": 0.1307341440168119
+  "val_accuracy": 0.6972329472329473,
+  "val_log_loss": 0.558849100810528,
+  "val_auc": 0.7804354271535738,
+  "val_brier": 0.1905189030392062
 }

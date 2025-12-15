@@ -26,7 +26,7 @@ def evaluate_slices(
 ):
     # Load pipeline (scaler + feature names) and dataset
     pipeline = FeaturePipeline(initialize_db=False)
-    pipeline.load_pipeline()
+    pipeline.load_pipeline(model_name=model_name)
     df = pipeline.load_dataset(data_path)
 
     # Prepare features using existing scaler (no refit)

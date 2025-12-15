@@ -6,7 +6,7 @@ REFACTORED: Now works with the new modular feature system.
 
 import pandas as pd
 import numpy as np
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Union
 from datetime import datetime
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from database.schema import Fighter, Fight
 from .fighter_features import FighterFeatureExtractor
 from .registry import FeatureRegistry
+from .feature_exclusions import get_columns_to_exclude, print_exclusion_summary
 
 
 class MatchupFeatureExtractor:
@@ -28,7 +29,7 @@ class MatchupFeatureExtractor:
         self,
         fighter_1_id: int,
         fighter_2_id: int,
-        as_of_date: Optional[datetime] = None,
+        as_of_date: Optional[Union[datetime, str]] = None,
         feature_set: Optional[List[str]] = None
     ) -> Dict:
         """
@@ -76,10 +77,21 @@ class MatchupFeatureExtractor:
         """Calculate differential features (advantages)"""
         differentials = {}
         
+        # Helper function to safely calculate differentials with NaN handling
+        def safe_diff(key: str, default=0):
+            """Calculate difference, returning NaN if either value is NaN"""
+            v1 = f1_features.get(key, default)
+            v2 = f2_features.get(key, default)
+            # If either value is NaN, return NaN (don't create false differentials)
+            if np.isnan(v1) or np.isnan(v2):
+                return np.nan
+            return v1 - v2
+        
         # Physical advantages
-        differentials['height_advantage'] = f1_features.get('height_cm', 0) - f2_features.get('height_cm', 0)
-        differentials['reach_advantage'] = f1_features.get('reach_inches', 0) - f2_features.get('reach_inches', 0)
-        differentials['age_difference'] = f1_features.get('age', 0) - f2_features.get('age', 0)
+        # Use NaN for missing values to avoid creating false extreme differentials
+        differentials['height_advantage'] = safe_diff('height_cm', np.nan)
+        differentials['reach_advantage'] = safe_diff('reach_inches', np.nan)
+        differentials['age_difference'] = safe_diff('age', 0)  # Age can be 0 for very young fighters
         
         # Experience advantages
         differentials['experience_difference'] = f1_features.get('total_fights', 0) - f2_features.get('total_fights', 0)
@@ -234,10 +246,23 @@ class MatchupFeatureExtractor:
         differentials['youth_form_score_diff'] = (
             f1_features.get('youth_form_score', 0.0) - f2_features.get('youth_form_score', 0.0)
         )
+        differentials['prospect_momentum_score_diff'] = (
+            f1_features.get('prospect_momentum_score', 0.0) - f2_features.get('prospect_momentum_score', 0.0)
+        )
+        differentials['early_finish_advantage_diff'] = (
+            f1_features.get('early_finish_advantage', 0.0) - f2_features.get('early_finish_advantage', 0.0)
+        )
+        differentials['power_striker_score_diff'] = (
+            f1_features.get('power_striker_score', 0.0) - f2_features.get('power_striker_score', 0.0)
+        )
 
         # Time-decayed performance differentials (recent performance weighted more heavily)
         differentials['time_decayed_win_rate_diff'] = (
             f1_features.get('time_decayed_win_rate', 0.0) - f2_features.get('time_decayed_win_rate', 0.0)
+        )
+        differentials['time_decayed_win_rate_adj_opp_quality_diff'] = (
+            f1_features.get('time_decayed_win_rate_adj_opp_quality', 0.0) - 
+            f2_features.get('time_decayed_win_rate_adj_opp_quality', 0.0)
         )
         differentials['time_decayed_finish_rate_diff'] = (
             f1_features.get('time_decayed_finish_rate', 0.0) - f2_features.get('time_decayed_finish_rate', 0.0)
@@ -317,7 +342,7 @@ class MatchupFeatureExtractor:
         return matchup
     
     def _calculate_common_opponents(self, fighter_1_id: int, fighter_2_id: int,
-                                     as_of_date: Optional[datetime] = None) -> Dict:
+                                     as_of_date: Optional[Union[datetime, str]] = None) -> Dict:
         """Analyze performance against common opponents"""
         # Get fight histories
         f1_history = self.fighter_extractor._get_fight_history(fighter_1_id, as_of_date)
@@ -373,6 +398,9 @@ def create_training_dataset(
         feature_set: Optional list of feature names to extract.
                     If None, uses FEATURE_SET_FULL (all features)
     """
+    # Print exclusion summary at the start
+    print_exclusion_summary()
+    
     logger.info("Creating training dataset from completed fights...")
     
     matchup_extractor = MatchupFeatureExtractor(session)
@@ -414,11 +442,15 @@ def create_training_dataset(
                 winner_id = fight.fighter_2_id
                 loser_id = fight.fighter_1_id
             
+            # Get event date for point-in-time feature calculation
+            # This prevents data leakage by only using fights BEFORE this event
+            event_date = fight.event.date if fight.event and fight.event.date else None
+            
             # Perspective 1: winner as fighter_1 (positive class)
             features_win = matchup_extractor.extract_matchup_features(
                 winner_id,
                 loser_id,
-                as_of_date=None,  # Could use event date for true historical analysis
+                as_of_date=event_date,  # Use fight date to prevent data leakage
                 feature_set=feature_set
             )
             features_win['target'] = 1
@@ -436,7 +468,7 @@ def create_training_dataset(
             features_lose = matchup_extractor.extract_matchup_features(
                 loser_id,
                 winner_id,
-                as_of_date=None,
+                as_of_date=event_date,  # Use fight date to prevent data leakage
                 feature_set=feature_set
             )
             features_lose['target'] = 0
@@ -456,6 +488,17 @@ def create_training_dataset(
     
     # Convert to DataFrame
     df = pd.DataFrame(training_data)
+    
+    # Apply column-level feature exclusions (fine-grained toggles)
+    cols_to_drop = get_columns_to_exclude(df.columns)
+    if cols_to_drop:
+        logger.warning(f"⚠️  Dropping {len(cols_to_drop)} excluded feature columns from training data")
+        for col in cols_to_drop:
+            logger.info(f"  ✗ {col}")
+        df = df.drop(columns=cols_to_drop)
+        logger.success(f"✓ Successfully excluded {len(cols_to_drop)} columns")
+    else:
+        logger.info("No feature columns excluded (all features will be used)")
     
     # Save to file
     df.to_csv(output_path, index=False)

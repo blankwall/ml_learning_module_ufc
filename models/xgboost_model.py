@@ -550,9 +550,17 @@ def main():
     
     # Other options
     parser.add_argument('--data-path', type=str, default='data/processed/training_data.csv', help='Path to training data')
+    parser.add_argument('--model-name', type=str, default='xgboost_model', help='Name for saved model (e.g., xgboost_model_with_2025)')
     parser.add_argument('--cv-folds', type=int, default=5, help='Number of CV folds')
     parser.add_argument('--top-n', type=int, default=20, help='Top N features to show')
     parser.add_argument('--save-plots', action='store_true', help='Save plots to file')
+    parser.add_argument('--export-schema', action='store_true', help='Export feature schema after training')
+    parser.add_argument(
+        '--holdout-from-year',
+        type=int,
+        default=None,
+        help='Exclude fights with event year >= this from training (e.g. 2025)'
+    )
     
     args = parser.parse_args()
     
@@ -563,66 +571,117 @@ def main():
     logger.info("Loading data...")
     pipeline = FeaturePipeline(initialize_db=False)
     df = pipeline.load_dataset(args.data_path)
-    X, y = pipeline.prepare_features(df, fit_scaler=True)
 
     # ------------------------------------------------------------------
-    # Monotonic constraints: enforce sensible directions on key features
+    # Optional: hold out all fights from a given year (e.g. 2025) from training
     # ------------------------------------------------------------------
-    def _build_monotone_constraints(feature_names: List[str]) -> str:
+    def _split_train_holdout_by_year(raw_df: pd.DataFrame, holdout_year: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Build a monotone_constraints string for XGBoost based on feature names.
+        Split dataset into train (events before holdout_year) and holdout (>= holdout_year).
+        Uses Event dates from the database via event_id.
+        """
+        if "event_id" not in raw_df.columns:
+            logger.warning("No event_id column in dataset; cannot split by year. Using all rows for training.")
+            return raw_df, raw_df.iloc[0:0].copy()
 
-        Conventions (from fighter_1 perspective):
-          - years_since_last_win_diff, fights_since_last_win_diff, losses_since_last_win_diff:
-              higher values should only HURT fighter_1 -> -1
-          - win_rate_last_3_diff, win_rate_last_5_diff, finish_rate_last_3_diff,
-            finish_rate_last_5_diff, early_finish_rate_last_3_diff,
-            early_finish_rate_last_5_diff, finish_rate_last_3_years_diff:
-              higher values should only HELP fighter_1 -> +1
-          - recent_control_time_diff_last_3_diff, recent_control_time_sec_last_3_diff,
-            takedown_matchup, takedown_ability_diff:
-              more grappling/control dominance should only HELP fighter_1 -> +1
-        Everything else is unconstrained (0).
+        db = DatabaseManager()
+        session = db.get_session()
+        try:
+            event_ids = (
+                raw_df["event_id"]
+                .dropna()
+                .astype(int)
+                .unique()
+                .tolist()
+            )
+            if not event_ids:
+                logger.warning("No event_ids found; using all rows for training.")
+                return raw_df, raw_df.iloc[0:0].copy()
+
+            events = (
+                session.query(Event)
+                .filter(Event.id.in_(event_ids))
+                .all()
+            )
+            id_to_date = {e.id: e.date for e in events}
+        finally:
+            session.close()
+
+        dates = raw_df["event_id"].map(id_to_date)
+        dates_parsed = pd.to_datetime(dates, errors="coerce")
+        years = dates_parsed.dt.year
+
+        train_mask = (years < holdout_year) | years.isna()
+        holdout_mask = (~train_mask) & years.notna()
+
+        df_train = raw_df[train_mask].copy()
+        df_holdout = raw_df[holdout_mask].copy()
+
+        logger.info(
+            f"Year-based split with holdout_from_year={holdout_year}: "
+            f"{len(df_train)} train rows, {len(df_holdout)} holdout rows."
+        )
+        return df_train, df_holdout
+
+    if args.holdout_from_year is not None:
+        df_train_raw, df_holdout_raw = _split_train_holdout_by_year(df, args.holdout_from_year)
+    else:
+        df_train_raw, df_holdout_raw = df, df.iloc[0:0].copy()
+
+    # Prepare features only on the training portion
+    X, y = pipeline.prepare_features(df_train_raw, fit_scaler=True)
+
+    # ------------------------------------------------------------------
+    # Monotonic constraints: load from schema/monotone_constraints.json
+    # ------------------------------------------------------------------
+    def _load_monotone_constraints(feature_names: List[str]) -> Optional[str]:
         """
+        Load monotone constraints from schema/monotone_constraints.json.
+
+        Schema format:
+        {
+          "version": "1.0.0",
+          "num_features": 246,
+          "default": 0,
+          "constraints": {
+            "f1_striking_accuracy": 1,
+            "f1_age": -1,
+            ...
+          }
+        }
+
+        Any feature not present in `constraints` uses `default` (usually 0).
+        Returns an XGBoost-compatible string: "(0,1,-1,...)",
+        or None if the schema file is missing.
+        """
+        schema_path = Path("schema/monotone_constraints.json")
+        if not schema_path.exists():
+            logger.warning("No schema/monotone_constraints.json found; training WITHOUT monotone constraints.")
+            return None
+
+        with schema_path.open("r") as f:
+            data = json.load(f)
+
+        constraints_map = data.get("constraints", {})
+        default_val = int(data.get("default", 0))
+
         constraints: List[int] = []
         for name in feature_names:
-            c = 0
-            if name.endswith("years_since_last_win_diff"):
-                c = -1
-            elif name.endswith("fights_since_last_win_diff"):
-                c = -1
-            elif name.endswith("losses_since_last_win_diff"):
-                c = -1
-            elif name.endswith("win_rate_last_3_diff"):
-                c = 1
-            elif name.endswith("win_rate_last_5_diff"):
-                c = 1
-            elif name.endswith("finish_rate_last_3_diff"):
-                c = 1
-            elif name.endswith("finish_rate_last_5_diff"):
-                c = 1
-            elif name.endswith("early_finish_rate_last_3_diff"):
-                c = 1
-            elif name.endswith("early_finish_rate_last_5_diff"):
-                c = 1
-            elif name.endswith("finish_rate_last_3_years_diff"):
-                c = 1
-            # Grappling dominance: more control time / better takedown matchup should help f1
-            elif name.endswith("recent_control_time_diff_last_3_diff"):
-                c = 1
-            elif name.endswith("recent_control_time_sec_last_3_diff"):
-                c = 1
-            elif name == "takedown_matchup":
-                c = 1
-            elif name == "takedown_ability_diff":
-                c = 1
+            val = constraints_map.get(name, default_val)
+            try:
+                c = int(val)
+            except (TypeError, ValueError):
+                c = default_val
+            if c not in (-1, 0, 1):
+                logger.warning(f"Invalid monotone constraint {c} for feature {name}; using 0 instead.")
+                c = 0
             constraints.append(c)
 
         constraint_str = "(" + ",".join(str(v) for v in constraints) + ")"
-        logger.info(f"Using monotone_constraints: {constraint_str}")
+        logger.info(f"Using monotone_constraints from schema: {constraint_str}")
         return constraint_str
 
-    monotone_constraints = _build_monotone_constraints(list(X.columns))
+    monotone_constraints = _load_monotone_constraints(list(X.columns))
 
     # ------------------------------------------------------------------
     # Recency-based sample weights: newer fights count more than old ones
@@ -675,7 +734,7 @@ def main():
         )
         return weights
 
-    recency_weights = _compute_recency_weights(df)
+    recency_weights = _compute_recency_weights(df_train_raw)
     
     # Split data (keep index-based alignment so we can align weights)
     X_train, X_test, y_train, y_test = train_test_split(
@@ -703,9 +762,9 @@ def main():
             )
             xgb_model.train(X_train, y_train, X_test, y_test, sample_weight=w_train)
         
-        # Save model
-        xgb_model.save_model()
-        pipeline.save_pipeline()
+        # Save model (optionally export feature schema)
+        xgb_model.save_model(name=args.model_name, export_schema=args.export_schema)
+        pipeline.save_pipeline(model_name=args.model_name)
     
     # Cross-validation
     if args.cross_validate:
@@ -729,7 +788,7 @@ def main():
     # Calibrate model
     if args.calibrate:
         xgb_model.calibrate_model(X_train, y_train)
-        xgb_model.save_model("xgboost_model_calibrated")
+        xgb_model.save_model(f"{args.model_name}_calibrated")
     
     logger.success("Done!")
 

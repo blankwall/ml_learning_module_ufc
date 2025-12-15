@@ -8,13 +8,14 @@ on/off and new features can be added without modifying core extraction logic.
 
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from datetime import datetime
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from database.schema import Fighter, Fight, FightStats
 from .registry import FeatureBuilder, FeatureRegistry
+from .feature_toggles import DEFAULT_FEATURE_SET
 
 
 class FighterFeatureExtractor:
@@ -40,7 +41,7 @@ class FighterFeatureExtractor:
     def extract_features(
         self,
         fighter_id: int,
-        as_of_date: Optional[datetime] = None,
+        as_of_date: Optional[Union[datetime, str]] = None,
         feature_set: Optional[List[str]] = None
     ) -> Dict:
         """
@@ -49,15 +50,16 @@ class FighterFeatureExtractor:
         Args:
             fighter_id: Fighter database ID
             as_of_date: Calculate features as of this date (for historical analysis)
-            feature_set: Optional list of feature names to extract.
-                        If None, uses FEATURE_SET_FULL (all features)
+            feature_set: Optional list of feature group names to extract.
+                        If None, uses the toggled DEFAULT_FEATURE_SET from
+                        `features/feature_toggles.py`.
             
         Returns:
             Dictionary of features
         """
-        # Use full feature set by default for backward compatibility
+        # Use toggle-based feature set by default
         if feature_set is None:
-            feature_set = FeatureRegistry.FEATURE_SET_FULL
+            feature_set = list(DEFAULT_FEATURE_SET)
         
         return self.feature_builder.build_features(
             fighter_id=fighter_id,
@@ -69,7 +71,7 @@ class FighterFeatureExtractor:
     def _get_fight_history(
         self,
         fighter_id: int,
-        as_of_date: Optional[datetime] = None
+        as_of_date: Optional[Union[datetime, str]] = None
     ) -> pd.DataFrame:
         """
         Get fight history for a fighter.

@@ -11,6 +11,12 @@ from .feature_pipeline import FeaturePipeline
 
 # New modular system
 from .registry import FeatureBuilder, FeatureRegistry
+from .feature_vector_builder import (
+    build_feature_vector,
+    build_feature_vector_from_matchup,
+    build_feature_vectors_batch,
+    get_schema_info,
+)
 
 # Feature modules (for direct use if needed)
 from . import physical
@@ -29,6 +35,11 @@ __all__ = [
     # New modular system
     'FeatureBuilder',
     'FeatureRegistry',
+    # Feature vector builder (schema-enforced)
+    'build_feature_vector',
+    'build_feature_vector_from_matchup',
+    'build_feature_vectors_batch',
+    'get_schema_info',
     # Feature modules
     'physical',
     'striking',

@@ -1,0 +1,78 @@
+{
+  "prediction_distribution": {
+    "mean": 0.49940098664227633,
+    "median": 0.49896617,
+    "std": 0.25464128807657993,
+    "min": 0.011931015,
+    "max": 0.9827094,
+    "confident_predictions_pct": 52.4390243902439,
+    "very_confident_pct": 29.67479674796748,
+    "coin_flip_pct": 24.390243902439025
+  },
+  "market_distribution": {
+    "mean": 0.520336346252048,
+    "median": 0.5191863153028202,
+    "std": 0.19648828379313782,
+    "min": 0.1204819277108433,
+    "max": 0.92,
+    "confident_predictions_pct": 38.61788617886179,
+    "very_confident_pct": 12.195121951219512,
+    "coin_flip_pct": 29.67479674796748
+  },
+  "model_vs_market": {
+    "model_accuracy": 0.6951219512195121,
+    "market_accuracy": 0.6788617886178862,
+    "agreement_rate": 0.7235772357723578,
+    "disagreements": 68,
+    "model_right_when_disagree": 36,
+    "market_right_when_disagree": 32
+  },
+  "error_patterns": {
+    "weight_class": {
+      "sum": {
+        "Bantamweight": 16,
+        "Catch Weight": 2,
+        "Featherweight": 15,
+        "Flyweight": 14,
+        "Heavyweight": 15,
+        "Light Heavyweight": 12,
+        "Lightweight": 30,
+        "Middleweight": 15,
+        "Welterweight": 21,
+        "Women's Bantamweight": 11,
+        "Women's Flyweight": 9,
+        "Women's Strawweight": 11
+      },
+      "count": {
+        "Bantamweight": 24,
+        "Catch Weight": 4,
+        "Featherweight": 24,
+        "Flyweight": 18,
+        "Heavyweight": 26,
+        "Light Heavyweight": 14,
+        "Lightweight": 40,
+        "Middleweight": 30,
+        "Welterweight": 28,
+        "Women's Bantamweight": 12,
+        "Women's Flyweight": 10,
+        "Women's Strawweight": 16
+      },
+      "mean": {
+        "Bantamweight": 0.6666666666666666,
+        "Catch Weight": 0.5,
+        "Featherweight": 0.625,
+        "Flyweight": 0.7777777777777778,
+        "Heavyweight": 0.5769230769230769,
+        "Light Heavyweight": 0.8571428571428571,
+        "Lightweight": 0.75,
+        "Middleweight": 0.5,
+        "Welterweight": 0.75,
+        "Women's Bantamweight": 0.9166666666666666,
+        "Women's Flyweight": 0.9,
+        "Women's Strawweight": 0.6875
+      }
+    },
+    "upset_accuracy": 0.45569620253164556,
+    "favorite_accuracy": 0.8083832335329342
+  }
+}

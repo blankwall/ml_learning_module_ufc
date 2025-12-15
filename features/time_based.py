@@ -5,7 +5,7 @@ Rolling statistics, momentum, decline, activity, and time-decayed metrics
 
 import pandas as pd
 import numpy as np
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Callable
 from datetime import datetime
 
 from .utils import (
@@ -407,6 +407,121 @@ def extract_time_decayed_features(
     }
 
 
+def extract_opponent_quality_adjusted_time_decayed_features(
+    fight_history: pd.DataFrame,
+    get_fighter_record: Callable[[int], Optional[Dict]],
+    lambda_decay: float = 0.3
+) -> Dict[str, float]:
+    """
+    Compute opponent-quality-adjusted time-decayed performance metrics.
+    
+    Weights wins/losses by opponent quality:
+    - Win against strong opponent = higher weight
+    - Loss to strong opponent = lower penalty
+    - Uses exponential time decay: weight = exp(-lambda * years_ago)
+    
+    Args:
+        fight_history: DataFrame with fight history (sorted most recent first)
+        get_fighter_record: Function that takes fighter_id and returns record dict
+            with keys: wins, losses, draws, total_fights, win_rate
+        lambda_decay: Decay rate (higher = faster decay, default 0.3)
+        
+    Returns:
+        Dictionary with opponent-quality-adjusted time-decayed metrics
+    """
+    if len(fight_history) == 0:
+        return {
+            "time_decayed_win_rate_adj_opp_quality": 0.0,
+        }
+    
+    if "event_date_parsed" not in fight_history.columns:
+        # Fallback to simple win rate if dates aren't available
+        wins = (fight_history["result"] == "win").sum()
+        total = len(fight_history)
+        return {
+            "time_decayed_win_rate_adj_opp_quality": safe_divide(wins, total),
+        }
+    
+    if "opponent_id" not in fight_history.columns:
+        # Fallback to regular time_decayed_win_rate if opponent info missing
+        return {
+            "time_decayed_win_rate_adj_opp_quality": 0.0,
+        }
+    
+    now = datetime.now()
+    
+    total_weighted_score = 0.0
+    total_weight = 0.0
+    
+    for _, row in fight_history.iterrows():
+        try:
+            fight_date = row["event_date_parsed"]
+            years_ago = (now - fight_date).days / 365.25
+            time_weight = np.exp(-lambda_decay * years_ago)
+            
+            opponent_id = row.get("opponent_id")
+            if pd.isna(opponent_id):
+                # If opponent info missing, use regular time weight
+                opponent_quality_multiplier = 1.0
+            else:
+                # Get opponent record
+                record = get_fighter_record(int(opponent_id))
+                if record and record.get("win_rate") is not None:
+                    opp_win_rate = record["win_rate"]
+                    # Normalize opponent quality: stronger differentiation
+                    # Scale from [0, 1] to [0.3, 2.3] so average opponent = 1.3x multiplier
+                    # This creates stronger differentiation between elite and weak opponents
+                    opponent_quality_multiplier = 0.3 + (opp_win_rate * 2.0)
+                else:
+                    # Unknown opponent = average quality
+                    opponent_quality_multiplier = 1.0
+            
+            # Calculate score contribution
+            if row["result"] == "win":
+                # Win: positive score weighted by opponent quality
+                # Win against elite opponent (2.3x) counts more than win against weak (0.3x)
+                score_contribution = 1.0 * opponent_quality_multiplier
+            elif row["result"] == "loss":
+                # Loss: negative score, but loss to elite opponent is MUCH less penalized
+                # Using exponential decay: -1.0 * exp(-multiplier)
+                # Loss to elite (2.0x): -1.0 * exp(-2.0) = -0.135 (very small penalty!)
+                # Loss to average (1.3x): -1.0 * exp(-1.3) = -0.273 (moderate penalty)
+                # Loss to weak (0.3x): -1.0 * exp(-0.3) = -0.741 (larger penalty)
+                score_contribution = -1.0 * np.exp(-opponent_quality_multiplier)
+            else:
+                # Draw/NC: neutral
+                score_contribution = 0.0
+            
+            # Combined weight: time decay × opponent quality adjustment
+            combined_weight = time_weight * opponent_quality_multiplier
+            
+            total_weighted_score += score_contribution * time_weight
+            total_weight += time_weight
+            
+        except Exception:
+            continue
+    
+    if total_weight == 0:
+        return {
+            "time_decayed_win_rate_adj_opp_quality": 0.0,
+        }
+    
+    # Normalize score to [0, 1] range (win rate equivalent)
+    # With multiplier range [0.3, 2.3] and exponential penalty:
+    # - Worst case: all losses to weak (0.3x) = -1.0 * exp(-0.3) ≈ -0.741
+    # - Best case: all wins vs elite (2.3x) = 1.0 * 2.3 = +2.3
+    # So actual range is approximately [-0.741, 2.3]
+    avg_score = total_weighted_score / total_weight if total_weight > 0 else 0.0
+    # Normalize from [-0.741, 2.3] to [0, 1]
+    # Add 0.741 to shift to [0, 3.041], then divide by 3.041
+    normalized_score = (avg_score + 0.741) / 3.041
+    normalized_score = max(0.0, min(1.0, normalized_score))  # Clamp to [0, 1]
+    
+    return {
+        "time_decayed_win_rate_adj_opp_quality": float(normalized_score),
+    }
+
+
 def extract_age_interactions(
     age: float,
     decline_features: Dict[str, float],
@@ -483,6 +598,130 @@ def extract_youth_form_score(
         base_form = max(0.0, 0.8 * win_rate_last_5 + 0.2 * finish_rate_last_5)
         youth_factor = max(0.0, 30.0 - age)
         return float(base_form * youth_factor)
+    except Exception:
+        return 0.0
+
+
+def extract_prospect_momentum_score(
+    age: float,
+    win_rate_last_5: float,
+    finish_rate_last_5: float
+) -> float:
+    """
+    Calculate prospect momentum score.
+    
+    Rewards young fighters with strong recent form and finishing ability.
+    Formula: win_rate_last_5 × finish_rate_last_5 × (1 - age/35)
+    
+    This helps capture rising prospects who are finishing fights and winning,
+    while reducing the penalty for facing weaker opponents (common for prospects).
+    
+    Args:
+        age: Fighter age
+        win_rate_last_5: Win rate in last 5 fights
+        finish_rate_last_5: Finish rate in last 5 fights (finishes / wins)
+        
+    Returns:
+        Prospect momentum score (0.0 to 1.0)
+    """
+    try:
+        age = float(age or 0.0)
+        win_rate_last_5 = float(win_rate_last_5 or 0.0)
+        finish_rate_last_5 = float(finish_rate_last_5 or 0.0)
+        
+        # Age factor: (1 - age/35) gives maximum at age 0, decreases to 0 at age 35
+        # Clamp to [0, 1] range
+        age_factor = max(0.0, min(1.0, 1.0 - (age / 35.0)))
+        
+        # Prospect momentum: win rate × finish rate × age factor
+        # All components are in [0, 1] range, so result is in [0, 1]
+        prospect_momentum = win_rate_last_5 * finish_rate_last_5 * age_factor
+        
+        return float(prospect_momentum)
+    except Exception:
+        return 0.0
+
+
+def extract_early_finish_advantage(
+    first_round_finish_rate: float,
+    early_finish_rate_last_3: float,
+    time_decayed_ko_rate: float
+) -> float:
+    """
+    Calculate early finish advantage score.
+    
+    Combines multiple early finishing signals to identify fighters who finish fights quickly.
+    Formula: first_round_finish_rate * 0.5 + early_finish_rate_last_3 * 0.3 + time_decayed_ko_rate * 0.2
+    
+    Args:
+        first_round_finish_rate: Rate of finishing in first round (career)
+        early_finish_rate_last_3: Rate of finishing in rounds 1-2 (last 3 fights)
+        time_decayed_ko_rate: Time-decayed KO rate (recent KOs weighted more)
+        
+    Returns:
+        Early finish advantage score (0.0 to 1.0)
+    """
+    try:
+        first_round_finish_rate = float(first_round_finish_rate or 0.0)
+        early_finish_rate_last_3 = float(early_finish_rate_last_3 or 0.0)
+        time_decayed_ko_rate = float(time_decayed_ko_rate or 0.0)
+        
+        # Weighted combination of early finishing signals
+        early_finish_advantage = (
+            first_round_finish_rate * 0.5 +
+            early_finish_rate_last_3 * 0.3 +
+            time_decayed_ko_rate * 0.2
+        )
+        
+        # Clamp to [0, 1] range
+        return float(max(0.0, min(1.0, early_finish_advantage)))
+    except Exception:
+        return 0.0
+
+
+def extract_power_striker_score(
+    ko_rate_last_5: float,
+    first_round_ko_rate: float,
+    knockdowns_per_fight: float,
+    head_strike_rate: float
+) -> float:
+    """
+    Calculate power striker score.
+    
+    Identifies fighters with knockout power and head-hunting style.
+    Formula: (ko_rate_last_5 * 0.4 + first_round_ko_rate * 0.3 + knockdowns_per_fight * 0.3) * head_strike_rate
+    
+    Args:
+        ko_rate_last_5: KO rate in last 5 fights (KOs / wins)
+        first_round_ko_rate: Rate of first round KOs (career)
+        knockdowns_per_fight: Average knockdowns per fight (lifetime or last 3)
+        head_strike_rate: Rate of strikes targeting head (lifetime or last 3)
+        
+    Returns:
+        Power striker score (0.0 to 1.0)
+    """
+    try:
+        ko_rate_last_5 = float(ko_rate_last_5 or 0.0)
+        first_round_ko_rate = float(first_round_ko_rate or 0.0)
+        knockdowns_per_fight = float(knockdowns_per_fight or 0.0)
+        head_strike_rate = float(head_strike_rate or 0.0)
+        
+        # Normalize knockdowns_per_fight to reasonable range [0, 2.0]
+        # Most fighters average 0-1 knockdowns per fight, elite power strikers can hit 1.5+
+        normalized_knockdowns = min(2.0, knockdowns_per_fight) / 2.0
+        
+        # Weighted combination of power indicators
+        power_components = (
+            ko_rate_last_5 * 0.4 +
+            first_round_ko_rate * 0.3 +
+            normalized_knockdowns * 0.3
+        )
+        
+        # Multiply by head strike rate (power strikers target the head)
+        power_striker_score = power_components * head_strike_rate
+        
+        # Clamp to [0, 1] range
+        return float(max(0.0, min(1.0, power_striker_score)))
     except Exception:
         return 0.0
 

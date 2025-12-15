@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Tuple, List, Optional
+import json
 from loguru import logger
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -81,7 +82,10 @@ class FeaturePipeline:
         metadata_cols = ['fight_id', 'event_id', 'fighter_1_id', 'fighter_2_id', 
                         'weight_class', 'method', 'target']
         
-        feature_cols = [col for col in df.columns if col not in metadata_cols]
+        # Deterministic feature ordering:
+        # Pandas column order can vary depending on how the dataset was assembled.
+        # Sorting here makes training/inference reproducible (and schema export stable).
+        feature_cols = sorted([col for col in df.columns if col not in metadata_cols])
         
         X = df[feature_cols].copy()
         y = df['target'] if 'target' in df.columns else None
@@ -133,34 +137,88 @@ class FeaturePipeline:
         
         return X_train, X_test, y_train, y_test
     
-    def save_pipeline(self, output_dir: str = 'models/saved'):
-        """Save the feature pipeline (scaler and feature names)"""
+    def save_pipeline(self, output_dir: str = 'models/saved', model_name: Optional[str] = None):
+        """
+        Save the feature pipeline (scaler + feature names).
+
+        IMPORTANT:
+        - If you train multiple models (e.g. `xgboost_model` and `xgboost_model_with_2025`)
+          you must save the pipeline artifacts per-model, otherwise the last training run
+          overwrites `feature_names.pkl`/`feature_scaler.pkl` and breaks older models with
+          XGBoost "feature_names mismatch" errors.
+        """
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
         
-        # Save scaler
-        scaler_path = output_path / 'feature_scaler.pkl'
-        joblib.dump(self.scaler, scaler_path)
-        
-        # Save feature names
-        features_path = output_path / 'feature_names.pkl'
-        joblib.dump(self.feature_names, features_path)
-        
-        logger.success(f"Saved feature pipeline to {output_dir}")
+        if model_name:
+            scaler_path = output_path / f"{model_name}_feature_scaler.pkl"
+            features_path = output_path / f"{model_name}_feature_names.pkl"
+            joblib.dump(self.scaler, scaler_path)
+            joblib.dump(self.feature_names, features_path)
+            logger.success(f"Saved feature pipeline to {output_dir} (model_name={model_name})")
+        else:
+            # Legacy single-model paths (kept for backward compatibility)
+            scaler_path = output_path / 'feature_scaler.pkl'
+            features_path = output_path / 'feature_names.pkl'
+            joblib.dump(self.scaler, scaler_path)
+            joblib.dump(self.feature_names, features_path)
+            logger.success(f"Saved feature pipeline to {output_dir}")
     
-    def load_pipeline(self, input_dir: str = 'models/saved'):
-        """Load a saved feature pipeline"""
+    def load_pipeline(self, input_dir: str = 'models/saved', model_name: Optional[str] = None):
+        """
+        Load a saved feature pipeline.
+
+        If `model_name` is provided, we will try to load:
+          - `{model_name}_feature_scaler.pkl`
+          - `{model_name}_feature_names.pkl`
+        and fall back to the legacy single-model filenames if those don't exist.
+        """
         input_path = Path(input_dir)
-        
-        # Load scaler
-        scaler_path = input_path / 'feature_scaler.pkl'
-        self.scaler = joblib.load(scaler_path)
-        
-        # Load feature names
-        features_path = input_path / 'feature_names.pkl'
-        self.feature_names = joblib.load(features_path)
-        
-        logger.success(f"Loaded feature pipeline from {input_dir}")
+
+        def _load_paths(scaler_path: Path, features_path: Path) -> None:
+            self.scaler = joblib.load(scaler_path)
+            self.feature_names = joblib.load(features_path)
+
+        if model_name:
+            scaler_path = input_path / f"{model_name}_feature_scaler.pkl"
+            features_path = input_path / f"{model_name}_feature_names.pkl"
+            if scaler_path.exists() and features_path.exists():
+                _load_paths(scaler_path, features_path)
+                logger.success(f"Loaded feature pipeline from {input_dir} (model_name={model_name})")
+            else:
+                # Fallback to legacy paths
+                legacy_scaler = input_path / "feature_scaler.pkl"
+                legacy_features = input_path / "feature_names.pkl"
+                _load_paths(legacy_scaler, legacy_features)
+                logger.warning(
+                    f"Model-specific pipeline files not found for '{model_name}'. "
+                    f"Fell back to legacy pipeline files in {input_dir}. "
+                    f"If you see feature mismatch errors, retrain and ensure the pipeline "
+                    f"is saved with model_name='{model_name}'."
+                )
+        else:
+            legacy_scaler = input_path / "feature_scaler.pkl"
+            legacy_features = input_path / "feature_names.pkl"
+            _load_paths(legacy_scaler, legacy_features)
+            logger.success(f"Loaded feature pipeline from {input_dir}")
+
+        # Optional integrity check: if a model-specific feature list exists, ensure alignment.
+        # This catches the common pitfall where a different model overwrote the legacy pipeline files.
+        if model_name:
+            model_features_path = Path("models/saved") / f"{model_name}_features.json"
+            if model_features_path.exists():
+                with model_features_path.open("r") as f:
+                    model_features = json.load(f)
+                if isinstance(model_features, list) and self.feature_names is not None:
+                    if list(model_features) != list(self.feature_names):
+                        raise ValueError(
+                            f"Loaded pipeline feature_names do not match model '{model_name}' feature list. "
+                            f"Pipeline features: {len(self.feature_names)}; model features: {len(model_features)}. "
+                            f"This usually means a different model overwrote legacy pipeline files. "
+                            f"Fix: retrain '{model_name}' (or re-save its pipeline) so that "
+                            f"models/saved/{model_name}_feature_names.pkl and "
+                            f"models/saved/{model_name}_feature_scaler.pkl exist."
+                        )
     
     def get_feature_importance_summary(self, feature_importances: np.ndarray, 
                                        top_n: int = 20) -> pd.DataFrame:
