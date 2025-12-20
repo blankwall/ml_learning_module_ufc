@@ -199,7 +199,12 @@ def dump_feature_names(prefix, feature_vector):
     print("\n")
 
 
-def add_model_predictions(df: pd.DataFrame, model_name: str = "xgboost_model") -> pd.DataFrame:
+def add_model_predictions(
+    df: pd.DataFrame,
+    model_name: str = "xgboost_model",
+    *,
+    symmetric: bool = False,
+) -> pd.DataFrame:
     """
     For each row in the input DataFrame, add model probabilities and edges
     vs. the provided American odds.
@@ -260,8 +265,25 @@ def add_model_predictions(df: pd.DataFrame, model_name: str = "xgboost_model") -
             X_scaled, _ = pipeline.prepare_features(X_df, fit_scaler=False)
             
             proba = xgb_model.predict(X_scaled, use_calibrated=False)
-            p_f1 = float(proba[0])
-            p_f2 = 1.0 - p_f1
+            p_f1_raw = float(proba[0])
+            p_f2_raw = 1.0 - p_f1_raw
+
+            if symmetric:
+                # Compute swapped orientation and build a symmetric probability for fighter_1:
+                #   p_sym(f1 beats f2) = 0.5 * ( p(f1,f2) + (1 - p(f2,f1)) )
+                features_swap = matchup_extractor.extract_matchup_features(f2.id, f1.id)
+                features_swap["is_title_fight"] = 1 if is_title else 0
+                X_df_swap = pd.DataFrame([features_swap])
+                X_scaled_swap, _ = pipeline.prepare_features(X_df_swap, fit_scaler=False)
+                proba_swap = xgb_model.predict(X_scaled_swap, use_calibrated=False)
+                p_f2_as_f1 = float(proba_swap[0])  # P(original f2 wins | f2,f1)
+
+                p_f1_sym = 0.5 * (p_f1_raw + (1.0 - p_f2_as_f1))
+                p_f1 = max(0.0, min(1.0, p_f1_sym))
+                p_f2 = 1.0 - p_f1
+            else:
+                p_f1 = p_f1_raw
+                p_f2 = p_f2_raw
 
             # Implied probs from market odds
             imp_f1 = american_to_implied_prob(f1_odds)
@@ -288,6 +310,8 @@ def add_model_predictions(df: pd.DataFrame, model_name: str = "xgboost_model") -
             # Percentage view (for quick eyeballing in Excel)
             p_f1_pct = round(p_f1 * 100.0, 1)
             p_f2_pct = round(p_f2 * 100.0, 1)
+            p_f1_raw_pct = round(p_f1_raw * 100.0, 1)
+            p_f2_raw_pct = round(p_f2_raw * 100.0, 1)
             imp_f1_pct = round(imp_f1 * 100.0, 1)
             imp_f2_pct = round(imp_f2 * 100.0, 1)
             edge_f1_pct = round(edge_f1 * 100.0, 1)
@@ -388,6 +412,9 @@ def add_model_predictions(df: pd.DataFrame, model_name: str = "xgboost_model") -
                     # High-level percentages (keep these for readability)
                     "model_p_f1_pct": p_f1_pct,
                     "model_p_f2_pct": p_f2_pct,
+                    "model_p_f1_raw_pct": p_f1_raw_pct,
+                    "model_p_f2_raw_pct": p_f2_raw_pct,
+                    "symmetric_mode": int(bool(symmetric)),
                     "implied_p_f1_pct": imp_f1_pct,
                     "implied_p_f2_pct": imp_f2_pct,
                     "edge_f1_pct": edge_f1_pct,
@@ -422,6 +449,7 @@ def export_to_excel(
     input_path: str = "data/predictions/upcoming_fights.xlsx",
     output_path: str = "data/predictions/model_vs_market.xlsx",
     model_name: str = "xgboost_model",
+    symmetric: bool = False,
 ) -> Tuple[Path, int]:
     """
     High-level helper: read fights+odds, add model info, write Excel.
@@ -442,7 +470,7 @@ def export_to_excel(
     df_in = load_input(in_path)
 
     logger.info(f"Adding model probabilities and edges using '{model_name}'...")
-    df_out = add_model_predictions(df_in, model_name=model_name)
+    df_out = add_model_predictions(df_in, model_name=model_name, symmetric=symmetric)
 
     # Cap total exposure across all fights to a maximum stake (e.g. $500)
     max_total_stake = 500.0
@@ -526,9 +554,17 @@ def main():
         default="xgboost_model",
         help="Model name to use (default: xgboost_model, e.g., xgboost_model_with_2025)",
     )
+    parser.add_argument(
+        "--symmetric",
+        action="store_true",
+        help=(
+            "Compute probabilities in both fighter orders and use a symmetric probability for EV/edges. "
+            "Adds model_p_*_raw_pct columns for debugging."
+        ),
+    )
 
     args = parser.parse_args()
-    export_to_excel(args.input, args.output, model_name=args.model_name)
+    export_to_excel(args.input, args.output, model_name=args.model_name, symmetric=bool(args.symmetric))
 
 
 if __name__ == "__main__":

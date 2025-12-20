@@ -205,13 +205,13 @@ class FeatureRegistry:
     def _extract_momentum(context: Dict) -> Dict[str, float]:
         """Extract momentum features"""
         fight_history = context["fight_history"]
-        return extract_momentum_features(fight_history)
+        return extract_momentum_features(fight_history, as_of_date=context.get("as_of_date"))
     
     @staticmethod
     def _extract_decline(context: Dict) -> Dict[str, float]:
         """Extract decline features"""
         fight_history = context["fight_history"]
-        return extract_decline_features(fight_history)
+        return extract_decline_features(fight_history, as_of_date=context.get("as_of_date"))
     
     @staticmethod
     def _extract_recent_damage(context: Dict) -> Dict[str, float]:
@@ -224,7 +224,11 @@ class FeatureRegistry:
         """Extract time-decayed features"""
         fight_history = context["fight_history"]
         lambda_decay = context.get("lambda_decay", 0.3)
-        return extract_time_decayed_features(fight_history, lambda_decay)
+        return extract_time_decayed_features(
+            fight_history,
+            lambda_decay,
+            as_of_date=context.get("as_of_date"),
+        )
     
     @staticmethod
     def _extract_time_decayed_adj_opp_quality(context: Dict) -> Dict[str, float]:
@@ -572,6 +576,7 @@ class FeatureBuilder:
             "fighter": fighter,
             "fighter_id": fighter_id,
             "fight_history": fight_history,
+            "as_of_date": as_of_date,
             "rolling_windows": self.rolling_windows,
             "lambda_decay": self.lambda_decay,
             "get_fighter_record": get_fighter_record_as_of,  # Pass wrapped version

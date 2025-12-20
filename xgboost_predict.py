@@ -15,9 +15,92 @@ from models.xgboost_model import XGBoostModel
 import pandas as pd
 from loguru import logger
 import argparse
+from sqlalchemy import or_
 
 
-def xgboost_predict(fighter_1_name: str, fighter_2_name: str, title_fight: bool = False, quiet: bool = False, model_name: str = 'xgboost_model'):
+def _print_fighter_candidates(candidates, session=None):
+    """Pretty-print ambiguous fighter matches to help disambiguate."""
+    print("\n[AMBIGUOUS FIGHTER MATCH]")
+    print("Multiple fighters matched your query. Use --fighter-*-id or --fighter-*-ufcstats-id to disambiguate.\n")
+    for f in candidates:
+        # Optionally show how many fights we have for this fighter (helps pick the active UFC fighter)
+        fights_count = None
+        try:
+            if session is not None:
+                from database.schema import Fight
+                fights_count = session.query(Fight).filter(
+                    or_(Fight.fighter_1_id == f.id, Fight.fighter_2_id == f.id)
+                ).count()
+        except Exception:
+            fights_count = None
+
+        record = f"{f.wins or 0}-{f.losses or 0}-{f.draws or 0}"
+        fights_suffix = f", fights_in_db={fights_count}" if fights_count is not None else ""
+        print(
+            f"- id={f.id}, ufcstats_id={f.fighter_id}, name='{f.name}', nickname='{f.nickname or ''}', "
+            f"dob='{f.date_of_birth or ''}', age={f.age}, record={record}{fights_suffix}"
+        )
+    print("")
+
+
+def _resolve_fighter(
+    session,
+    name: str,
+    *,
+    db_id: int | None = None,
+    ufcstats_id: str | None = None,
+    allow_ambiguous: bool = False,
+):
+    """
+    Resolve a fighter from CLI inputs.
+
+    Priority:
+    1) db_id (fighters.id)
+    2) ufcstats_id (fighters.fighter_id)
+    3) fuzzy name match (fighters.name ILIKE %name%)
+       - if multiple matches: error (unless allow_ambiguous=True)
+    """
+    if db_id is not None:
+        fighter = session.query(Fighter).filter(Fighter.id == db_id).first()
+        return fighter, []
+
+    if ufcstats_id is not None:
+        fighter = session.query(Fighter).filter(Fighter.fighter_id == ufcstats_id).first()
+        return fighter, []
+
+    candidates = session.query(Fighter).filter(Fighter.name.ilike(f"%{name}%")).all()
+    if len(candidates) == 0:
+        return None, []
+    if len(candidates) == 1:
+        return candidates[0], []
+
+    # Multiple matches: either fail loudly (default) or pick a "best" candidate with a warning.
+    if not allow_ambiguous:
+        return None, candidates
+
+    # Heuristic: prefer the candidate with the most fights in our DB (then lowest id).
+    from database.schema import Fight
+    scored = []
+    for f in candidates:
+        cnt = session.query(Fight).filter(or_(Fight.fighter_1_id == f.id, Fight.fighter_2_id == f.id)).count()
+        scored.append((cnt, f.id, f))
+    scored.sort(key=lambda t: (-t[0], t[1]))
+    best = scored[0][2]
+    return best, candidates
+
+
+def xgboost_predict(
+    fighter_1_name: str,
+    fighter_2_name: str,
+    title_fight: bool = False,
+    quiet: bool = False,
+    model_name: str = "xgboost_model",
+    fighter_1_id: int | None = None,
+    fighter_2_id: int | None = None,
+    fighter_1_ufcstats_id: str | None = None,
+    fighter_2_ufcstats_id: str | None = None,
+    allow_ambiguous: bool = False,
+):
     """Make a prediction using XGBoost model"""
     
     # Load model
@@ -35,15 +118,41 @@ def xgboost_predict(fighter_1_name: str, fighter_2_name: str, title_fight: bool 
     db = DatabaseManager()
     session = db.get_session()
     
-    fighter_1 = session.query(Fighter).filter(Fighter.name.ilike(f'%{fighter_1_name}%')).first()
-    fighter_2 = session.query(Fighter).filter(Fighter.name.ilike(f'%{fighter_2_name}%')).first()
+    fighter_1, f1_candidates = _resolve_fighter(
+        session,
+        fighter_1_name,
+        db_id=fighter_1_id,
+        ufcstats_id=fighter_1_ufcstats_id,
+        allow_ambiguous=allow_ambiguous,
+    )
+    fighter_2, f2_candidates = _resolve_fighter(
+        session,
+        fighter_2_name,
+        db_id=fighter_2_id,
+        ufcstats_id=fighter_2_ufcstats_id,
+        allow_ambiguous=allow_ambiguous,
+    )
     
     if not fighter_1:
-        logger.error(f"Fighter not found: {fighter_1_name}")
+        if f1_candidates:
+            _print_fighter_candidates(f1_candidates, session=session)
+            logger.error(
+                f"Ambiguous fighter match for '{fighter_1_name}'. "
+                f"Re-run with --fighter-1-id or --fighter-1-ufcstats-id (or pass --allow-ambiguous)."
+            )
+        else:
+            logger.error(f"Fighter not found: {fighter_1_name}")
         session.close()
         return
     if not fighter_2:
-        logger.error(f"Fighter not found: {fighter_2_name}")
+        if f2_candidates:
+            _print_fighter_candidates(f2_candidates, session=session)
+            logger.error(
+                f"Ambiguous fighter match for '{fighter_2_name}'. "
+                f"Re-run with --fighter-2-id or --fighter-2-ufcstats-id (or pass --allow-ambiguous)."
+            )
+        else:
+            logger.error(f"Fighter not found: {fighter_2_name}")
         session.close()
         return
     
@@ -193,8 +302,23 @@ def xgboost_predict(fighter_1_name: str, fighter_2_name: str, title_fight: bool 
             print(f"    - {fighter_2.name} faced better opponents (avg_opponent_win_rate_diff: {features['avg_opponent_win_rate_diff']:.4f})")
         if 'avg_beaten_opponent_win_rate_diff' in features and features['avg_beaten_opponent_win_rate_diff'] < 0:
             print(f"    - {fighter_2.name} beat better opponents (avg_beaten_opponent_win_rate_diff: {features['avg_beaten_opponent_win_rate_diff']:.4f})")
-        if 'age_x_days_since_last_fight_diff' in features and features['age_x_days_since_last_fight_diff'] < 0:
-            print(f"    - {fighter_2.name} fought more recently (age_x_days_since_last_fight_diff: {features['age_x_days_since_last_fight_diff']:.0f} days)")
+        # Recency: prefer the direct days-since feature when available (more interpretable than age×days)
+        if "f1_days_since_last_fight" in features and "f2_days_since_last_fight" in features:
+            f1_days = float(features["f1_days_since_last_fight"])
+            f2_days = float(features["f2_days_since_last_fight"])
+            if f1_days != f2_days:
+                more_recent = fighter_1.name if f1_days < f2_days else fighter_2.name
+                print(
+                    f"    - {more_recent} fought more recently "
+                    f"(f1_days_since_last_fight={f1_days:.0f}, f2_days_since_last_fight={f2_days:.0f})"
+                )
+        elif 'age_x_days_since_last_fight_diff' in features and features['age_x_days_since_last_fight_diff'] != 0:
+            # Fallback: age×days is harder to interpret because age differs, but sign still matters.
+            more_recent = fighter_1.name if features['age_x_days_since_last_fight_diff'] < 0 else fighter_2.name
+            print(
+                f"    - {more_recent} fought more recently "
+                f"(age_x_days_since_last_fight_diff: {features['age_x_days_since_last_fight_diff']:.0f})"
+            )
         
         # Show individual opponent quality scores
         print("\n  Opponent Quality Breakdown:")
@@ -212,16 +336,18 @@ def xgboost_predict(fighter_1_name: str, fighter_2_name: str, title_fight: bool 
                 print(f"      This means their losses were to top-tier fighters, not weak competition")
                 print(f"      But opponent_quality_score penalizes them for this!")
         
-        # Show the calculation issue
+        # Opponent quality score calculation explanation (matches features/opponent_quality.py)
         if 'f2_avg_beaten_opponent_win_rate' in features and 'f2_avg_lost_to_opponent_win_rate' in features:
-            beaten_wr = features['f2_avg_beaten_opponent_win_rate']
-            lost_wr = features['f2_avg_lost_to_opponent_win_rate']
-            print(f"\n  Opponent Quality Score Calculation Issue:")
+            beaten_wr = float(features['f2_avg_beaten_opponent_win_rate'])
+            lost_wr = float(features['f2_avg_lost_to_opponent_win_rate'])
+            naive = beaten_wr - lost_wr
+            adjusted = beaten_wr - (1.0 - lost_wr)
+            print(f"\n  Opponent Quality Score Calculation (info):")
             print(f"    {fighter_2.name} beat opponents with {beaten_wr*100:.1f}% win rate")
             print(f"    {fighter_2.name} lost to opponents with {lost_wr*100:.1f}% win rate")
-            print(f"    raw_score = {beaten_wr:.4f} - {lost_wr:.4f} = {beaten_wr - lost_wr:.4f}")
-            print(f"    ⚠️  PROBLEM: Losing to BETTER opponents gives negative score!")
-            print(f"    This is backwards - losing to elite fighters shouldn't hurt as much")
+            print(f"    naive_raw = beaten - lost = {beaten_wr:.4f} - {lost_wr:.4f} = {naive:.4f}")
+            print(f"    adjusted_raw = beaten - (1 - lost) = {beaten_wr:.4f} - (1 - {lost_wr:.4f}) = {adjusted:.4f}")
+            print(f"    (Adjusted formula reduces penalty for losses to elite opponents.)")
         print("")
         print("  This suggests:")
         print("    - Recent form (time_decayed_win_rate) is dominating the prediction")
@@ -247,12 +373,29 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='XGBoost UFC Fight Prediction')
     parser.add_argument('--fighter-1', type=str, required=True, help='First fighter name')
     parser.add_argument('--fighter-2', type=str, required=True, help='Second fighter name')
+    parser.add_argument('--fighter-1-id', type=int, default=None, help='Disambiguate fighter 1 by DB id (fighters.id)')
+    parser.add_argument('--fighter-2-id', type=int, default=None, help='Disambiguate fighter 2 by DB id (fighters.id)')
+    parser.add_argument('--fighter-1-ufcstats-id', type=str, default=None, help='Disambiguate fighter 1 by UFCStats id (fighters.fighter_id)')
+    parser.add_argument('--fighter-2-ufcstats-id', type=str, default=None, help='Disambiguate fighter 2 by UFCStats id (fighters.fighter_id)')
     parser.add_argument('--title-fight', action='store_true', help='Is this a title fight?')
     parser.add_argument('--quiet', action='store_true', help='Quiet mode: only show prediction percentages')
-    parser.add_argument('--model-name', type=str, default='xgboost_model', 
+    parser.add_argument('--model-name', '--model', dest='model_name', type=str, default='xgboost_model',
                         help='Model name to use (default: xgboost_model, e.g., xgboost_model_with_2025)')
+    parser.add_argument('--allow-ambiguous', action='store_true',
+                        help='Allow ambiguous name matches by picking a best guess (prints candidates).')
     
     args = parser.parse_args()
     
-    xgboost_predict(args.fighter_1, args.fighter_2, args.title_fight, quiet=args.quiet, model_name=args.model_name)
+    xgboost_predict(
+        args.fighter_1,
+        args.fighter_2,
+        args.title_fight,
+        quiet=args.quiet,
+        model_name=args.model_name,
+        fighter_1_id=args.fighter_1_id,
+        fighter_2_id=args.fighter_2_id,
+        fighter_1_ufcstats_id=args.fighter_1_ufcstats_id,
+        fighter_2_ufcstats_id=args.fighter_2_ufcstats_id,
+        allow_ambiguous=args.allow_ambiguous,
+    )
 

@@ -70,7 +70,7 @@ def american_to_prob(odds: float) -> float:
         return 100.0 / (o + 100.0)
 
 
-def build_odds_index(odds_path: Path) -> pd.DataFrame:
+def build_odds_index(odds_path: Path, date_tolerance_days: int = 0) -> pd.DataFrame:
     """
     Load odds CSV and build normalized keys for joining.
 
@@ -101,11 +101,30 @@ def build_odds_index(odds_path: Path) -> pd.DataFrame:
         lambda r: pd.Series(_sorted_pair(r)), axis=1
     )
 
-    df["event_day"] = df["event_date"].dt.date
+    # Normalize to midnight so we can safely shift by whole days if needed
+    df["event_day"] = df["event_date"].dt.normalize()
+
+    # Optional tolerance: if odds dates are off by +/- 1 day (common timezone issue),
+    # we can expand each odds row to multiple candidate event days.
+    try:
+        date_tolerance_days = int(date_tolerance_days)
+    except (TypeError, ValueError):
+        date_tolerance_days = 0
+
+    if date_tolerance_days > 0:
+        expanded = []
+        for delta in range(-date_tolerance_days, date_tolerance_days + 1):
+            tmp = df.copy()
+            tmp["event_day"] = tmp["event_day"] + pd.Timedelta(days=delta)
+            tmp["odds_date_shift_days"] = delta
+            expanded.append(tmp)
+        df = pd.concat(expanded, ignore_index=True)
+    else:
+        df["odds_date_shift_days"] = 0
 
     # Key: YYYY-MM-DD | name_a | name_b
     df["fight_key"] = df.apply(
-        lambda r: f"{r['event_day']}|{r['name_a']}|{r['name_b']}", axis=1
+        lambda r: f"{r['event_day'].date()}|{r['name_a']}|{r['name_b']}", axis=1
     )
 
     # Precompute implied probabilities
@@ -142,6 +161,16 @@ def main() -> None:
         help="Path to odds CSV (American odds, one row per fight)",
     )
     parser.add_argument(
+        "--odds-date-tolerance-days",
+        type=int,
+        default=0,
+        help=(
+            "Allow matching odds rows to events even if the odds 'date' is off by +/- N days "
+            "(e.g., timezone mismatch where UFCStats shows Jan 18 but odds file uses Jan 19). "
+            "Default: 0 (exact date match)."
+        ),
+    )
+    parser.add_argument(
         "--min-year",
         type=int,
         default=2025,
@@ -152,6 +181,15 @@ def main() -> None:
         type=str,
         default="reports",
         help="Directory to save evaluation reports/plots",
+    )
+    parser.add_argument(
+        "--strict-point-in-time",
+        action="store_true",
+        help=(
+            "Leakage-audit mode: zero out base striking/grappling features that are sourced from "
+            "current fighter profile stats and/or unfiltered fight relationships (not point-in-time safe). "
+            "This helps quantify how much optimistic lift those features provide in backtests."
+        ),
     )
 
     args = parser.parse_args()
@@ -165,7 +203,10 @@ def main() -> None:
     # 1) Load odds and build index
     # ------------------------------------------------------------------
     logger.info(f"Loading odds from {args.odds_path}...")
-    odds_df = build_odds_index(Path(args.odds_path))
+    odds_df = build_odds_index(
+        Path(args.odds_path),
+        date_tolerance_days=args.odds_date_tolerance_days,
+    )
 
     logger.info(f"Loaded {len(odds_df)} odds rows.")
 
@@ -300,6 +341,68 @@ def main() -> None:
     if merged.empty:
         logger.warning("After name alignment, no rows remain; nothing to evaluate.")
         return
+
+    # ------------------------------------------------------------------
+    # Optional leakage-audit: remove non-point-in-time-safe feature groups
+    # ------------------------------------------------------------------
+    if args.strict_point_in_time:
+        # These are the feature keys produced by the base "striking" and base "grappling" groups.
+        # We keep *recent_* FightStats-derived features (they already use fight_history filtered by as_of_date).
+        base_striking_keys = [
+            "sig_strikes_landed_per_min",
+            "striking_accuracy",
+            "striking_defense",
+            "striking_differential",
+            "defensive_efficiency",
+            "striking_volume_control",
+            "distance_accuracy_last_3",
+            "clinch_accuracy_last_3",
+            "ground_output_per_min_last_3",
+            "leg_strike_rate_last_3",
+            "knockdowns_last_3",
+            "striking_accuracy_last_3",
+            "sig_strikes_landed_per_min_last_3",
+            "head_strike_rate_last_3",
+            "body_strike_rate_last_3",
+            "ground_strike_rate_last_3",
+            "distance_strike_rate_last_3",
+            "distance_accuracy_lifetime",
+            "clinch_accuracy_lifetime",
+            "ground_output_per_min_lifetime",
+            "leg_strike_rate_lifetime",
+            "knockdowns_lifetime",
+            "head_strike_rate_lifetime",
+            "body_strike_rate_lifetime",
+            "ground_strike_rate_lifetime",
+            "distance_strike_rate_lifetime",
+            "sig_strikes_landed_per_min_lifetime",
+            "striking_accuracy_lifetime",
+        ]
+        base_grappling_keys = [
+            "takedown_avg_per_15min",
+            "takedown_accuracy",
+            "takedown_defense",
+            "submission_avg_per_15min",
+        ]
+
+        cols_to_zero = []
+        for prefix in ("f1_", "f2_"):
+            for k in base_striking_keys + base_grappling_keys:
+                c = f"{prefix}{k}"
+                if c in merged.columns:
+                    cols_to_zero.append(c)
+
+        if cols_to_zero:
+            merged.loc[:, cols_to_zero] = 0.0
+            logger.warning(
+                f"[strict-point-in-time] Zeroed {len(cols_to_zero)} base striking/grappling columns "
+                f"to reduce leakage risk for backtests."
+            )
+        else:
+            logger.warning(
+                "[strict-point-in-time] No matching striking/grappling columns found to zero; "
+                "check feature schema or dataset columns."
+            )
 
     # ------------------------------------------------------------------
     # 4) Prepare features (using saved pipeline) and get model predictions

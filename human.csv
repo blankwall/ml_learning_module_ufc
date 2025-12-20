@@ -1,0 +1,557 @@
+event_date,fight_key,f1_name,f2_name,target,market_prob_f1,model_prob_f1,edge,price_f1,model_name,f1_ufc_fights_before,f2_ufc_fights_before
+2025-11-22,2025-11-22|arman tsarukyan|dan hooker,Arman Tsarukyan,Dan Hooker,1,0.8823529411764706,0.8612698,-0.02108316912370567,-750,xgboost_model,0,0
+2025-11-22,2025-11-22|arman tsarukyan|dan hooker,Dan Hooker,Arman Tsarukyan,0,0.15873015873015872,0.16157308,0.0028429234784747015,530,xgboost_model,0,0
+2025-11-22,2025-11-22|belal muhammad|ian machado garry,Ian Machado Garry,Belal Muhammad,1,0.7435897435897436,0.7161569,-0.02743284366069698,-290,xgboost_model,0,0
+2025-11-22,2025-11-22|belal muhammad|ian machado garry,Belal Muhammad,Ian Machado Garry,0,0.29850746268656714,0.22430886,-0.07419859940436346,235,xgboost_model,0,0
+2025-11-22,2025-11-22|alonzo menifield|volkan oezdemir,Volkan Oezdemir,Alonzo Menifield,1,0.696969696969697,0.683841,-0.013128706903168696,-230,xgboost_model,0,0
+2025-11-22,2025-11-22|alonzo menifield|volkan oezdemir,Alonzo Menifield,Volkan Oezdemir,0,0.3448275862068966,0.34949946,0.004671877828137605,190,xgboost_model,0,0
+2025-11-22,2025-11-22|jack hermansson|myktybek orolbai,Myktybek Orolbai,Jack Hermansson,1,0.6644295302013423,0.67054534,0.006115809383008264,-198,xgboost_model,0,0
+2025-11-22,2025-11-22|jack hermansson|myktybek orolbai,Jack Hermansson,Myktybek Orolbai,0,0.37593984962406013,0.509923,0.1339831316381469,166,xgboost_model,0,0
+2025-11-22,2025-11-22|shamil gaziev|waldo cortes acosta,Waldo Cortes Acosta,Shamil Gaziev,1,0.5967741935483871,0.6657269,0.06895270655232089,-148,xgboost_model,0,0
+2025-11-22,2025-11-22|shamil gaziev|waldo cortes acosta,Shamil Gaziev,Waldo Cortes Acosta,0,0.4424778761061947,0.32602003,-0.11645784393876002,126,xgboost_model,0,0
+2025-11-22,2025-11-22|kyoji horiguchi|tagir ulanbekov,Kyoji Horiguchi,Tagir Ulanbekov,1,0.3401360544217687,0.65126693,0.3111308780657191,194,xgboost_model,0,0
+2025-11-22,2025-11-22|kyoji horiguchi|tagir ulanbekov,Tagir Ulanbekov,Kyoji Horiguchi,0,0.7014925373134329,0.29503003,-0.4064625096854879,-235,xgboost_model,0,0
+2025-11-22,2025-11-22|bogdan grad|luke riley,Luke Riley,Bogdan Grad,1,0.7142857142857143,0.5984729,-0.11581282104764667,-250,xgboost_model,0,0
+2025-11-22,2025-11-22|bogdan grad|luke riley,Bogdan Grad,Luke Riley,0,0.32786885245901637,0.2862015,-0.04166734560591273,205,xgboost_model,0,0
+2025-11-22,2025-11-22|nicolas dalby|saygid izagakhmaev,Nicolas Dalby,Saygid Izagakhmaev,1,0.2702702702702703,0.4227514,0.15248112662418467,270,xgboost_model,0,0
+2025-11-22,2025-11-22|nicolas dalby|saygid izagakhmaev,Saygid Izagakhmaev,Nicolas Dalby,0,0.7701149425287356,0.6951336,-0.07498131606770653,-335,xgboost_model,0,0
+2025-11-22,2025-11-22|alex perez|asu almabayev,Asu Almabayev,Alex Perez,1,0.6721311475409836,0.57692385,-0.09520730034249725,-205,xgboost_model,0,0
+2025-11-22,2025-11-22|alex perez|asu almabayev,Alex Perez,Asu Almabayev,0,0.36764705882352944,0.384282,0.016634934088763043,172,xgboost_model,0,0
+2025-11-22,2025-11-22|aleksandre topuria|bekzat almakhan,Aleksandre Topuria,Bekzat Almakhan,1,0.5798319327731093,0.84300417,0.26317223430681624,-138,xgboost_model,0,0
+2025-11-22,2025-11-22|aleksandre topuria|bekzat almakhan,Bekzat Almakhan,Aleksandre Topuria,0,0.45871559633027525,0.090914585,-0.3678010116339824,118,xgboost_model,0,0
+2025-11-22,2025-11-22|ismail naurdiev|ryan loder,Ismail Naurdiev,Ryan Loder,1,0.5535714285714286,0.6688511,0.1152796489851815,-124,xgboost_model,0,0
+2025-11-22,2025-11-22|ismail naurdiev|ryan loder,Ryan Loder,Ismail Naurdiev,0,0.4854368932038835,0.21398632,-0.2714505709201387,106,xgboost_model,0,0
+2025-11-22,2025-11-22|nurullo aliev|shem rock,Nurullo Aliev,Shem Rock,1,0.7619047619047619,0.9412448,0.1793400191125416,-320,xgboost_model,0,0
+2025-11-22,2025-11-22|nurullo aliev|shem rock,Shem Rock,Nurullo Aliev,0,0.2777777777777778,0.045466494,-0.23231128396259415,260,xgboost_model,0,0
+2025-11-22,2025-11-22|denzel freeman|marek bujlo,Denzel Freeman,Marek Bujlo,1,0.696969696969697,0.78940326,0.09243356278448389,-230,xgboost_model,0,0
+2025-11-22,2025-11-22|denzel freeman|marek bujlo,Marek Bujlo,Denzel Freeman,0,0.3448275862068966,0.2534008,-0.09142678359459189,190,xgboost_model,0,0
+2025-11-15,2025-11-15|islam makhachev|jack della maddalena,Islam Makhachev,Jack Della Maddalena,1,0.7619047619047619,0.71129835,-0.05060641538529165,-320,xgboost_model,0,0
+2025-11-15,2025-11-15|islam makhachev|jack della maddalena,Jack Della Maddalena,Islam Makhachev,0,0.2777777777777778,0.19976819,-0.07800959216223824,260,xgboost_model,0,0
+2025-11-15,2025-11-15|valentina shevchenko|zhang weili,Valentina Shevchenko,Zhang Weili,1,0.5867768595041323,0.2591806,-0.32759625409260273,-142,xgboost_model,0,0
+2025-11-15,2025-11-15|valentina shevchenko|zhang weili,Zhang Weili,Valentina Shevchenko,0,0.45454545454545453,0.482979,0.028433545069261046,120,xgboost_model,0,0
+2025-11-15,2025-11-15|michael morales|sean brady,Michael Morales,Sean Brady,1,0.43859649122807015,0.7151726,0.2765760975971557,128,xgboost_model,0,0
+2025-11-15,2025-11-15|michael morales|sean brady,Sean Brady,Michael Morales,0,0.6031746031746031,0.3249498,-0.278224802206433,-152,xgboost_model,0,0
+2025-11-15,2025-11-15|carlos prates|leon edwards,Carlos Prates,Leon Edwards,1,0.6062992125984252,0.6341266,0.027827391004937807,-154,xgboost_model,0,0
+2025-11-15,2025-11-15|carlos prates|leon edwards,Leon Edwards,Carlos Prates,0,0.43478260869565216,0.45818228,0.023399666599605407,130,xgboost_model,0,0
+2025-11-15,2025-11-15|beneil dariush|benoit saint denis,Benoit Saint Denis,Beneil Dariush,1,0.6551724137931034,0.53907883,-0.11609358212043497,-190,xgboost_model,0,0
+2025-11-15,2025-11-15|beneil dariush|benoit saint denis,Beneil Dariush,Benoit Saint Denis,0,0.38461538461538464,0.5745742,0.18995878788141102,160,xgboost_model,0,0
+2025-11-15,2025-11-15|bo nickal|rodolfo vieira,Bo Nickal,Rodolfo Vieira,1,0.7101449275362319,0.8230865,0.11294157263161475,-245,xgboost_model,0,0
+2025-11-15,2025-11-15|bo nickal|rodolfo vieira,Rodolfo Vieira,Bo Nickal,0,0.3333333333333333,0.2685553,-0.06477801998456317,200,xgboost_model,0,0
+2025-11-15,2025-11-15|gregory rodrigues|roman kopylov,Gregory Rodrigues,Roman Kopylov,1,0.6621621621621622,0.54618347,-0.11597869525084625,-196,xgboost_model,0,0
+2025-11-15,2025-11-15|gregory rodrigues|roman kopylov,Roman Kopylov,Gregory Rodrigues,0,0.3787878787878788,0.4000841,0.02129622932636377,164,xgboost_model,0,0
+2025-11-15,2025-11-15|erin blanchfield|tracy cortez,Erin Blanchfield,Tracy Cortez,1,0.7674418604651163,0.64876413,-0.11867772701174717,-330,xgboost_model,0,0
+2025-11-15,2025-11-15|erin blanchfield|tracy cortez,Tracy Cortez,Erin Blanchfield,0,0.273972602739726,0.3570596,0.08308699522932916,265,xgboost_model,0,0
+2025-11-15,2025-11-15|ethyn ewing|malcolm wellmaker,Ethyn Ewing,Malcolm Wellmaker,1,0.23255813953488372,0.65417093,0.4216127908507059,330,xgboost_model,0,0
+2025-11-15,2025-11-15|ethyn ewing|malcolm wellmaker,Malcolm Wellmaker,Ethyn Ewing,0,0.8076923076923077,0.30063257,-0.5070597414786999,-420,xgboost_model,0,0
+2025-11-15,2025-11-15|gerald meerschaert|kyle daukaus,Kyle Daukaus,Gerald Meerschaert,1,0.8275862068965517,0.6055956,-0.22199061821246968,-480,xgboost_model,0,0
+2025-11-15,2025-11-15|gerald meerschaert|kyle daukaus,Gerald Meerschaert,Kyle Daukaus,0,0.2127659574468085,0.4067514,0.19398543682504207,370,xgboost_model,0,0
+2025-11-15,2025-11-15|angela hill|fatima kline,Fatima Kline,Angela Hill,1,0.855072463768116,0.85608643,0.0010139691656914085,-590,xgboost_model,0,0
+2025-11-15,2025-11-15|angela hill|fatima kline,Angela Hill,Fatima Kline,0,0.18518518518518517,0.11894765,-0.0662375376732261,440,xgboost_model,0,0
+2025-11-08,2025-11-08|gabriel bonfim|randy brown,Gabriel Bonfim,Randy Brown,1,0.6212121212121212,0.5339523,-0.08725982543193933,-164,xgboost_model,0,0
+2025-11-08,2025-11-08|gabriel bonfim|randy brown,Randy Brown,Gabriel Bonfim,0,0.42016806722689076,0.60834897,0.18818089841794566,138,xgboost_model,0,0
+2025-11-08,2025-11-08|joseph morales|matt schnell,Joseph Morales,Matt Schnell,1,0.8305084745762712,0.7274365,-0.10307199166992964,-490,xgboost_model,0,0
+2025-11-08,2025-11-08|joseph morales|matt schnell,Matt Schnell,Joseph Morales,0,0.20833333333333334,0.21055247,0.002219135562578828,380,xgboost_model,0,0
+2025-11-08,2025-11-08|muslim salikhov|uros medic,Uros Medic,Muslim Salikhov,1,0.5652173913043478,0.72636336,0.16114596957745764,-130,xgboost_model,0,0
+2025-11-08,2025-11-08|muslim salikhov|uros medic,Muslim Salikhov,Uros Medic,0,0.47619047619047616,0.28510776,-0.19108271456900094,110,xgboost_model,0,0
+2025-11-08,2025-11-08|chris padilla|ismael bonfim,Chris Padilla,Ismael Bonfim,1,0.5412844036697247,0.52705055,-0.014233848917374892,-118,xgboost_model,0,0
+2025-11-08,2025-11-08|chris padilla|ismael bonfim,Ismael Bonfim,Chris Padilla,0,0.5,0.496615,-0.003385007381439209,100,xgboost_model,0,0
+2025-11-08,2025-11-08|christian leroy duncan|marco tulio,Christian Leroy Duncan,Marco Tulio,1,0.4166666666666667,0.18369016,-0.2329765061537425,140,xgboost_model,0,0
+2025-11-08,2025-11-08|christian leroy duncan|marco tulio,Marco Tulio,Christian Leroy Duncan,0,0.6240601503759399,0.7399062,0.11584604144992683,-166,xgboost_model,0,0
+2025-11-01,2025-11-01|david onama|steve garcia,Steve Garcia,David Onama,1,0.5798319327731093,0.72542024,0.14558830381441512,-138,xgboost_model,0,0
+2025-11-01,2025-11-01|david onama|steve garcia,David Onama,Steve Garcia,0,0.45871559633027525,0.21037832,-0.24833727730523558,118,xgboost_model,0,0
+2025-11-01,2025-11-01|ante delija|waldo cortes acosta,Waldo Cortes Acosta,Ante Delija,1,0.47619047619047616,0.6915889,0.21539840244111563,110,xgboost_model,0,0
+2025-11-01,2025-11-01|ante delija|waldo cortes acosta,Ante Delija,Waldo Cortes Acosta,0,0.5652173913043478,0.28882322,-0.2763941741507986,-130,xgboost_model,0,0
+2025-11-01,2025-11-01|jeremiah wells|themba gorimbo,Jeremiah Wells,Themba Gorimbo,1,0.43103448275862066,0.4393478,0.008313320834061222,132,xgboost_model,0,0
+2025-11-01,2025-11-01|jeremiah wells|themba gorimbo,Themba Gorimbo,Jeremiah Wells,0,0.6240601503759399,0.35356718,-0.27049296735820916,-166,xgboost_model,0,0
+2025-11-01,2025-11-01|isaac dulgarian|yadier del valle,Yadier del Valle,Isaac Dulgarian,1,0.44642857142857145,0.19626504,-0.25016352960041593,124,xgboost_model,0,0
+2025-11-01,2025-11-01|isaac dulgarian|yadier del valle,Isaac Dulgarian,Yadier del Valle,0,0.5934959349593496,0.7640731,0.17057713890463355,-146,xgboost_model,0,0
+2025-11-01,2025-11-01|charles radtke|daniel frunza,Charles Radtke,Daniel Frunza,1,0.6323529411764706,0.8596756,0.22732264504713173,-172,xgboost_model,0,0
+2025-11-01,2025-11-01|charles radtke|daniel frunza,Daniel Frunza,Charles Radtke,0,0.4098360655737705,0.22691819,-0.18291787485607336,144,xgboost_model,0,0
+2025-11-01,2025-11-01|allan nascimento|cody durden,Allan Nascimento,Cody Durden,1,0.7560975609756098,0.42628342,-0.3298141418433771,-310,xgboost_model,0,0
+2025-11-01,2025-11-01|allan nascimento|cody durden,Cody Durden,Allan Nascimento,0,0.2857142857142857,0.5629296,0.27721528496061054,250,xgboost_model,0,0
+2025-11-01,2025-11-01|billy elekana|kevin christian,Billy Elekana,Kevin Christian,1,0.7297297297297297,0.790222,0.06049225942508596,-270,xgboost_model,0,0
+2025-11-01,2025-11-01|billy elekana|kevin christian,Kevin Christian,Billy Elekana,0,0.3125,0.24600975,-0.06649024784564972,220,xgboost_model,0,0
+2025-11-01,2025-11-01|donte johnson|sedriques dumas,Donte Johnson,Sedriques Dumas,1,0.7777777777777778,0.6688104,-0.1089673505889045,-350,xgboost_model,0,0
+2025-11-01,2025-11-01|donte johnson|sedriques dumas,Sedriques Dumas,Donte Johnson,0,0.2631578947368421,0.34356263,0.08040473806230647,280,xgboost_model,0,0
+2025-11-01,2025-11-01|ketlen vieira|norma dumont,Norma Dumont,Ketlen Vieira,1,0.635036496350365,0.71605533,0.0810188372639844,-174,xgboost_model,0,0
+2025-11-01,2025-11-01|ketlen vieira|norma dumont,Ketlen Vieira,Norma Dumont,0,0.4065040650406504,0.29027906,-0.11622500443846229,146,xgboost_model,0,0
+2025-11-01,2025-11-01|phil rowe|seokhyeon ko,Seokhyeon Ko,Phil Rowe,1,0.6428571428571429,0.874707,0.23184984070914127,-180,xgboost_model,0,0
+2025-11-01,2025-11-01|phil rowe|seokhyeon ko,Phil Rowe,Seokhyeon Ko,0,0.3968253968253968,0.11924843,-0.2775769693747399,152,xgboost_model,0,0
+2025-11-01,2025-11-01|ariane carnelossi|talita alencar,Talita Alencar,Ariane Carnelossi,1,0.6923076923076923,0.64231825,-0.049989443558912994,-225,xgboost_model,0,0
+2025-11-01,2025-11-01|ariane carnelossi|talita alencar,Ariane Carnelossi,Talita Alencar,0,0.3472222222222222,0.26447627,-0.08274595273865593,188,xgboost_model,0,0
+2025-10-25,2025-10-25|mackenzie dern|virna jandiroba,Mackenzie Dern,Virna Jandiroba,1,0.5726495726495726,0.5153202,-0.05732939080295396,-134,xgboost_model,0,0
+2025-10-25,2025-10-25|mackenzie dern|virna jandiroba,Virna Jandiroba,Mackenzie Dern,0,0.4672897196261682,0.5362871,0.06899740929915527,114,xgboost_model,0,0
+2025-10-25,2025-10-25|mario bautista|umar nurmagomedov,Umar Nurmagomedov,Mario Bautista,1,0.8611111111111112,0.8937202,0.0326090984874301,-620,xgboost_model,0,0
+2025-10-25,2025-10-25|mario bautista|umar nurmagomedov,Mario Bautista,Umar Nurmagomedov,0,0.17857142857142858,0.105877794,-0.07269363424607686,460,xgboost_model,0,0
+2025-10-25,2025-10-25|alexander volkov|jailton almeida,Alexander Volkov,Jailton Almeida,1,0.37593984962406013,0.17445469,-0.20148516059818122,166,xgboost_model,0,0
+2025-10-25,2025-10-25|alexander volkov|jailton almeida,Jailton Almeida,Alexander Volkov,0,0.6644295302013423,0.5722782,-0.09215132862129471,-198,xgboost_model,0,0
+2025-10-25,2025-10-25|aleksandar rakic|azamat murzakanov,Azamat Murzakanov,Aleksandar Rakic,1,0.5,0.51583964,0.01583963632583618,100,xgboost_model,0,0
+2025-10-25,2025-10-25|aleksandar rakic|azamat murzakanov,Aleksandar Rakic,Azamat Murzakanov,0,0.5412844036697247,0.26172355,-0.2795608554958203,-118,xgboost_model,0,0
+2025-10-25,2025-10-25|nasrat haqparast|quillan salkilld,Quillan Salkilld,Nasrat Haqparast,1,0.5454545454545454,0.6380545,0.09259994463487109,-120,xgboost_model,0,0
+2025-10-25,2025-10-25|nasrat haqparast|quillan salkilld,Nasrat Haqparast,Quillan Salkilld,0,0.49504950495049505,0.35440916,-0.14064034672066716,102,xgboost_model,0,0
+2025-10-25,2025-10-25|ikram aliskerov|junyong park,Ikram Aliskerov,JunYong Park,1,0.696969696969697,0.5171,-0.1798697204300852,-230,xgboost_model,0,0
+2025-10-25,2025-10-25|ikram aliskerov|junyong park,JunYong Park,Ikram Aliskerov,0,0.3448275862068966,0.54515254,0.2003249587683842,190,xgboost_model,0,0
+2025-10-25,2025-10-25|ludovit klein|mateusz rebecki,Ludovit Klein,Mateusz Rebecki,1,0.5575221238938053,0.5199459,-0.037576204380102896,-126,xgboost_model,0,0
+2025-10-25,2025-10-25|ludovit klein|mateusz rebecki,Mateusz Rebecki,Ludovit Klein,0,0.4807692307692308,0.43069232,-0.05007691566760725,108,xgboost_model,0,0
+2025-10-25,2025-10-25|louie sutherland|valter walker,Valter Walker,Louie Sutherland,1,0.801980198019802,0.8970146,0.09503441990011985,-405,xgboost_model,0,0
+2025-10-25,2025-10-25|louie sutherland|valter walker,Louie Sutherland,Valter Walker,0,0.23809523809523808,0.10675053,-0.1313447051105045,320,xgboost_model,0,0
+2025-10-25,2025-10-25|jose delgado|nathaniel wood,Nathaniel Wood,Jose Delgado,1,0.423728813559322,0.63046443,0.20673562106439625,136,xgboost_model,0,0
+2025-10-25,2025-10-25|jose delgado|nathaniel wood,Jose Delgado,Nathaniel Wood,0,0.6183206106870229,0.27527264,-0.3430479730813558,-162,xgboost_model,0,0
+2025-10-25,2025-10-25|chris barnett|hamdy abdelwahab,Hamdy Abdelwahab,Chris Barnett,1,0.8113207547169812,0.93325144,0.12193068580807376,-430,xgboost_model,0,0
+2025-10-25,2025-10-25|chris barnett|hamdy abdelwahab,Chris Barnett,Hamdy Abdelwahab,0,0.22727272727272727,0.04949949,-0.17777323790571906,340,xgboost_model,0,0
+2025-10-25,2025-10-25|azat maksum|mitch raposo,Mitch Raposo,Azat Maksum,1,0.20618556701030927,0.2557618,0.04957623518619342,385,xgboost_model,0,0
+2025-10-25,2025-10-25|azat maksum|mitch raposo,Azat Maksum,Mitch Raposo,0,0.8333333333333334,0.73069537,-0.10263796647389734,-500,xgboost_model,0,0
+2025-10-18,2025-10-18|brendan allen|reinier de ridder,Brendan Allen,Reinier de Ridder,1,0.352112676056338,0.5929618,0.24084911212115223,184,xgboost_model,0,0
+2025-10-18,2025-10-18|brendan allen|reinier de ridder,Reinier de Ridder,Brendan Allen,0,0.6875,0.5035325,-0.1839674711227417,-220,xgboost_model,0,0
+2025-10-18,2025-10-18|kevin holland|mike malott,Mike Malott,Kevin Holland,1,0.5145631067961165,0.54002666,0.02546355793777022,-106,xgboost_model,0,0
+2025-10-18,2025-10-18|kevin holland|mike malott,Kevin Holland,Mike Malott,0,0.5238095238095238,0.56363696,0.03982743478956674,-110,xgboost_model,0,0
+2025-10-18,2025-10-18|aiemann zahabi|marlon vera,Aiemann Zahabi,Marlon Vera,1,0.5689655172413793,0.6541504,0.08518490914640753,-132,xgboost_model,0,0
+2025-10-18,2025-10-18|aiemann zahabi|marlon vera,Marlon Vera,Aiemann Zahabi,0,0.4716981132075472,0.2972351,-0.17446301174613665,112,xgboost_model,0,0
+2025-10-18,2025-10-18|jasmine jasudavicius|manon fiorot,Manon Fiorot,Jasmine Jasudavicius,1,0.696969696969697,0.69418985,-0.0027798504540414992,-230,xgboost_model,0,0
+2025-10-18,2025-10-18|jasmine jasudavicius|manon fiorot,Jasmine Jasudavicius,Manon Fiorot,0,0.3448275862068966,0.26902422,-0.07580336311767844,190,xgboost_model,0,0
+2025-10-18,2025-10-18|charles jourdain|davey grant,Charles Jourdain,Davey Grant,1,0.6551724137931034,0.62606233,-0.029110080209271638,-190,xgboost_model,0,0
+2025-10-18,2025-10-18|charles jourdain|davey grant,Davey Grant,Charles Jourdain,0,0.38461538461538464,0.40832877,0.023713386975801887,160,xgboost_model,0,0
+2025-10-18,2025-10-18|kyle nelson|matt frevola,Kyle Nelson,Matt Frevola,1,0.5689655172413793,0.3442044,-0.22476112123193415,-132,xgboost_model,0,0
+2025-10-18,2025-10-18|kyle nelson|matt frevola,Matt Frevola,Kyle Nelson,0,0.4716981132075472,0.7231101,0.25141196655777265,112,xgboost_model,0,0
+2025-10-18,2025-10-18|drew dober|kyle prepolec,Drew Dober,Kyle Prepolec,1,0.7674418604651163,0.92712444,0.15968258020489712,-330,xgboost_model,0,0
+2025-10-18,2025-10-18|drew dober|kyle prepolec,Kyle Prepolec,Drew Dober,0,0.273972602739726,0.062652245,-0.21132035757580847,265,xgboost_model,0,0
+2025-10-18,2025-10-18|aoriqileng|cody gibson,Aoriqileng,Cody Gibson,1,0.38461538461538464,0.47334313,0.08872774931100696,160,xgboost_model,0,0
+2025-10-18,2025-10-18|aoriqileng|cody gibson,Cody Gibson,Aoriqileng,0,0.6551724137931034,0.6051944,-0.04997802397300455,-190,xgboost_model,0,0
+2025-10-18,2025-10-18|bruno silva|hyunsung park,Bruno Silva,HyunSung Park,1,0.3472222222222222,0.26656657,-0.08065564764870536,188,xgboost_model,0,0
+2025-10-18,2025-10-18|bruno silva|hyunsung park,HyunSung Park,Bruno Silva,0,0.6923076923076923,0.75922465,0.06691696093632626,-225,xgboost_model,0,0
+2025-10-18,2025-10-18|danny barlow|djorden santos,Djorden Santos,Danny Barlow,1,0.32786885245901637,0.5259878,0.19811895147698827,205,xgboost_model,0,0
+2025-10-18,2025-10-18|danny barlow|djorden santos,Danny Barlow,Djorden Santos,0,0.7142857142857143,0.43706906,-0.2772166558674404,-250,xgboost_model,0,0
+2025-10-18,2025-10-18|ravena oliveira|stephanie luciano,Stephanie Luciano,Ravena Oliveira,1,0.7674418604651163,0.9679261,0.20048422453015347,-330,xgboost_model,0,0
+2025-10-18,2025-10-18|ravena oliveira|stephanie luciano,Ravena Oliveira,Stephanie Luciano,0,0.273972602739726,0.04026418,-0.23370842094698996,265,xgboost_model,0,0
+2025-10-18,2025-10-18|azamat bekoev|yousri belgaroui,Yousri Belgaroui,Azamat Bekoev,1,0.29411764705882354,0.79792356,0.5038059178520651,240,xgboost_model,0,0
+2025-10-18,2025-10-18|azamat bekoev|yousri belgaroui,Azamat Bekoev,Yousri Belgaroui,0,0.7468354430379747,0.1882651,-0.5585703429164766,-295,xgboost_model,0,0
+2025-10-18,2025-10-18|melissa croden|tainara lisboa,Melissa Croden,Tainara Lisboa,1,0.5689655172413793,0.87403613,0.3050706160479578,-132,xgboost_model,0,0
+2025-10-18,2025-10-18|melissa croden|tainara lisboa,Tainara Lisboa,Melissa Croden,0,0.4716981132075472,0.09885452,-0.3728435937807245,112,xgboost_model,0,0
+2025-10-11,2025-10-11|charles oliveira|mateusz gamrot,Charles Oliveira,Mateusz Gamrot,1,0.5192307692307693,0.43509847,-0.08413229997341454,-108,xgboost_model,0,0
+2025-10-11,2025-10-11|charles oliveira|mateusz gamrot,Mateusz Gamrot,Charles Oliveira,0,0.5192307692307693,0.63925284,0.12002207224185646,-108,xgboost_model,0,0
+2025-10-11,2025-10-11|deiveson figueiredo|montel jackson,Deiveson Figueiredo,Montel Jackson,1,0.273972602739726,0.23366031,-0.040312292232905333,265,xgboost_model,0,0
+2025-10-11,2025-10-11|deiveson figueiredo|montel jackson,Montel Jackson,Deiveson Figueiredo,0,0.7674418604651163,0.7593578,-0.008084050444669533,-330,xgboost_model,0,0
+2025-10-11,2025-10-11|joel alvarez|vicente luque,Joel Alvarez,Vicente Luque,1,0.8666666666666667,0.7925075,-0.07415913740793867,-650,xgboost_model,0,0
+2025-10-11,2025-10-11|joel alvarez|vicente luque,Vicente Luque,Joel Alvarez,0,0.19607843137254902,0.26355064,0.06747220777997784,410,xgboost_model,0,0
+2025-10-04,2025-10-04|alex pereira|magomed ankalaev,Alex Pereira,Magomed Ankalaev,1,0.32786885245901637,0.5707162,0.24284734980004735,205,xgboost_model,0,0
+2025-10-04,2025-10-04|alex pereira|magomed ankalaev,Magomed Ankalaev,Alex Pereira,0,0.7142857142857143,0.28887212,-0.4254135915211269,-250,xgboost_model,0,0
+2025-10-04,2025-10-04|cory sandhagen|merab dvalishvili,Merab Dvalishvili,Cory Sandhagen,1,0.8076923076923077,0.667466,-0.14022632287098813,-420,xgboost_model,0,0
+2025-10-04,2025-10-04|cory sandhagen|merab dvalishvili,Cory Sandhagen,Merab Dvalishvili,0,0.23255813953488372,0.17424847,-0.05830966767876647,330,xgboost_model,0,0
+2025-10-04,2025-10-04|jiri prochazka|khalil rountree jr,Jiri Prochazka,Khalil Rountree Jr.,1,0.6598639455782312,0.8396015,0.17973757114540156,-194,xgboost_model,0,0
+2025-10-04,2025-10-04|jiri prochazka|khalil rountree jr,Khalil Rountree Jr.,Jiri Prochazka,0,0.3816793893129771,0.17816131,-0.2035180811436122,162,xgboost_model,0,0
+2025-10-04,2025-10-04|josh emmett|youssef zalal,Youssef Zalal,Josh Emmett,1,0.8214285714285714,0.8907269,0.06929835251399452,-460,xgboost_model,0,0
+2025-10-04,2025-10-04|josh emmett|youssef zalal,Josh Emmett,Youssef Zalal,0,0.21739130434782608,0.19681834,-0.020572967503381806,360,xgboost_model,0,0
+2025-10-04,2025-10-04|daniel santos|joosang yoo,Daniel Santos,JooSang Yoo,1,0.5726495726495726,0.8525642,0.2799146430105226,-134,xgboost_model,0,0
+2025-10-04,2025-10-04|daniel santos|joosang yoo,JooSang Yoo,Daniel Santos,0,0.4672897196261682,0.12233505,-0.3449546730963983,114,xgboost_model,0,0
+2025-10-04,2025-10-04|jakub wiklacz|patchy mix,Jakub Wiklacz,Patchy Mix,1,0.2631578947368421,0.6213788,0.3582208846744738,280,xgboost_model,0,0
+2025-10-04,2025-10-04|jakub wiklacz|patchy mix,Patchy Mix,Jakub Wiklacz,0,0.7777777777777778,0.38583705,-0.39194072948561776,-350,xgboost_model,0,0
+2025-10-04,2025-10-04|andre muniz|edmen shahbazyan,Edmen Shahbazyan,Andre Muniz,1,0.7619047619047619,0.74678373,-0.01512102853684194,-320,xgboost_model,0,0
+2025-10-04,2025-10-04|andre muniz|edmen shahbazyan,Andre Muniz,Edmen Shahbazyan,0,0.2777777777777778,0.42041132,0.14263354076279533,260,xgboost_model,0,0
+2025-09-27,2025-09-27|carlos ulberg|dominick reyes,Carlos Ulberg,Dominick Reyes,1,0.7101449275362319,0.67777365,-0.03237127307532495,-245,xgboost_model,0,0
+2025-09-27,2025-09-27|carlos ulberg|dominick reyes,Dominick Reyes,Carlos Ulberg,0,0.3333333333333333,0.3222188,-0.011114527781804384,200,xgboost_model,0,0
+2025-09-27,2025-09-27|ivan erslan|jimmy crute,Jimmy Crute,Ivan Erslan,1,0.7014925373134329,0.9130228,0.21153027886775,-235,xgboost_model,0,0
+2025-09-27,2025-09-27|ivan erslan|jimmy crute,Ivan Erslan,Jimmy Crute,0,0.3401360544217687,0.09122619,-0.24890986409317067,194,xgboost_model,0,0
+2025-09-27,2025-09-27|jack jenkins|ramon taveras,Jack Jenkins,Ramon Taveras,1,0.75,0.77323973,0.023239731788635254,-300,xgboost_model,0,0
+2025-09-27,2025-09-27|jack jenkins|ramon taveras,Ramon Taveras,Jack Jenkins,0,0.2898550724637681,0.18095878,-0.10889629479767621,245,xgboost_model,0,0
+2025-09-27,2025-09-27|jake matthews|neil magny,Neil Magny,Jake Matthews,1,0.2777777777777778,0.43382052,0.15604273809327018,260,xgboost_model,0,0
+2025-09-27,2025-09-27|jake matthews|neil magny,Jake Matthews,Neil Magny,0,0.7619047619047619,0.6191494,-0.14275537502197988,-320,xgboost_model,0,0
+2025-09-27,2025-09-27|charlie campbell|tom nolan,Tom Nolan,Charlie Campbell,1,0.6124031007751938,0.29460618,-0.31779692177624663,-158,xgboost_model,0,0
+2025-09-27,2025-09-27|charlie campbell|tom nolan,Charlie Campbell,Tom Nolan,0,0.42735042735042733,0.6644582,0.2371077878862365,134,xgboost_model,0,0
+2025-09-27,2025-09-27|navajo stirling|rodolfo bellato,Navajo Stirling,Rodolfo Bellato,1,0.7297297297297297,0.5948447,-0.1348850308237849,-270,xgboost_model,0,0
+2025-09-27,2025-09-27|navajo stirling|rodolfo bellato,Rodolfo Bellato,Navajo Stirling,0,0.3125,0.24985614,-0.0626438558101654,220,xgboost_model,0,0
+2025-09-27,2025-09-27|andre petroski|cam rowston,Cam Rowston,Andre Petroski,1,0.4065040650406504,0.63570404,0.22919997548669335,146,xgboost_model,0,0
+2025-09-27,2025-09-27|andre petroski|cam rowston,Andre Petroski,Cam Rowston,0,0.635036496350365,0.4570988,-0.17793768448551206,-174,xgboost_model,0,0
+2025-09-27,2025-09-27|jamie mullarkey|rolando bedoya,Jamie Mullarkey,Rolando Bedoya,1,0.5726495726495726,0.7569655,0.18431594534816909,-134,xgboost_model,0,0
+2025-09-27,2025-09-27|jamie mullarkey|rolando bedoya,Rolando Bedoya,Jamie Mullarkey,0,0.4672897196261682,0.30819863,-0.15909108881638429,114,xgboost_model,0,0
+2025-09-27,2025-09-27|colby thicknesse|josias musasa,Colby Thicknesse,Josias Musasa,1,0.42735042735042733,0.89770395,0.47035351828632194,134,xgboost_model,0,0
+2025-09-27,2025-09-27|colby thicknesse|josias musasa,Josias Musasa,Colby Thicknesse,0,0.6124031007751938,0.17354076,-0.43886234466881713,-158,xgboost_model,0,0
+2025-09-27,2025-09-27|luana carolina|michelle montague,Michelle Montague,Luana Carolina,1,0.6774193548387096,0.42591634,-0.2515030109113262,-210,xgboost_model,0,0
+2025-09-27,2025-09-27|luana carolina|michelle montague,Luana Carolina,Michelle Montague,0,0.36231884057971014,0.6379533,0.27563444082287775,176,xgboost_model,0,0
+2025-09-13,2025-09-13|diego lopes|jean silva,Diego Lopes,Jean Silva,1,0.36231884057971014,0.5538227,0.1915038556292437,176,xgboost_model,0,0
+2025-09-13,2025-09-13|diego lopes|jean silva,Jean Silva,Diego Lopes,0,0.6774193548387096,0.5129951,-0.16442423097548942,-210,xgboost_model,0,0
+2025-09-13,2025-09-13|david martinez|rob font,David Martinez,Rob Font,1,0.4807692307692308,0.81569743,0.3349282007951003,108,xgboost_model,0,0
+2025-09-13,2025-09-13|david martinez|rob font,Rob Font,David Martinez,0,0.5652173913043478,0.18646051,-0.3787568814080694,-130,xgboost_model,0,0
+2025-09-06,2025-09-06|caio borralho|nassourdine imavov,Nassourdine Imavov,Caio Borralho,1,0.4716981132075472,0.4597711,-0.011927016501156795,112,xgboost_model,0,0
+2025-09-06,2025-09-06|caio borralho|nassourdine imavov,Caio Borralho,Nassourdine Imavov,0,0.5689655172413793,0.579327,0.01036147002516119,-132,xgboost_model,0,0
+2025-09-06,2025-09-06|benoit saint denis|mauricio ruffy,Benoit Saint Denis,Mauricio Ruffy,1,0.4065040650406504,0.59837514,0.1918710765799856,146,xgboost_model,0,0
+2025-09-06,2025-09-06|benoit saint denis|mauricio ruffy,Mauricio Ruffy,Benoit Saint Denis,0,0.635036496350365,0.50685674,-0.12817975682933835,-174,xgboost_model,0,0
+2025-09-06,2025-09-06|modestas bukauskas|paul craig,Modestas Bukauskas,Paul Craig,1,0.7701149425287356,0.5887993,-0.18131564471913475,-335,xgboost_model,0,0
+2025-09-06,2025-09-06|modestas bukauskas|paul craig,Paul Craig,Modestas Bukauskas,0,0.2702702702702703,0.3259586,0.05568833931072337,270,xgboost_model,0,0
+2025-09-06,2025-09-06|bolaji oki|mason jones,Mason Jones,Bolaji Oki,1,0.5967741935483871,0.6466875,0.04991331408100741,-148,xgboost_model,0,0
+2025-09-06,2025-09-06|bolaji oki|mason jones,Bolaji Oki,Mason Jones,0,0.4424778761061947,0.40184394,-0.04063394085495875,126,xgboost_model,0,0
+2025-09-06,2025-09-06|axel sola|rhys mckee,Axel Sola,Rhys McKee,1,0.576271186440678,0.7366647,0.16039352598836865,-136,xgboost_model,0,0
+2025-09-06,2025-09-06|axel sola|rhys mckee,Rhys McKee,Axel Sola,0,0.46296296296296297,0.23535359,-0.2276093739050406,116,xgboost_model,0,0
+2025-09-06,2025-09-06|robert ruchala|william gomis,William Gomis,Robert Ruchala,1,0.7297297297297297,0.9367502,0.20702044383899587,-270,xgboost_model,0,0
+2025-09-06,2025-09-06|robert ruchala|william gomis,Robert Ruchala,William Gomis,0,0.3125,0.089280404,-0.223219595849514,220,xgboost_model,0,0
+2025-09-06,2025-09-06|brendson ribeiro|oumar sy,Oumar Sy,Brendson Ribeiro,1,0.8484848484848485,0.9010712,0.0525863423491969,-560,xgboost_model,0,0
+2025-09-06,2025-09-06|brendson ribeiro|oumar sy,Brendson Ribeiro,Oumar Sy,0,0.19230769230769232,0.057552047,-0.13475564523385122,420,xgboost_model,0,0
+2025-09-06,2025-09-06|ante delija|marcin tybura,Ante Delija,Marcin Tybura,1,0.504950495049505,0.42489153,-0.08005896358206721,-102,xgboost_model,0,0
+2025-09-06,2025-09-06|ante delija|marcin tybura,Marcin Tybura,Ante Delija,0,0.5370370370370371,0.62092745,0.08389041600403957,-116,xgboost_model,0,0
+2025-09-06,2025-09-06|harry hardwick|kaue fernandes,Kaue Fernandes,Harry Hardwick,1,0.6774193548387096,0.9725716,0.2951522565657093,-210,xgboost_model,0,0
+2025-09-06,2025-09-06|harry hardwick|kaue fernandes,Harry Hardwick,Kaue Fernandes,0,0.36231884057971014,0.015858527,-0.34646031330677046,176,xgboost_model,0,0
+2025-09-06,2025-09-06|sam patterson|trey waters,Sam Patterson,Trey Waters,1,0.6598639455782312,0.55133015,-0.10853379640449468,-194,xgboost_model,0,0
+2025-09-06,2025-09-06|sam patterson|trey waters,Trey Waters,Sam Patterson,0,0.3816793893129771,0.63743156,0.2557521726338918,162,xgboost_model,0,0
+2025-09-06,2025-09-06|brad tavares|robert bryczek,Robert Bryczek,Brad Tavares,1,0.373134328358209,0.5079245,0.13479016876932398,168,xgboost_model,0,0
+2025-09-06,2025-09-06|brad tavares|robert bryczek,Brad Tavares,Robert Bryczek,0,0.6666666666666666,0.57249004,-0.09417663017908728,-200,xgboost_model,0,0
+2025-09-06,2025-09-06|andreas gustafsson|rinat fakhretdinov,Rinat Fakhretdinov,Andreas Gustafsson,1,0.4716981132075472,0.6338704,0.16217230963257123,112,xgboost_model,0,0
+2025-09-06,2025-09-06|andreas gustafsson|rinat fakhretdinov,Andreas Gustafsson,Rinat Fakhretdinov,0,0.5689655172413793,0.38653305,-0.18243246551217707,-132,xgboost_model,0,0
+2025-09-06,2025-09-06|sam hughes|shauna bannon,Sam Hughes,Shauna Bannon,1,0.7333333333333333,0.7992831,0.06594975392023728,-275,xgboost_model,0,0
+2025-09-06,2025-09-06|sam hughes|shauna bannon,Shauna Bannon,Sam Hughes,0,0.3076923076923077,0.14643162,-0.16126068280293393,225,xgboost_model,0,0
+2025-08-16,2025-08-16|drakkar klose|edson barboza,Drakkar Klose,Edson Barboza,1,0.5098039215686274,0.57695806,0.06715413869595999,-104,xgboost_model,0,0
+2025-08-16,2025-08-16|drakkar klose|edson barboza,Edson Barboza,Drakkar Klose,0,0.5283018867924528,0.5901477,0.06184578729125689,-112,xgboost_model,0,0
+2025-08-16,2025-08-16|dione barbosa|karine silva,Karine Silva,Dione Barbosa,1,0.6666666666666666,0.39509013,-0.2715765337149302,-200,xgboost_model,0,0
+2025-08-16,2025-08-16|dione barbosa|karine silva,Dione Barbosa,Karine Silva,0,0.373134328358209,0.53220224,0.15906791544672266,168,xgboost_model,0,0
+2025-08-16,2025-08-16|alibi idiris|joseph morales,Joseph Morales,Alibi Idiris,1,0.20618556701030927,0.8670148,0.6608292583337765,385,xgboost_model,0,0
+2025-08-16,2025-08-16|alibi idiris|joseph morales,Alibi Idiris,Joseph Morales,0,0.8333333333333334,0.11400695,-0.7193263818820318,-500,xgboost_model,0,0
+2025-08-09,2025-08-09|ode osbourne|steve erceg,Steve Erceg,Ode Osbourne,1,0.855072463768116,0.64332443,-0.2117480290108833,-590,xgboost_model,0,0
+2025-08-09,2025-08-09|ode osbourne|steve erceg,Ode Osbourne,Steve Erceg,0,0.18518518518518517,0.41501403,0.22982884336400916,440,xgboost_model,0,0
+2025-08-09,2025-08-09|angela hill|iasmin lucindo,Iasmin Lucindo,Angela Hill,1,0.6323529411764706,0.7181421,0.08578915105146523,-172,xgboost_model,0,0
+2025-08-09,2025-08-09|angela hill|iasmin lucindo,Angela Hill,Iasmin Lucindo,0,0.4098360655737705,0.4309467,0.0211106421517544,144,xgboost_model,0,0
+2025-08-09,2025-08-09|andre fili|christian rodriguez,Andre Fili,Christian Rodriguez,1,0.32786885245901637,0.20438854,-0.12348030849558406,205,xgboost_model,0,0
+2025-08-09,2025-08-09|andre fili|christian rodriguez,Christian Rodriguez,Andre Fili,0,0.7142857142857143,0.7625404,0.04825468574251446,-250,xgboost_model,0,0
+2025-08-09,2025-08-09|jean matsumoto|miles johns,Jean Matsumoto,Miles Johns,1,0.7222222222222222,0.41395387,-0.30826835168732536,-260,xgboost_model,0,0
+2025-08-09,2025-08-09|jean matsumoto|miles johns,Miles Johns,Jean Matsumoto,0,0.31746031746031744,0.7025605,0.38510016694901483,215,xgboost_model,0,0
+2025-08-09,2025-08-09|christian leroy duncan|eryk anders,Christian Leroy Duncan,Eryk Anders,1,0.8305084745762712,0.6889367,-0.14157176421860518,-490,xgboost_model,0,0
+2025-08-09,2025-08-09|christian leroy duncan|eryk anders,Eryk Anders,Christian Leroy Duncan,0,0.20833333333333334,0.39045846,0.18212513128916422,380,xgboost_model,0,0
+2025-08-09,2025-08-09|elijah smith|toshiomi kazama,Elijah Smith,Toshiomi Kazama,1,0.8913043478260869,0.8754728,-0.01583156378372852,-820,xgboost_model,0,0
+2025-08-09,2025-08-09|elijah smith|toshiomi kazama,Toshiomi Kazama,Elijah Smith,0,0.14925373134328357,0.082015865,-0.06723786679221622,570,xgboost_model,0,0
+2025-08-09,2025-08-09|joselyne edwards|priscila cachoeira,Joselyne Edwards,Priscila Cachoeira,1,0.8076923076923077,0.71966726,-0.08802505181385922,-420,xgboost_model,0,0
+2025-08-09,2025-08-09|joselyne edwards|priscila cachoeira,Priscila Cachoeira,Joselyne Edwards,0,0.23255813953488372,0.23831093,0.005752793578214427,330,xgboost_model,0,0
+2025-08-09,2025-08-09|gilbert urbina|uros medic,Uros Medic,Gilbert Urbina,1,0.7701149425287356,0.6230936,-0.14702133748723167,-335,xgboost_model,0,0
+2025-08-09,2025-08-09|gilbert urbina|uros medic,Gilbert Urbina,Uros Medic,0,0.2702702702702703,0.26530215,-0.004968118828696189,270,xgboost_model,0,0
+2025-08-09,2025-08-09|gabriella fernandes|julija stoliarenko,Gabriella Fernandes,Julija Stoliarenko,1,0.8181818181818182,0.73147404,-0.0867077762430365,-450,xgboost_model,0,0
+2025-08-09,2025-08-09|gabriella fernandes|julija stoliarenko,Julija Stoliarenko,Gabriella Fernandes,0,0.2222222222222222,0.20225994,-0.019962279333008648,350,xgboost_model,0,0
+2025-08-09,2025-08-09|cody brundage|eric mcconico,Eric McConico,Cody Brundage,1,0.3448275862068966,0.12699679,-0.2178308008045986,190,xgboost_model,0,0
+2025-08-09,2025-08-09|cody brundage|eric mcconico,Cody Brundage,Eric McConico,0,0.696969696969697,0.92462945,0.22765975287466333,-230,xgboost_model,0,0
+2025-08-02,2025-08-02|chris duncan|mateusz rebecki,Chris Duncan,Mateusz Rebecki,1,0.33557046979865773,0.3081174,-0.027453080119702655,198,xgboost_model,0,0
+2025-08-02,2025-08-02|chris duncan|mateusz rebecki,Mateusz Rebecki,Chris Duncan,0,0.7058823529411765,0.5636335,-0.1422488514114829,-240,xgboost_model,0,0
+2025-08-02,2025-08-02|elves brener|esteban ribovics,Esteban Ribovics,Elves Brener,1,0.7222222222222222,0.6666356,-0.05558664931191337,-260,xgboost_model,0,0
+2025-08-02,2025-08-02|elves brener|esteban ribovics,Elves Brener,Esteban Ribovics,0,0.31746031746031744,0.24277456,-0.07468575641276343,215,xgboost_model,0,0
+2025-08-02,2025-08-02|karol rosa|nora cornolle,Karol Rosa,Nora Cornolle,1,0.6124031007751938,0.76018184,0.14777874345927278,-158,xgboost_model,0,0
+2025-08-02,2025-08-02|karol rosa|nora cornolle,Nora Cornolle,Karol Rosa,0,0.43103448275862066,0.21226084,-0.21877364043531744,132,xgboost_model,0,0
+2025-08-02,2025-08-02|danny silva|kevin vallejos,Kevin Vallejos,Danny Silva,1,0.7894736842105263,0.6743342,-0.11513945617173849,-375,xgboost_model,0,0
+2025-08-02,2025-08-02|danny silva|kevin vallejos,Danny Silva,Kevin Vallejos,0,0.25,0.4709006,0.22090059518814087,300,xgboost_model,0,0
+2025-08-02,2025-08-02|andrey pulyaev|nick klein,Andrey Pulyaev,Nick Klein,1,0.5575221238938053,0.6704997,0.11297755853264735,-126,xgboost_model,0,0
+2025-08-02,2025-08-02|andrey pulyaev|nick klein,Nick Klein,Andrey Pulyaev,0,0.4807692307692308,0.5249631,0.04419385011379534,108,xgboost_model,0,0
+2025-08-02,2025-08-02|austin bashi|john yannis,Austin Bashi,John Yannis,1,0.92,0.9075814,-0.01241861104965214,-1150,xgboost_model,0,0
+2025-08-02,2025-08-02|austin bashi|john yannis,John Yannis,Austin Bashi,0,0.12048192771084337,0.10687618,-0.013605748134923268,730,xgboost_model,0,0
+2025-08-02,2025-08-02|felipe bunes|rafael estevam,Rafael Estevam,Felipe Bunes,1,0.8701298701298701,0.84366435,-0.026465522004412323,-670,xgboost_model,0,0
+2025-08-02,2025-08-02|felipe bunes|rafael estevam,Felipe Bunes,Rafael Estevam,0,0.1694915254237288,0.17016608,0.0006745498059159694,490,xgboost_model,0,0
+2025-08-02,2025-08-02|ketlen souza|piera rodriguez,Piera Rodriguez,Ketlen Souza,1,0.7183098591549296,0.7032637,-0.015046159146537286,-255,xgboost_model,0,0
+2025-08-02,2025-08-02|ketlen souza|piera rodriguez,Ketlen Souza,Piera Rodriguez,0,0.3225806451612903,0.22459604,-0.09798460670055881,210,xgboost_model,0,0
+2025-07-19,2025-07-19|dustin poirier|max holloway,Max Holloway,Dustin Poirier,1,0.5495495495495496,0.6143177,0.06476816561844967,-122,xgboost_model,0,0
+2025-07-19,2025-07-19|dustin poirier|max holloway,Dustin Poirier,Max Holloway,0,0.5098039215686274,0.38975516,-0.12004876195215708,-104,xgboost_model,0,0
+2025-07-19,2025-07-19|brendan allen|marvin vettori,Brendan Allen,Marvin Vettori,1,0.726027397260274,0.612726,-0.11330142413100153,-265,xgboost_model,0,0
+2025-07-19,2025-07-19|brendan allen|marvin vettori,Marvin Vettori,Brendan Allen,0,0.3333333333333333,0.4913165,0.1579831639925639,200,xgboost_model,0,0
+2025-07-19,2025-07-19|adam fugitt|islam dulatov,Islam Dulatov,Adam Fugitt,1,0.8214285714285714,0.8722198,0.05079122952052528,-460,xgboost_model,0,0
+2025-07-19,2025-07-19|adam fugitt|islam dulatov,Adam Fugitt,Islam Dulatov,0,0.23809523809523808,0.123598985,-0.11449625272126424,320,xgboost_model,0,0
+2025-06-28,2025-06-28|charles oliveira|ilia topuria,Ilia Topuria,Charles Oliveira,1,0.801980198019802,0.7287281,-0.07325208246117776,-405,xgboost_model,0,0
+2025-06-28,2025-06-28|charles oliveira|ilia topuria,Charles Oliveira,Ilia Topuria,0,0.23809523809523808,0.20230849,-0.035786747222854964,320,xgboost_model,0,0
+2025-06-28,2025-06-28|alexandre pantoja|kai kara france,Alexandre Pantoja,Kai Kara-France,1,0.7142857142857143,0.48886544,-0.2254202791622707,-250,xgboost_model,0,0
+2025-06-28,2025-06-28|alexandre pantoja|kai kara france,Kai Kara-France,Alexandre Pantoja,0,0.32786885245901637,0.5106972,0.1828283335341782,205,xgboost_model,0,0
+2025-06-28,2025-06-28|brandon royval|joshua van,Joshua Van,Brandon Royval,1,0.5454545454545454,0.6836396,0.13818504051728686,-120,xgboost_model,0,0
+2025-06-28,2025-06-28|brandon royval|joshua van,Brandon Royval,Joshua Van,0,0.49504950495049505,0.4007005,-0.09434899540230779,102,xgboost_model,0,0
+2025-06-28,2025-06-28|beneil dariush|renato moicano,Beneil Dariush,Renato Moicano,1,0.5283018867924528,0.6306738,0.10237193894836139,-112,xgboost_model,0,0
+2025-06-28,2025-06-28|beneil dariush|renato moicano,Renato Moicano,Beneil Dariush,0,0.5098039215686274,0.31586227,-0.19394165335917002,-104,xgboost_model,0,0
+2025-06-28,2025-06-28|felipe lima|payton talbott,Payton Talbott,Felipe Lima,1,0.4065040650406504,0.60627747,0.1997734007796621,146,xgboost_model,0,0
+2025-06-28,2025-06-28|felipe lima|payton talbott,Felipe Lima,Payton Talbott,0,0.635036496350365,0.32586798,-0.3091685156317523,-174,xgboost_model,0,0
+2025-06-28,2025-06-28|gregory rodrigues|jack hermansson,Gregory Rodrigues,Jack Hermansson,1,0.6721311475409836,0.57005733,-0.10207381502526702,-205,xgboost_model,0,0
+2025-06-28,2025-06-28|gregory rodrigues|jack hermansson,Jack Hermansson,Gregory Rodrigues,0,0.36764705882352944,0.5962918,0.22864472164827232,172,xgboost_model,0,0
+2025-06-28,2025-06-28|hyder amil|jose delgado,Jose Delgado,Hyder Amil,1,0.576271186440678,0.45388705,-0.12238414105722462,-136,xgboost_model,0,0
+2025-06-28,2025-06-28|hyder amil|jose delgado,Hyder Amil,Jose Delgado,0,0.46296296296296297,0.46750578,0.004542819879673143,116,xgboost_model,0,0
+2025-06-28,2025-06-28|tracy cortez|viviane araujo,Tracy Cortez,Viviane Araujo,1,0.6774193548387096,0.7330386,0.055619249420781336,-210,xgboost_model,0,0
+2025-06-28,2025-06-28|tracy cortez|viviane araujo,Viviane Araujo,Tracy Cortez,0,0.36231884057971014,0.25971308,-0.10260575707407965,176,xgboost_model,0,0
+2025-06-28,2025-06-28|terrance mckinney|viacheslav borshchev,Terrance McKinney,Viacheslav Borshchev,1,0.6323529411764706,0.758848,0.1264950703172123,-172,xgboost_model,0,0
+2025-06-28,2025-06-28|terrance mckinney|viacheslav borshchev,Viacheslav Borshchev,Terrance McKinney,0,0.4098360655737705,0.17066245,-0.23917361776359747,144,xgboost_model,0,0
+2025-06-21,2025-06-21|ignacio bahamondes|rafael fiziev,Rafael Fiziev,Ignacio Bahamondes,1,0.44642857142857145,0.21929403,-0.22713454493454527,124,xgboost_model,0,0
+2025-06-21,2025-06-21|ignacio bahamondes|rafael fiziev,Ignacio Bahamondes,Rafael Fiziev,0,0.5901639344262295,0.8070272,0.2168632862997837,-144,xgboost_model,0,0
+2025-06-21,2025-06-21|curtis blaydes|rizvan kuniev,Curtis Blaydes,Rizvan Kuniev,1,0.7058823529411765,0.693529,-0.012353343122145755,-240,xgboost_model,0,0
+2025-06-21,2025-06-21|curtis blaydes|rizvan kuniev,Rizvan Kuniev,Curtis Blaydes,0,0.33557046979865773,0.3130855,-0.02248497337302907,198,xgboost_model,0,0
+2025-06-21,2025-06-21|myktybek orolbai|tofiq musayev,Myktybek Orolbai,Tofiq Musayev,1,0.6503496503496503,0.94987386,0.299524214301076,-186,xgboost_model,0,0
+2025-06-21,2025-06-21|myktybek orolbai|tofiq musayev,Tofiq Musayev,Myktybek Orolbai,0,0.390625,0.06479344,-0.3258315622806549,156,xgboost_model,0,0
+2025-06-21,2025-06-21|nazim sadykhov|nikolas motta,Nazim Sadykhov,Nikolas Motta,1,0.8076923076923077,0.4988187,-0.3088736121471112,-420,xgboost_model,0,0
+2025-06-21,2025-06-21|nazim sadykhov|nikolas motta,Nikolas Motta,Nazim Sadykhov,0,0.23255813953488372,0.39726102,0.16470288398653962,330,xgboost_model,0,0
+2025-06-21,2025-06-21|bogdan grad|muhammad naimov,Muhammad Naimov,Bogdan Grad,1,0.7142857142857143,0.44417673,-0.27010898079190937,-250,xgboost_model,0,0
+2025-06-21,2025-06-21|bogdan grad|muhammad naimov,Bogdan Grad,Muhammad Naimov,0,0.32786885245901637,0.4079946,0.08012574569123693,205,xgboost_model,0,0
+2025-06-21,2025-06-21|oban elliott|seokhyeon ko,Seokhyeon Ko,Oban Elliott,1,0.2127659574468085,0.51047343,0.2977074727098993,370,xgboost_model,0,0
+2025-06-21,2025-06-21|oban elliott|seokhyeon ko,Oban Elliott,Seokhyeon Ko,0,0.8275862068965517,0.2996803,-0.527905914290198,-480,xgboost_model,0,0
+2025-06-21,2025-06-21|daria zhelezniakova|melissa mullins,Daria Zhelezniakova,Melissa Mullins,1,0.32786885245901637,0.5708669,0.24299803034203954,205,xgboost_model,0,0
+2025-06-21,2025-06-21|daria zhelezniakova|melissa mullins,Melissa Mullins,Daria Zhelezniakova,0,0.7142857142857143,0.5056994,-0.20858631815229145,-250,xgboost_model,0,0
+2025-06-21,2025-06-21|irina alekseeva|klaudia sygula,Klaudia Sygula,Irina Alekseeva,1,0.3333333333333333,0.7747438,0.44141046206156415,200,xgboost_model,0,0
+2025-06-21,2025-06-21|irina alekseeva|klaudia sygula,Irina Alekseeva,Klaudia Sygula,0,0.7101449275362319,0.28136197,-0.42878296021102136,-245,xgboost_model,0,0
+2025-06-21,2025-06-21|azat maksum|tagir ulanbekov,Tagir Ulanbekov,Azat Maksum,1,0.8333333333333334,0.71675295,-0.11658038695653283,-500,xgboost_model,0,0
+2025-06-21,2025-06-21|azat maksum|tagir ulanbekov,Azat Maksum,Tagir Ulanbekov,0,0.20618556701030927,0.327446,0.12126044667873187,385,xgboost_model,0,0
+2025-06-21,2025-06-21|hamdy abdelwahab|mohammed usman,Mohammed Usman,Hamdy Abdelwahab,1,0.4132231404958678,0.11527926,-0.2979438831983519,142,xgboost_model,0,0
+2025-06-21,2025-06-21|hamdy abdelwahab|mohammed usman,Hamdy Abdelwahab,Mohammed Usman,0,0.6268656716417911,0.84600514,0.21913947009328583,-168,xgboost_model,0,0
+2025-06-14,2025-06-14|joaquin buckley|kamaru usman,Kamaru Usman,Joaquin Buckley,1,0.352112676056338,0.55803627,0.20592359170107777,184,xgboost_model,0,0
+2025-06-14,2025-06-14|joaquin buckley|kamaru usman,Joaquin Buckley,Kamaru Usman,0,0.6875,0.28644097,-0.40105903148651123,-220,xgboost_model,0,0
+2025-06-14,2025-06-14|miranda maverick|rose namajunas,Rose Namajunas,Miranda Maverick,1,0.7101449275362319,0.4326376,-0.27750732544539636,-245,xgboost_model,0,0
+2025-06-14,2025-06-14|miranda maverick|rose namajunas,Miranda Maverick,Rose Namajunas,0,0.3333333333333333,0.7229396,0.3896062771479289,200,xgboost_model,0,0
+2025-06-14,2025-06-14|andre petroski|edmen shahbazyan,Edmen Shahbazyan,Andre Petroski,1,0.6268656716417911,0.5631447,-0.06372098780390045,-168,xgboost_model,0,0
+2025-06-14,2025-06-14|andre petroski|edmen shahbazyan,Andre Petroski,Edmen Shahbazyan,0,0.4132231404958678,0.454918,0.04169485662594313,142,xgboost_model,0,0
+2025-06-14,2025-06-14|cody garbrandt|raoni barcelos,Raoni Barcelos,Cody Garbrandt,1,0.7183098591549296,0.80765355,0.08934368717838337,-255,xgboost_model,0,0
+2025-06-14,2025-06-14|cody garbrandt|raoni barcelos,Cody Garbrandt,Raoni Barcelos,0,0.3225806451612903,0.21824174,-0.10433890886845126,210,xgboost_model,0,0
+2025-06-14,2025-06-14|alonzo menifield|oumar sy,Alonzo Menifield,Oumar Sy,1,0.1694915254237288,0.1146108,-0.054880726766788346,490,xgboost_model,0,0
+2025-06-14,2025-06-14|alonzo menifield|oumar sy,Oumar Sy,Alonzo Menifield,0,0.8701298701298701,0.8311988,-0.03893105859880319,-670,xgboost_model,0,0
+2025-06-14,2025-06-14|court mcgee|michael chiesa,Michael Chiesa,Court McGee,1,0.7701149425287356,0.6199618,-0.15015314433766502,-335,xgboost_model,0,0
+2025-06-14,2025-06-14|court mcgee|michael chiesa,Court McGee,Michael Chiesa,0,0.2702702702702703,0.28622046,0.015950190859871927,270,xgboost_model,0,0
+2025-06-14,2025-06-14|kris moutinho|malcolm wellmaker,Malcolm Wellmaker,Kris Moutinho,1,0.9473684210526315,0.8970178,-0.050350644086536556,-1800,xgboost_model,0,0
+2025-06-14,2025-06-14|kris moutinho|malcolm wellmaker,Kris Moutinho,Malcolm Wellmaker,0,0.09259259259259259,0.110045776,0.017453183178548465,980,xgboost_model,0,0
+2025-06-14,2025-06-14|cody durden|jose ochoa,Jose Ochoa,Cody Durden,1,0.6721311475409836,0.48352045,-0.18861069933312835,-205,xgboost_model,0,0
+2025-06-14,2025-06-14|cody durden|jose ochoa,Cody Durden,Jose Ochoa,0,0.36764705882352944,0.41365805,0.04601099385934715,172,xgboost_model,0,0
+2025-06-14,2025-06-14|cameron smotherman|ricky simon,Ricky Simon,Cameron Smotherman,1,0.7959183673469388,0.8310043,0.035085954228226024,-390,xgboost_model,0,0
+2025-06-14,2025-06-14|cameron smotherman|ricky simon,Cameron Smotherman,Ricky Simon,0,0.24390243902439024,0.16419195,-0.07971049263709928,310,xgboost_model,0,0
+2025-06-07,2025-06-07|merab dvalishvili|sean o malley,Merab Dvalishvili,Sean O'Malley,1,0.7142857142857143,0.61323756,-0.10104815449033466,-250,xgboost_model,0,0
+2025-06-07,2025-06-07|merab dvalishvili|sean o malley,Sean O'Malley,Merab Dvalishvili,0,0.32786885245901637,0.24493729,-0.08293156667810969,205,xgboost_model,0,0
+2025-06-07,2025-06-07|julianna pena|kayla harrison,Kayla Harrison,Julianna Pena,1,0.875,0.6725436,-0.20245641469955444,-700,xgboost_model,0,0
+2025-06-07,2025-06-07|julianna pena|kayla harrison,Julianna Pena,Kayla Harrison,0,0.16666666666666666,0.11592705,-0.050739618639151246,500,xgboost_model,0,0
+2025-06-07,2025-06-07|joe pyfer|kelvin gastelum,Joe Pyfer,Kelvin Gastelum,1,0.7959183673469388,0.7277804,-0.06813796564024321,-390,xgboost_model,0,0
+2025-06-07,2025-06-07|joe pyfer|kelvin gastelum,Kelvin Gastelum,Joe Pyfer,0,0.24390243902439024,0.39724445,0.15334201440578554,310,xgboost_model,0,0
+2025-06-07,2025-06-07|kevin holland|vicente luque,Kevin Holland,Vicente Luque,1,0.6428571428571429,0.61152345,-0.03133369343621395,-180,xgboost_model,0,0
+2025-06-07,2025-06-07|kevin holland|vicente luque,Vicente Luque,Kevin Holland,0,0.3968253968253968,0.5113781,0.11455271262971184,152,xgboost_model,0,0
+2025-06-07,2025-06-07|bruno silva|joshua van,Joshua Van,Bruno Silva,1,0.8780487804878049,0.8987186,0.02066981501695586,-720,xgboost_model,0,0
+2025-06-07,2025-06-07|bruno silva|joshua van,Bruno Silva,Joshua Van,0,0.16129032258064516,0.08220815,-0.0790821734455324,520,xgboost_model,0,0
+2025-06-07,2025-06-07|azamat murzakanov|brendson ribeiro,Azamat Murzakanov,Brendson Ribeiro,1,0.8611111111111112,0.86307675,0.0019656353526644743,-620,xgboost_model,0,0
+2025-06-07,2025-06-07|azamat murzakanov|brendson ribeiro,Brendson Ribeiro,Azamat Murzakanov,0,0.17857142857142858,0.16739716,-0.011174272213663378,460,xgboost_model,0,0
+2025-06-07,2025-06-07|serghei spivac|waldo cortes acosta,Waldo Cortes Acosta,Serghei Spivac,1,0.4132231404958678,0.60092527,0.18770212624683852,142,xgboost_model,0,0
+2025-06-07,2025-06-07|serghei spivac|waldo cortes acosta,Serghei Spivac,Waldo Cortes Acosta,0,0.6268656716417911,0.5716073,-0.05525837994333527,-168,xgboost_model,0,0
+2025-06-07,2025-06-07|andreas gustafsson|khaos williams,Andreas Gustafsson,Khaos Williams,1,0.3875968992248062,0.73091274,0.34331584577412566,158,xgboost_model,0,0
+2025-06-07,2025-06-07|andreas gustafsson|khaos williams,Khaos Williams,Andreas Gustafsson,0,0.6527777777777778,0.27226138,-0.3805163966284858,-188,xgboost_model,0,0
+2025-06-07,2025-06-07|ariane da silva|wang cong,Wang Cong,Ariane da Silva,1,0.8666666666666667,0.58655834,-0.2801083246866862,-650,xgboost_model,0,0
+2025-06-07,2025-06-07|ariane da silva|wang cong,Ariane da Silva,Wang Cong,0,0.17857142857142858,0.35075846,0.1721870345728738,460,xgboost_model,0,0
+2025-06-07,2025-06-07|quillan salkilld|yanal ashmouz,Quillan Salkilld,Yanal Ashmouz,1,0.8076923076923077,0.8175371,0.009844821233015777,-420,xgboost_model,0,0
+2025-06-07,2025-06-07|quillan salkilld|yanal ashmouz,Yanal Ashmouz,Quillan Salkilld,0,0.23255813953488372,0.17258264,-0.059975498290949086,330,xgboost_model,0,0
+2025-06-07,2025-06-07|mark choinski|marquel mederos,MarQuel Mederos,Mark Choinski,1,0.6062992125984252,0.9465818,0.3402825683120667,-154,xgboost_model,0,0
+2025-06-07,2025-06-07|mark choinski|marquel mederos,Mark Choinski,MarQuel Mederos,0,0.43478260869565216,0.07213646,-0.36264614696088043,130,xgboost_model,0,0
+2025-05-17,2025-05-17|gilbert burns|michael morales,Michael Morales,Gilbert Burns,1,0.8275862068965517,0.9405816,0.11299541284298076,-480,xgboost_model,0,0
+2025-05-17,2025-05-17|gilbert burns|michael morales,Gilbert Burns,Michael Morales,0,0.2127659574468085,0.05913551,-0.1536304459292838,370,xgboost_model,0,0
+2025-05-17,2025-05-17|mairon santos|sodiq yusuff,Mairon Santos,Sodiq Yusuff,1,0.5967741935483871,0.46679625,-0.12997794439715726,-148,xgboost_model,0,0
+2025-05-17,2025-05-17|mairon santos|sodiq yusuff,Sodiq Yusuff,Mairon Santos,0,0.4424778761061947,0.44757968,0.005101805767126821,126,xgboost_model,0,0
+2025-05-10,2025-05-10|belal muhammad|jack della maddalena,Jack Della Maddalena,Belal Muhammad,1,0.37593984962406013,0.7243105,0.34837066768703606,166,xgboost_model,0,0
+2025-05-10,2025-05-10|belal muhammad|jack della maddalena,Belal Muhammad,Jack Della Maddalena,0,0.6644295302013423,0.50767505,-0.15675447851219437,-198,xgboost_model,0,0
+2025-05-10,2025-05-10|manon fiorot|valentina shevchenko,Valentina Shevchenko,Manon Fiorot,1,0.46296296296296297,0.5156468,0.05268385233702483,116,xgboost_model,0,0
+2025-05-10,2025-05-10|manon fiorot|valentina shevchenko,Manon Fiorot,Valentina Shevchenko,0,0.5726495726495726,0.2958064,-0.2768431647211058,-134,xgboost_model,0,0
+2025-05-10,2025-05-10|aiemann zahabi|jose aldo,Aiemann Zahabi,Jose Aldo,1,0.38461538461538464,0.47064823,0.08603284450677723,160,xgboost_model,0,0
+2025-05-10,2025-05-10|aiemann zahabi|jose aldo,Jose Aldo,Aiemann Zahabi,0,0.6551724137931034,0.50060815,-0.15456426760246011,-190,xgboost_model,0,0
+2025-05-10,2025-05-10|alexa grasso|natalia silva,Natalia Silva,Alexa Grasso,1,0.7014925373134329,0.7029789,0.0014863717022226552,-235,xgboost_model,0,0
+2025-05-10,2025-05-10|alexa grasso|natalia silva,Alexa Grasso,Natalia Silva,0,0.3401360544217687,0.13703129,-0.20310476746688894,194,xgboost_model,0,0
+2025-05-10,2025-05-10|benoit saint denis|kyle prepolec,Benoit Saint Denis,Kyle Prepolec,1,0.9333333333333333,0.96273375,0.029400412241617824,-1400,xgboost_model,0,0
+2025-05-10,2025-05-10|benoit saint denis|kyle prepolec,Kyle Prepolec,Benoit Saint Denis,0,0.10752688172043011,0.035102677,-0.07242420512021229,830,xgboost_model,0,0
+2025-05-10,2025-05-10|charles radtke|mike malott,Mike Malott,Charles Radtke,1,0.6666666666666666,0.61834794,-0.04831872383753455,-200,xgboost_model,0,0
+2025-05-10,2025-05-10|charles radtke|mike malott,Charles Radtke,Mike Malott,0,0.373134328358209,0.42280936,0.049675034053290046,168,xgboost_model,0,0
+2025-05-10,2025-05-10|jasmine jasudavicius|jessica andrade,Jasmine Jasudavicius,Jessica Andrade,1,0.7333333333333333,0.49770224,-0.2356310923894246,-275,xgboost_model,0,0
+2025-05-10,2025-05-10|jasmine jasudavicius|jessica andrade,Jessica Andrade,Jasmine Jasudavicius,0,0.3076923076923077,0.4735691,0.1658767874424274,225,xgboost_model,0,0
+2025-05-10,2025-05-10|ion cutelaba|modestas bukauskas,Modestas Bukauskas,Ion Cutelaba,1,0.5145631067961165,0.43948424,-0.07507886817154374,-106,xgboost_model,0,0
+2025-05-10,2025-05-10|ion cutelaba|modestas bukauskas,Ion Cutelaba,Modestas Bukauskas,0,0.5238095238095238,0.67244196,0.14863243557157968,-110,xgboost_model,0,0
+2025-05-10,2025-05-10|ivan erslan|navajo stirling,Navajo Stirling,Ivan Erslan,1,0.7674418604651163,0.9539232,0.18648136493771572,-330,xgboost_model,0,0
+2025-05-10,2025-05-10|ivan erslan|navajo stirling,Ivan Erslan,Navajo Stirling,0,0.273972602739726,0.04757388,-0.22639872337857336,265,xgboost_model,0,0
+2025-05-10,2025-05-10|bruno silva|marc andre barriault,Marc-Andre Barriault,Bruno Silva,1,0.6183206106870229,0.4483371,-0.16998350279021812,-162,xgboost_model,0,0
+2025-05-10,2025-05-10|bruno silva|marc andre barriault,Bruno Silva,Marc-Andre Barriault,0,0.423728813559322,0.4936098,0.06988097247430836,136,xgboost_model,0,0
+2025-05-10,2025-05-10|bekzat almakhan|brad katona,Bekzat Almakhan,Brad Katona,1,0.5867768595041323,0.2035105,-0.38326636646404744,-142,xgboost_model,0,0
+2025-05-10,2025-05-10|bekzat almakhan|brad katona,Brad Katona,Bekzat Almakhan,0,0.45454545454545453,0.649782,0.19523654742674396,120,xgboost_model,0,0
+2025-05-03,2025-05-03|cory sandhagen|deiveson figueiredo,Cory Sandhagen,Deiveson Figueiredo,1,0.8387096774193549,0.585265,-0.2534446966263556,-520,xgboost_model,0,0
+2025-05-03,2025-05-03|cory sandhagen|deiveson figueiredo,Deiveson Figueiredo,Cory Sandhagen,0,0.2,0.3705958,0.17059581279754638,400,xgboost_model,0,0
+2025-05-03,2025-05-03|bo nickal|reinier de ridder,Reinier de Ridder,Bo Nickal,1,0.25316455696202533,0.5547311,0.3015665140333055,295,xgboost_model,0,0
+2025-05-03,2025-05-03|bo nickal|reinier de ridder,Bo Nickal,Reinier de Ridder,0,0.7872340425531915,0.47230813,-0.3149259134810022,-370,xgboost_model,0,0
+2025-05-03,2025-05-03|daniel rodriguez|santiago ponzinibbio,Daniel Rodriguez,Santiago Ponzinibbio,1,0.45871559633027525,0.6552341,0.196518502104173,118,xgboost_model,0,0
+2025-05-03,2025-05-03|daniel rodriguez|santiago ponzinibbio,Santiago Ponzinibbio,Daniel Rodriguez,0,0.5798319327731093,0.26135033,-0.318481599082466,-138,xgboost_model,0,0
+2025-05-03,2025-05-03|daniel marcos|montel jackson,Montel Jackson,Daniel Marcos,1,0.6923076923076923,0.73424125,0.04193355486943173,-225,xgboost_model,0,0
+2025-05-03,2025-05-03|daniel marcos|montel jackson,Daniel Marcos,Montel Jackson,0,0.3472222222222222,0.22234188,-0.12488034201992881,188,xgboost_model,0,0
+2025-05-03,2025-05-03|cameron smotherman|serhiy sidey,Serhiy Sidey,Cameron Smotherman,1,0.5798319327731093,0.5084126,-0.07141933320951066,-138,xgboost_model,0,0
+2025-05-03,2025-05-03|cameron smotherman|serhiy sidey,Cameron Smotherman,Serhiy Sidey,0,0.45871559633027525,0.4860975,0.02738191829908876,118,xgboost_model,0,0
+2025-05-03,2025-05-03|jeremy stephens|mason jones,Mason Jones,Jeremy Stephens,1,0.8611111111111112,0.77273977,-0.08837134308285188,-620,xgboost_model,0,0
+2025-05-03,2025-05-03|jeremy stephens|mason jones,Jeremy Stephens,Mason Jones,0,0.17857142857142858,0.23809417,0.05952273734978267,460,xgboost_model,0,0
+2025-05-03,2025-05-03|miesha tate|yana santos,Yana Santos,Miesha Tate,1,0.43859649122807015,0.36106205,-0.0775344413623475,128,xgboost_model,0,0
+2025-05-03,2025-05-03|miesha tate|yana santos,Miesha Tate,Yana Santos,0,0.6031746031746031,0.48188192,-0.1212926866516234,-152,xgboost_model,0,0
+2025-05-03,2025-05-03|azamat bekoev|ryan loder,Azamat Bekoev,Ryan Loder,1,0.7674418604651163,0.23926856,-0.5281733042278955,-330,xgboost_model,0,0
+2025-05-03,2025-05-03|azamat bekoev|ryan loder,Ryan Loder,Azamat Bekoev,0,0.273972602739726,0.70785755,0.43388494645079523,265,xgboost_model,0,0
+2025-05-03,2025-05-03|gillian robertson|marina rodriguez,Gillian Robertson,Marina Rodriguez,1,0.7297297297297297,0.6668971,-0.06283261163814646,-270,xgboost_model,0,0
+2025-05-03,2025-05-03|gillian robertson|marina rodriguez,Marina Rodriguez,Gillian Robertson,0,0.3125,0.38674033,0.07424032688140869,220,xgboost_model,0,0
+2025-05-03,2025-05-03|gaston bolanos|quang le,Quang Le,Gaston Bolanos,1,0.4807692307692308,0.3459247,-0.13484452550227827,108,xgboost_model,0,0
+2025-05-03,2025-05-03|gaston bolanos|quang le,Gaston Bolanos,Quang Le,0,0.5575221238938053,0.6932982,0.13577609674065516,-126,xgboost_model,0,0
+2025-04-26,2025-04-26|carlos prates|ian machado garry,Ian Machado Garry,Carlos Prates,1,0.6212121212121212,0.69304127,0.07182914379871252,-164,xgboost_model,0,0
+2025-04-26,2025-04-26|carlos prates|ian machado garry,Carlos Prates,Ian Machado Garry,0,0.42016806722689076,0.2519289,-0.16823917151499196,138,xgboost_model,0,0
+2025-04-26,2025-04-26|anthony smith|zhang mingyang,Zhang Mingyang,Anthony Smith,1,0.7872340425531915,0.86064637,0.07341232451986757,-370,xgboost_model,0,0
+2025-04-26,2025-04-26|anthony smith|zhang mingyang,Anthony Smith,Zhang Mingyang,0,0.25316455696202533,0.2063729,-0.04679165516473072,295,xgboost_model,0,0
+2025-04-26,2025-04-26|david onama|giga chikadze,David Onama,Giga Chikadze,1,0.6644295302013423,0.57556164,-0.08886788755455277,-198,xgboost_model,0,0
+2025-04-26,2025-04-26|david onama|giga chikadze,Giga Chikadze,David Onama,0,0.37593984962406013,0.49161237,0.11567252515850213,166,xgboost_model,0,0
+2025-04-26,2025-04-26|abus magomedov|michel pereira,Abus Magomedov,Michel Pereira,1,0.45454545454545453,0.645015,0.19046954675154254,120,xgboost_model,0,0
+2025-04-26,2025-04-26|abus magomedov|michel pereira,Michel Pereira,Abus Magomedov,0,0.5867768595041323,0.38092732,-0.20584953520908833,-142,xgboost_model,0,0
+2025-04-26,2025-04-26|nicolas dalby|randy brown,Randy Brown,Nicolas Dalby,1,0.7619047619047619,0.7436872,-0.01821754943756826,-320,xgboost_model,0,0
+2025-04-26,2025-04-26|nicolas dalby|randy brown,Nicolas Dalby,Randy Brown,0,0.2777777777777778,0.3279786,0.05020083321465385,260,xgboost_model,0,0
+2025-04-26,2025-04-26|andre muniz|ikram aliskerov,Ikram Aliskerov,Andre Muniz,1,0.8113207547169812,0.68091196,-0.13040879649936032,-430,xgboost_model,0,0
+2025-04-26,2025-04-26|andre muniz|ikram aliskerov,Andre Muniz,Ikram Aliskerov,0,0.22727272727272727,0.33015093,0.10287820480086587,340,xgboost_model,0,0
+2025-04-26,2025-04-26|jimmy flick|matt schnell,Matt Schnell,Jimmy Flick,1,0.6212121212121212,0.66002303,0.038810912406805786,-164,xgboost_model,0,0
+2025-04-26,2025-04-26|jimmy flick|matt schnell,Jimmy Flick,Matt Schnell,0,0.42016806722689076,0.21975157,-0.20041650057840749,138,xgboost_model,0,0
+2025-04-26,2025-04-26|evan elder|gauge young,Evan Elder,Gauge Young,1,0.6825396825396826,0.75040686,0.06786717876555426,-215,xgboost_model,0,0
+2025-04-26,2025-04-26|evan elder|gauge young,Gauge Young,Evan Elder,0,0.35714285714285715,0.2737324,-0.0834104631628309,180,xgboost_model,0,0
+2025-04-26,2025-04-26|chris gutierrez|john castaneda,Chris Gutierrez,John Castaneda,1,0.5967741935483871,0.47327766,-0.12349653532428129,-148,xgboost_model,0,0
+2025-04-26,2025-04-26|chris gutierrez|john castaneda,John Castaneda,Chris Gutierrez,0,0.4424778761061947,0.527362,0.08488411291510656,126,xgboost_model,0,0
+2025-04-05,2025-04-05|josh emmett|lerone murphy,Lerone Murphy,Josh Emmett,1,0.7619047619047619,0.82749516,0.06559039581389658,-320,xgboost_model,0,0
+2025-04-05,2025-04-05|josh emmett|lerone murphy,Josh Emmett,Lerone Murphy,0,0.2777777777777778,0.19646756,-0.08131021426783669,260,xgboost_model,0,0
+2025-04-05,2025-04-05|joanderson brito|pat sabatini,Pat Sabatini,Joanderson Brito,1,0.36764705882352944,0.54646665,0.17881958975511436,172,xgboost_model,0,0
+2025-04-05,2025-04-05|joanderson brito|pat sabatini,Joanderson Brito,Pat Sabatini,0,0.6721311475409836,0.43261355,-0.23951759592431487,-205,xgboost_model,0,0
+2025-04-05,2025-04-05|brad tavares|gerald meerschaert,Brad Tavares,Gerald Meerschaert,1,0.6240601503759399,0.43721235,-0.1868478023916259,-166,xgboost_model,0,0
+2025-04-05,2025-04-05|brad tavares|gerald meerschaert,Gerald Meerschaert,Brad Tavares,0,0.4166666666666667,0.552851,0.13618435462315875,140,xgboost_model,0,0
+2025-04-05,2025-04-05|luis gurule|ode osbourne,Ode Osbourne,Luis Gurule,1,0.3225806451612903,0.7943305,0.47174983255324826,210,xgboost_model,0,0
+2025-04-05,2025-04-05|luis gurule|ode osbourne,Luis Gurule,Ode Osbourne,0,0.7183098591549296,0.1663965,-0.5519133604748149,-255,xgboost_model,0,0
+2025-04-05,2025-04-05|diana belbita|dione barbosa,Dione Barbosa,Diana Belbita,1,0.92,0.7897841,-0.13021592617034916,-1150,xgboost_model,0,0
+2025-04-05,2025-04-05|diana belbita|dione barbosa,Diana Belbita,Dione Barbosa,0,0.12048192771084337,0.245316,0.12483407108180494,730,xgboost_model,0,0
+2025-04-05,2025-04-05|daniel frunza|rhys mckee,Rhys McKee,Daniel Frunza,1,0.49019607843137253,0.5562092,0.0660131281497432,104,xgboost_model,0,0
+2025-04-05,2025-04-05|daniel frunza|rhys mckee,Daniel Frunza,Rhys McKee,0,0.5495495495495496,0.30932197,-0.24022757980200626,-122,xgboost_model,0,0
+2025-03-29,2025-03-29|brandon moreno|steve erceg,Brandon Moreno,Steve Erceg,1,0.696969696969697,0.66319984,-0.033769854993531245,-230,xgboost_model,0,0
+2025-03-29,2025-03-29|brandon moreno|steve erceg,Steve Erceg,Brandon Moreno,0,0.3448275862068966,0.32571363,-0.019113951715929778,190,xgboost_model,0,0
+2025-03-29,2025-03-29|drew dober|manuel torres,Manuel Torres,Drew Dober,1,0.5535714285714286,0.8309988,0.2774273497717721,-124,xgboost_model,0,0
+2025-03-29,2025-03-29|drew dober|manuel torres,Drew Dober,Manuel Torres,0,0.4854368932038835,0.14003697,-0.3453999228269151,106,xgboost_model,0,0
+2025-03-29,2025-03-29|cj vergara|edgar chairez,Edgar Chairez,CJ Vergara,1,0.7297297297297297,0.1792321,-0.5504976241169749,-270,xgboost_model,0,0
+2025-03-29,2025-03-29|cj vergara|edgar chairez,CJ Vergara,Edgar Chairez,0,0.3125,0.71015245,0.39765244722366333,220,xgboost_model,0,0
+2025-03-29,2025-03-29|raul rosas jr|vince morales,Raul Rosas Jr.,Vince Morales,1,0.8275862068965517,0.7920299,-0.03555628965640889,-480,xgboost_model,0,0
+2025-03-29,2025-03-29|raul rosas jr|vince morales,Vince Morales,Raul Rosas Jr.,0,0.2127659574468085,0.11285364,-0.09991231861900776,370,xgboost_model,0,0
+2025-03-22,2025-03-22|leon edwards|sean brady,Sean Brady,Leon Edwards,1,0.5689655172413793,0.84526557,0.2763000500613245,-132,xgboost_model,0,0
+2025-03-22,2025-03-22|leon edwards|sean brady,Leon Edwards,Sean Brady,0,0.4716981132075472,0.18189019,-0.2898079235598726,112,xgboost_model,0,0
+2025-03-22,2025-03-22|carlos ulberg|jan blachowicz,Carlos Ulberg,Jan Blachowicz,1,0.7674418604651163,0.69881934,-0.0686225211897562,-330,xgboost_model,0,0
+2025-03-22,2025-03-22|carlos ulberg|jan blachowicz,Jan Blachowicz,Carlos Ulberg,0,0.273972602739726,0.32945296,0.0554803589435473,265,xgboost_model,0,0
+2025-03-22,2025-03-22|gunnar nelson|kevin holland,Kevin Holland,Gunnar Nelson,1,0.4807692307692308,0.58832705,0.10755781943981463,108,xgboost_model,0,0
+2025-03-22,2025-03-22|gunnar nelson|kevin holland,Gunnar Nelson,Kevin Holland,0,0.5575221238938053,0.62839615,0.07087402955620692,-126,xgboost_model,0,0
+2025-03-22,2025-03-22|alexia thainara|molly mccann,Alexia Thainara,Molly McCann,1,0.6923076923076923,0.5892509,-0.10305677010462833,-225,xgboost_model,0,0
+2025-03-22,2025-03-22|alexia thainara|molly mccann,Molly McCann,Alexia Thainara,0,0.3472222222222222,0.3101552,-0.0370670093430413,188,xgboost_model,0,0
+2025-03-22,2025-03-22|chris duncan|jordan vucenic,Chris Duncan,Jordan Vucenic,1,0.273972602739726,0.5083112,0.23433860932310968,265,xgboost_model,0,0
+2025-03-22,2025-03-22|chris duncan|jordan vucenic,Jordan Vucenic,Chris Duncan,0,0.7674418604651163,0.6215043,-0.14593755367190342,-330,xgboost_model,0,0
+2025-03-22,2025-03-22|morgan charriere|nathaniel wood,Nathaniel Wood,Morgan Charriere,1,0.504950495049505,0.7082964,0.2033459231404975,-102,xgboost_model,0,0
+2025-03-22,2025-03-22|morgan charriere|nathaniel wood,Morgan Charriere,Nathaniel Wood,0,0.5370370370370371,0.32216582,-0.21487122001471348,-116,xgboost_model,0,0
+2025-03-22,2025-03-22|chris padilla|jai herbert,Chris Padilla,Jai Herbert,1,0.47619047619047616,0.8300569,0.3538664295559838,110,xgboost_model,0,0
+2025-03-22,2025-03-22|chris padilla|jai herbert,Jai Herbert,Chris Padilla,0,0.5652173913043478,0.13380545,-0.43141193752703455,-130,xgboost_model,0,0
+2025-03-22,2025-03-22|felipe dos santos|lone er kavanagh,Lone'er Kavanagh,Felipe dos Santos,1,0.7183098591549296,0.802428,0.08411814797092487,-255,xgboost_model,0,0
+2025-03-22,2025-03-22|felipe dos santos|lone er kavanagh,Felipe dos Santos,Lone'er Kavanagh,0,0.3225806451612903,0.15988906,-0.1626915878826572,210,xgboost_model,0,0
+2025-03-22,2025-03-22|marcin tybura|mick parkin,Marcin Tybura,Mick Parkin,1,0.4132231404958678,0.17171152,-0.24151162113532548,142,xgboost_model,0,0
+2025-03-22,2025-03-22|marcin tybura|mick parkin,Mick Parkin,Marcin Tybura,0,0.6268656716417911,0.79863775,0.17177207612279632,-168,xgboost_model,0,0
+2025-03-22,2025-03-22|andrey pulyaev|christian leroy duncan,Christian Leroy Duncan,Andrey Pulyaev,1,0.801980198019802,0.82322,0.02123981655234153,-405,xgboost_model,0,0
+2025-03-22,2025-03-22|andrey pulyaev|christian leroy duncan,Andrey Pulyaev,Christian Leroy Duncan,0,0.23809523809523808,0.25538602,0.017290786618278153,320,xgboost_model,0,0
+2025-03-22,2025-03-22|puja tomar|shauna bannon,Shauna Bannon,Puja Tomar,1,0.6774193548387096,0.1628217,-0.5145976596301601,-210,xgboost_model,0,0
+2025-03-22,2025-03-22|puja tomar|shauna bannon,Puja Tomar,Shauna Bannon,0,0.36231884057971014,0.70286524,0.3405464023783587,176,xgboost_model,0,0
+2025-03-22,2025-03-22|caolan loughran|nathan fletcher,Caolan Loughran,Nathan Fletcher,1,0.43103448275862066,0.23540938,-0.19562510375318853,132,xgboost_model,0,0
+2025-03-22,2025-03-22|caolan loughran|nathan fletcher,Nathan Fletcher,Caolan Loughran,0,0.609375,0.7131393,0.10376429557800293,-156,xgboost_model,0,0
+2025-03-15,2025-03-15|marvin vettori|roman dolidze,Roman Dolidze,Marvin Vettori,1,0.43478260869565216,0.44325265,0.008470044187877501,130,xgboost_model,0,0
+2025-03-15,2025-03-15|marvin vettori|roman dolidze,Marvin Vettori,Roman Dolidze,0,0.6062992125984252,0.5851662,-0.021132996701818785,-154,xgboost_model,0,0
+2025-03-15,2025-03-15|chidi njokuani|elizeu zaleski dos santos,Chidi Njokuani,Elizeu Zaleski dos Santos,1,0.3787878787878788,0.620045,0.24125712748729822,164,xgboost_model,0,0
+2025-03-15,2025-03-15|chidi njokuani|elizeu zaleski dos santos,Elizeu Zaleski dos Santos,Chidi Njokuani,0,0.6621621621621622,0.43155834,-0.2306038213742746,-196,xgboost_model,0,0
+2025-03-15,2025-03-15|alexander hernandez|kurt holobaugh,Alexander Hernandez,Kurt Holobaugh,1,0.6666666666666666,0.6838867,0.017220040162404415,-200,xgboost_model,0,0
+2025-03-15,2025-03-15|alexander hernandez|kurt holobaugh,Kurt Holobaugh,Alexander Hernandez,0,0.373134328358209,0.2971847,-0.07594962262395605,168,xgboost_model,0,0
+2025-03-15,2025-03-15|cody gibson|da mon blackshear,Da'Mon Blackshear,Cody Gibson,1,0.8181818181818182,0.5754884,-0.24269342964345764,-450,xgboost_model,0,0
+2025-03-15,2025-03-15|cody gibson|da mon blackshear,Cody Gibson,Da'Mon Blackshear,0,0.2222222222222222,0.37273458,0.15051235424147713,350,xgboost_model,0,0
+2025-03-08,2025-03-08|djorden santos|ozzy diaz,Ozzy Diaz,Djorden Santos,1,0.37593984962406013,0.38608348,0.010143634071923757,166,xgboost_model,0,0
+2025-03-08,2025-03-08|djorden santos|ozzy diaz,Djorden Santos,Ozzy Diaz,0,0.6644295302013423,0.785488,0.1210584792514775,-198,xgboost_model,0,0
+2025-03-01,2025-03-01|cody brundage|julian marquez,Cody Brundage,Julian Marquez,1,0.5370370370370371,0.58863264,0.05159560618577175,-116,xgboost_model,0,0
+2025-03-01,2025-03-01|cody brundage|julian marquez,Julian Marquez,Cody Brundage,0,0.504950495049505,0.4264917,-0.07845878748610469,-102,xgboost_model,0,0
+2025-03-01,2025-03-01|esteban ribovics|nasrat haqparast,Nasrat Haqparast,Esteban Ribovics,1,0.31746031746031744,0.34075093,0.023290615233164003,215,xgboost_model,0,0
+2025-03-01,2025-03-01|esteban ribovics|nasrat haqparast,Esteban Ribovics,Nasrat Haqparast,0,0.7222222222222222,0.5424288,-0.17979343069924247,-260,xgboost_model,0,0
+2025-03-01,2025-03-01|hyder amil|william gomis,Hyder Amil,William Gomis,1,0.36231884057971014,0.3851582,0.022839370413102966,176,xgboost_model,0,0
+2025-03-01,2025-03-01|hyder amil|william gomis,William Gomis,Hyder Amil,0,0.6774193548387096,0.5482816,-0.1291377448266552,-210,xgboost_model,0,0
+2025-03-01,2025-03-01|danny barlow|sam patterson,Sam Patterson,Danny Barlow,1,0.3333333333333333,0.51124734,0.17791400353113812,200,xgboost_model,0,0
+2025-03-01,2025-03-01|danny barlow|sam patterson,Danny Barlow,Sam Patterson,0,0.7101449275362319,0.6305341,-0.07961081508277124,-245,xgboost_model,0,0
+2025-02-22,2025-02-22|henry cejudo|song yadong,Song Yadong,Henry Cejudo,1,0.7183098591549296,0.613973,-0.10433683764766644,-255,xgboost_model,0,0
+2025-02-22,2025-02-22|henry cejudo|song yadong,Henry Cejudo,Song Yadong,0,0.3225806451612903,0.3076832,-0.014897445517201569,210,xgboost_model,0,0
+2025-02-22,2025-02-22|anthony hernandez|brendan allen,Anthony Hernandez,Brendan Allen,1,0.7701149425287356,0.72854996,-0.041564985253344955,-335,xgboost_model,0,0
+2025-02-22,2025-02-22|anthony hernandez|brendan allen,Brendan Allen,Anthony Hernandez,0,0.2702702702702703,0.24338667,-0.026883599323195395,270,xgboost_model,0,0
+2025-02-22,2025-02-22|jean matsumoto|rob font,Rob Font,Jean Matsumoto,1,0.373134328358209,0.6309901,0.25785575962778345,168,xgboost_model,0,0
+2025-02-22,2025-02-22|jean matsumoto|rob font,Jean Matsumoto,Rob Font,0,0.6666666666666666,0.4465655,-0.22010115782419837,-200,xgboost_model,0,0
+2025-02-22,2025-02-22|jean silva|melsik baghdasaryan,Jean Silva,Melsik Baghdasaryan,1,0.8305084745762712,0.65622014,-0.17428833650330366,-490,xgboost_model,0,0
+2025-02-22,2025-02-22|jean silva|melsik baghdasaryan,Melsik Baghdasaryan,Jean Silva,0,0.20833333333333334,0.27597693,0.06764359275499979,380,xgboost_model,0,0
+2025-02-22,2025-02-22|alonzo menifield|julius walker,Alonzo Menifield,Julius Walker,1,0.7014925373134329,0.19182354,-0.5096689951953604,-235,xgboost_model,0,0
+2025-02-22,2025-02-22|alonzo menifield|julius walker,Julius Walker,Alonzo Menifield,0,0.3401360544217687,0.8135945,0.4734584656702418,194,xgboost_model,0,0
+2025-02-22,2025-02-22|ibo aslan|ion cutelaba,Ion Cutelaba,Ibo Aslan,1,0.35714285714285715,0.41261664,0.05547378318650381,180,xgboost_model,0,0
+2025-02-22,2025-02-22|ibo aslan|ion cutelaba,Ibo Aslan,Ion Cutelaba,0,0.6825396825396826,0.69950306,0.016963381615896056,-215,xgboost_model,0,0
+2025-02-22,2025-02-22|andre fili|melquizael costa,Melquizael Costa,Andre Fili,1,0.5867768595041323,0.7398635,0.15308665539607524,-142,xgboost_model,0,0
+2025-02-22,2025-02-22|andre fili|melquizael costa,Andre Fili,Melquizael Costa,0,0.45454545454545453,0.34999788,-0.10454757647080853,120,xgboost_model,0,0
+2025-02-22,2025-02-22|mansur abdul malik|nick klein,Mansur Abdul-Malik,Nick Klein,1,0.9310344827586207,0.91107905,-0.019955433648208065,-1350,xgboost_model,0,0
+2025-02-22,2025-02-22|mansur abdul malik|nick klein,Nick Klein,Mansur Abdul-Malik,0,0.10989010989010989,0.11357493,0.0036848196452790583,810,xgboost_model,0,0
+2025-02-22,2025-02-22|javid basharat|ricky simon,Ricky Simon,Javid Basharat,1,0.31746031746031744,0.40470245,0.0872421373450567,215,xgboost_model,0,0
+2025-02-22,2025-02-22|javid basharat|ricky simon,Javid Basharat,Ricky Simon,0,0.7222222222222222,0.5990184,-0.12320382727517021,-260,xgboost_model,0,0
+2025-02-22,2025-02-22|austin vanderford|nikolay veretennikov,Austin Vanderford,Nikolay Veretennikov,1,0.49504950495049505,0.8222479,0.32719841747000666,102,xgboost_model,0,0
+2025-02-22,2025-02-22|austin vanderford|nikolay veretennikov,Nikolay Veretennikov,Austin Vanderford,0,0.5454545454545454,0.15415704,-0.3912975029511885,-120,xgboost_model,0,0
+2025-02-15,2025-02-15|gregory rodrigues|jared cannonier,Jared Cannonier,Gregory Rodrigues,1,0.3401360544217687,0.28794864,-0.05218741622100881,194,xgboost_model,0,0
+2025-02-15,2025-02-15|gregory rodrigues|jared cannonier,Gregory Rodrigues,Jared Cannonier,0,0.7058823529411765,0.8196303,0.11374797189936914,-240,xgboost_model,0,0
+2025-02-15,2025-02-15|calvin kattar|youssef zalal,Youssef Zalal,Calvin Kattar,1,0.8181818181818182,0.7699973,-0.04818451946431945,-450,xgboost_model,0,0
+2025-02-15,2025-02-15|calvin kattar|youssef zalal,Calvin Kattar,Youssef Zalal,0,0.2222222222222222,0.29497582,0.07275359498129952,350,xgboost_model,0,0
+2025-02-15,2025-02-15|dylan budka|edmen shahbazyan,Edmen Shahbazyan,Dylan Budka,1,0.8780487804878049,0.8721193,-0.00592947296979951,-720,xgboost_model,0,0
+2025-02-15,2025-02-15|dylan budka|edmen shahbazyan,Dylan Budka,Edmen Shahbazyan,0,0.16129032258064516,0.13826501,-0.023025308885881973,520,xgboost_model,0,0
+2025-02-15,2025-02-15|ismael bonfim|nazim sadykhov,Nazim Sadykhov,Ismael Bonfim,1,0.3333333333333333,0.30197787,-0.03135546048482257,200,xgboost_model,0,0
+2025-02-15,2025-02-15|ismael bonfim|nazim sadykhov,Ismael Bonfim,Nazim Sadykhov,0,0.7101449275362319,0.6609132,-0.04923169854758447,-245,xgboost_model,0,0
+2025-02-15,2025-02-15|andre petroski|rodolfo vieira,Andre Petroski,Rodolfo Vieira,1,0.3125,0.52180284,0.2093028426170349,220,xgboost_model,0,0
+2025-02-15,2025-02-15|andre petroski|rodolfo vieira,Rodolfo Vieira,Andre Petroski,0,0.7297297297297297,0.4651666,-0.2645631311713038,-270,xgboost_model,0,0
+2025-02-08,2025-02-08|dricus du plessis|sean strickland,Dricus Du Plessis,Sean Strickland,1,0.6875,0.5699353,-0.11756467819213867,-220,xgboost_model,0,0
+2025-02-08,2025-02-08|dricus du plessis|sean strickland,Sean Strickland,Dricus Du Plessis,0,0.352112676056338,0.33608368,-0.016028995665026358,184,xgboost_model,0,0
+2025-02-08,2025-02-08|tatiana suarez|zhang weili,Zhang Weili,Tatiana Suarez,1,0.44642857142857145,0.29693723,-0.14949134417942594,124,xgboost_model,0,0
+2025-02-08,2025-02-08|tatiana suarez|zhang weili,Tatiana Suarez,Zhang Weili,0,0.5934959349593496,0.46261638,-0.13087955092996117,-146,xgboost_model,0,0
+2025-02-08,2025-02-08|justin tafa|tallison teixeira,Tallison Teixeira,Justin Tafa,1,0.609375,0.41968852,-0.18968647718429565,-156,xgboost_model,0,0
+2025-02-08,2025-02-08|justin tafa|tallison teixeira,Justin Tafa,Tallison Teixeira,0,0.43103448275862066,0.5984208,0.16738631601991327,132,xgboost_model,0,0
+2025-02-08,2025-02-08|francisco prado|jake matthews,Jake Matthews,Francisco Prado,1,0.7101449275362319,0.62431705,-0.08582787755606835,-245,xgboost_model,0,0
+2025-02-08,2025-02-08|francisco prado|jake matthews,Francisco Prado,Jake Matthews,0,0.3333333333333333,0.37124482,0.03791148463884991,200,xgboost_model,0,0
+2025-02-08,2025-02-08|gabriel santos|jack jenkins,Gabriel Santos,Jack Jenkins,1,0.6923076923076923,0.3941368,-0.2981709058468158,-225,xgboost_model,0,0
+2025-02-08,2025-02-08|gabriel santos|jack jenkins,Jack Jenkins,Gabriel Santos,0,0.3472222222222222,0.51408565,0.16686342822180855,188,xgboost_model,0,0
+2025-02-08,2025-02-08|tom nolan|viacheslav borshchev,Tom Nolan,Viacheslav Borshchev,1,0.504950495049505,0.6055742,0.10062369556710271,-102,xgboost_model,0,0
+2025-02-08,2025-02-08|tom nolan|viacheslav borshchev,Viacheslav Borshchev,Tom Nolan,0,0.5370370370370371,0.32144156,-0.21559547605337925,-116,xgboost_model,0,0
+2025-02-08,2025-02-08|aleksandre topuria|colby thicknesse,Aleksandre Topuria,Colby Thicknesse,1,0.7674418604651163,0.47414127,-0.29330059054285984,-330,xgboost_model,0,0
+2025-02-08,2025-02-08|aleksandre topuria|colby thicknesse,Colby Thicknesse,Aleksandre Topuria,0,0.273972602739726,0.5353798,0.2614072242828265,265,xgboost_model,0,0
+2025-02-08,2025-02-08|kody steele|rongzhu,Rongzhu,Kody Steele,1,0.2631578947368421,0.94397026,0.6808123682674609,280,xgboost_model,0,0
+2025-02-08,2025-02-08|kody steele|rongzhu,Kody Steele,Rongzhu,0,0.7777777777777778,0.07454864,-0.7032291384206878,-350,xgboost_model,0,0
+2025-02-08,2025-02-08|jonathan micallef|kevin jousset,Jonathan Micallef,Kevin Jousset,1,0.35714285714285715,0.61302525,0.25588239090783255,180,xgboost_model,0,0
+2025-02-08,2025-02-08|jonathan micallef|kevin jousset,Kevin Jousset,Jonathan Micallef,0,0.6825396825396826,0.3704737,-0.31206596985695856,-215,xgboost_model,0,0
+2025-02-01,2025-02-01|israel adesanya|nassourdine imavov,Nassourdine Imavov,Israel Adesanya,1,0.42735042735042733,0.7164159,0.28906545476016837,134,xgboost_model,0,0
+2025-02-01,2025-02-01|israel adesanya|nassourdine imavov,Israel Adesanya,Nassourdine Imavov,0,0.6124031007751938,0.35110414,-0.26129896049351653,-158,xgboost_model,0,0
+2025-02-01,2025-02-01|michael page|shara magomedov,Michael Page,Shara Magomedov,1,0.3787878787878788,0.25225937,-0.12652850512302283,164,xgboost_model,0,0
+2025-02-01,2025-02-01|michael page|shara magomedov,Shara Magomedov,Michael Page,0,0.6621621621621622,0.7011976,0.0390354620443808,-196,xgboost_model,0,0
+2025-02-01,2025-02-01|jairzinho rozenstruik|sergei pavlovich,Sergei Pavlovich,Jairzinho Rozenstruik,1,0.7619047619047619,0.5344445,-0.2274602509680248,-320,xgboost_model,0,0
+2025-02-01,2025-02-01|jairzinho rozenstruik|sergei pavlovich,Jairzinho Rozenstruik,Sergei Pavlovich,0,0.2777777777777778,0.4386826,0.16090480817688835,260,xgboost_model,0,0
+2025-02-01,2025-02-01|said nurmagomedov|vinicius oliveira,Vinicius Oliveira,Said Nurmagomedov,1,0.3472222222222222,0.56939256,0.2221703396903144,188,xgboost_model,0,0
+2025-02-01,2025-02-01|said nurmagomedov|vinicius oliveira,Said Nurmagomedov,Vinicius Oliveira,0,0.6923076923076923,0.19225629,-0.5000514055673893,-225,xgboost_model,0,0
+2025-02-01,2025-02-01|fares ziam|mike davis,Fares Ziam,Mike Davis,1,0.45045045045045046,0.62853116,0.178080707519978,122,xgboost_model,0,0
+2025-02-01,2025-02-01|fares ziam|mike davis,Mike Davis,Fares Ziam,0,0.5901639344262295,0.32900414,-0.2611597957181149,-144,xgboost_model,0,0
+2025-02-01,2025-02-01|kaan ofli|muhammad naimov,Muhammad Naimov,Kaan Ofli,1,0.7959183673469388,0.8718446,0.07592622236329682,-390,xgboost_model,0,0
+2025-02-01,2025-02-01|kaan ofli|muhammad naimov,Kaan Ofli,Muhammad Naimov,0,0.24390243902439024,0.1228388,-0.12106363638872053,310,xgboost_model,0,0
+2025-02-01,2025-02-01|shamil gaziev|thomas petersen,Shamil Gaziev,Thomas Petersen,1,0.7727272727272727,0.27129138,-0.5014358975670554,-340,xgboost_model,0,0
+2025-02-01,2025-02-01|shamil gaziev|thomas petersen,Thomas Petersen,Shamil Gaziev,0,0.26666666666666666,0.7060774,0.43941073020299276,275,xgboost_model,0,0
+2025-02-01,2025-02-01|damir hadzovic|terrance mckinney,Terrance McKinney,Damir Hadzovic,1,0.855072463768116,0.74406725,-0.11100521208583447,-590,xgboost_model,0,0
+2025-02-01,2025-02-01|damir hadzovic|terrance mckinney,Damir Hadzovic,Terrance McKinney,0,0.18867924528301888,0.24978043,0.06110118610678977,430,xgboost_model,0,0
+2025-02-01,2025-02-01|jasmine jasudavicius|mayra bueno silva,Jasmine Jasudavicius,Mayra Bueno Silva,1,0.7142857142857143,0.826289,0.11200328384126934,-250,xgboost_model,0,0
+2025-02-01,2025-02-01|jasmine jasudavicius|mayra bueno silva,Mayra Bueno Silva,Jasmine Jasudavicius,0,0.32786885245901637,0.14810303,-0.17976582392317347,205,xgboost_model,0,0
+2025-02-01,2025-02-01|bogdan grad|lucas alexander,Bogdan Grad,Lucas Alexander,1,0.4807692307692308,0.26137087,-0.21939836327846235,108,xgboost_model,0,0
+2025-02-01,2025-02-01|bogdan grad|lucas alexander,Lucas Alexander,Bogdan Grad,0,0.5575221238938053,0.7580349,0.2005127610358517,-126,xgboost_model,0,0
+2025-02-01,2025-02-01|hamdy abdelwahab|jamal pogues,Hamdy Abdelwahab,Jamal Pogues,1,0.5967741935483871,0.8128725,0.21609833548145907,-148,xgboost_model,0,0
+2025-02-01,2025-02-01|hamdy abdelwahab|jamal pogues,Jamal Pogues,Hamdy Abdelwahab,0,0.4424778761061947,0.19001149,-0.25246638969510005,126,xgboost_model,0,0
+2025-01-18,2025-01-18|islam makhachev|renato moicano,Islam Makhachev,Renato Moicano,1,0.9230769230769231,0.8637752,-0.059301729385669466,-1200,xgboost_model,0,0
+2025-01-18,2025-01-18|islam makhachev|renato moicano,Renato Moicano,Islam Makhachev,0,0.11764705882352941,0.16855407,0.050907008788164926,750,xgboost_model,0,0
+2025-01-18,2025-01-18|merab dvalishvili|umar nurmagomedov,Merab Dvalishvili,Umar Nurmagomedov,1,0.3125,0.2975135,-0.014986485242843628,220,xgboost_model,0,0
+2025-01-18,2025-01-18|merab dvalishvili|umar nurmagomedov,Umar Nurmagomedov,Merab Dvalishvili,0,0.7297297297297297,0.4516179,-0.27811183317287547,-270,xgboost_model,0,0
+2025-01-18,2025-01-18|jamahal hill|jiri prochazka,Jiri Prochazka,Jamahal Hill,1,0.49504950495049505,0.7193344,0.22428491859152766,102,xgboost_model,0,0
+2025-01-18,2025-01-18|jamahal hill|jiri prochazka,Jamahal Hill,Jiri Prochazka,0,0.5454545454545454,0.29698086,-0.24847368760542432,-120,xgboost_model,0,0
+2025-01-18,2025-01-18|jailton almeida|serghei spivac,Jailton Almeida,Serghei Spivac,1,0.8181818181818182,0.6730892,-0.14509261196309875,-450,xgboost_model,0,0
+2025-01-18,2025-01-18|jailton almeida|serghei spivac,Serghei Spivac,Jailton Almeida,0,0.2222222222222222,0.31315687,0.09093465076552498,350,xgboost_model,0,0
+2025-01-18,2025-01-18|kevin holland|reinier de ridder,Reinier de Ridder,Kevin Holland,1,0.576271186440678,0.7851449,0.2088737386768147,-136,xgboost_model,0,0
+2025-01-18,2025-01-18|kevin holland|reinier de ridder,Kevin Holland,Reinier de Ridder,0,0.46296296296296297,0.34156418,-0.12139878449616609,116,xgboost_model,0,0
+2025-01-18,2025-01-18|payton talbott|raoni barcelos,Raoni Barcelos,Payton Talbott,1,0.11764705882352941,0.36112314,0.24347608580308802,750,xgboost_model,0,0
+2025-01-18,2025-01-18|payton talbott|raoni barcelos,Payton Talbott,Raoni Barcelos,0,0.9230769230769231,0.610726,-0.3123509241984441,-1200,xgboost_model,0,0
+2025-01-18,2025-01-18|billy elekana|bogdan guskov,Bogdan Guskov,Billy Elekana,1,0.8076923076923077,0.55739677,-0.2502955381686871,-420,xgboost_model,0,0
+2025-01-18,2025-01-18|billy elekana|bogdan guskov,Billy Elekana,Bogdan Guskov,0,0.23255813953488372,0.45909512,0.22653698089510896,330,xgboost_model,0,0
+2025-01-18,2025-01-18|diego ferreira|grant dawson,Grant Dawson,Diego Ferreira,1,0.7101449275362319,0.734602,0.02445704695107276,-245,xgboost_model,0,0
+2025-01-18,2025-01-18|diego ferreira|grant dawson,Diego Ferreira,Grant Dawson,0,0.3333333333333333,0.22927156,-0.10406177242596942,200,xgboost_model,0,0
+2025-01-18,2025-01-18|ailin perez|karol rosa,Ailin Perez,Karol Rosa,1,0.32786885245901637,0.70384526,0.37597641006844945,205,xgboost_model,0,0
+2025-01-18,2025-01-18|ailin perez|karol rosa,Karol Rosa,Ailin Perez,0,0.7101449275362319,0.363433,-0.3467119241106338,-245,xgboost_model,0,0
+2025-01-18,2025-01-18|muin gafurov|rinya nakamura,Muin Gafurov,Rinya Nakamura,1,0.15873015873015872,0.20973189,0.051001733021130646,530,xgboost_model,0,0
+2025-01-18,2025-01-18|muin gafurov|rinya nakamura,Rinya Nakamura,Muin Gafurov,0,0.8823529411764706,0.8250914,-0.05726151957231407,-750,xgboost_model,0,0
+2025-01-18,2025-01-18|benardo sopaj|ricky turcios,Benardo Sopaj,Ricky Turcios,1,0.7468354430379747,0.69012415,-0.05671128894709332,-295,xgboost_model,0,0
+2025-01-18,2025-01-18|benardo sopaj|ricky turcios,Ricky Turcios,Benardo Sopaj,0,0.29411764705882354,0.31540284,0.021285188548705147,240,xgboost_model,0,0
+2025-01-18,2025-01-18|clayton carpenter|tagir ulanbekov,Tagir Ulanbekov,Clayton Carpenter,1,0.7959183673469388,0.5509543,-0.2449640850631558,-390,xgboost_model,0,0
+2025-01-18,2025-01-18|clayton carpenter|tagir ulanbekov,Clayton Carpenter,Tagir Ulanbekov,0,0.24390243902439024,0.39183283,0.14793038949733828,310,xgboost_model,0,0
+2025-01-11,2025-01-11|amanda ribas|mackenzie dern,Mackenzie Dern,Amanda Ribas,1,0.3816793893129771,0.3970558,0.015376415416484546,162,xgboost_model,0,0
+2025-01-11,2025-01-11|amanda ribas|mackenzie dern,Amanda Ribas,Mackenzie Dern,0,0.6598639455782312,0.6619077,0.00204372730384883,-194,xgboost_model,0,0
+2025-01-11,2025-01-11|carlston harris|santiago ponzinibbio,Santiago Ponzinibbio,Carlston Harris,1,0.6062992125984252,0.6742488,0.06794960198439948,-154,xgboost_model,0,0
+2025-01-11,2025-01-11|carlston harris|santiago ponzinibbio,Carlston Harris,Santiago Ponzinibbio,0,0.43478260869565216,0.45208734,0.017304734043453063,130,xgboost_model,0,0
+2025-01-11,2025-01-11|abdul razak alhassan|cesar almeida,Cesar Almeida,Abdul Razak Alhassan,1,0.7222222222222222,0.64974356,-0.07247866524590385,-260,xgboost_model,0,0
+2025-01-11,2025-01-11|abdul razak alhassan|cesar almeida,Abdul Razak Alhassan,Cesar Almeida,0,0.31746031746031744,0.3712435,0.053783189209680726,215,xgboost_model,0,0
+2025-01-11,2025-01-11|chris curtis|roman kopylov,Roman Kopylov,Chris Curtis,1,0.7058823529411765,0.61813253,-0.0877498212982627,-240,xgboost_model,0,0
+2025-01-11,2025-01-11|chris curtis|roman kopylov,Chris Curtis,Roman Kopylov,0,0.33557046979865773,0.4012104,0.0656399276832606,198,xgboost_model,0,0
+2025-01-11,2025-01-11|austin bashi|christian rodriguez,Christian Rodriguez,Austin Bashi,1,0.31746031746031744,0.8480471,0.5305867601954748,215,xgboost_model,0,0
+2025-01-11,2025-01-11|austin bashi|christian rodriguez,Austin Bashi,Christian Rodriguez,0,0.7222222222222222,0.1298109,-0.5924113227261437,-260,xgboost_model,0,0
+2025-01-11,2025-01-11|punahele soriano|uros medic,Punahele Soriano,Uros Medic,1,0.33557046979865773,0.43490872,0.09933824807205455,198,xgboost_model,0,0
+2025-01-11,2025-01-11|punahele soriano|uros medic,Uros Medic,Punahele Soriano,0,0.7058823529411765,0.5249298,-0.18095253144993506,-240,xgboost_model,0,0

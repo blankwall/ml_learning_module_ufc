@@ -54,6 +54,14 @@ def main() -> None:
         default="xgboost_model",
         help="Model name to use (default: xgboost_model, e.g., xgboost_model_with_2025)",
     )
+    parser.add_argument(
+        "--symmetric",
+        action="store_true",
+        help=(
+            "Compute probabilities in both fighter orders and use a symmetric probability for EV/edges. "
+            "This reduces order sensitivity (adds model_p_*_raw_pct columns in the output CSV)."
+        ),
+    )
 
     args = parser.parse_args()
 
@@ -65,7 +73,7 @@ def main() -> None:
     df_in = load_input(in_path)
 
     logger.info(f"Adding model probabilities and edges using '{args.model_name}'...")
-    df_out = add_model_predictions(df_in, model_name=args.model_name)
+    df_out = add_model_predictions(df_in, model_name=args.model_name, symmetric=bool(args.symmetric))
 
     # Save full details to CSV for Excel / further analysis
     df_out.to_csv(out_path, index=False)

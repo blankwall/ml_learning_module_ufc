@@ -1,0 +1,12 @@
+{
+  "timestamp": "20251216_093142",
+  "model_name": "xgboost_model",
+  "min_year": 2025,
+  "n_eval_rows": 302,
+  "n_odds_rows": 351,
+  "brier_score": 0.2292538739438524,
+  "log_loss": 0.6505050770293642,
+  "auc": 0.6906276040524538,
+  "n_bets_edge_gt_0": 124,
+  "roi_flat_edge_gt_0": 0.0391116484266015
+}

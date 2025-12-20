@@ -5,7 +5,7 @@ Rolling statistics, momentum, decline, activity, and time-decayed metrics
 
 import pandas as pd
 import numpy as np
-from typing import Dict, Optional, List, Callable
+from typing import Dict, Optional, List, Callable, Union
 from datetime import datetime
 
 from .utils import (
@@ -80,7 +80,8 @@ def extract_rolling_stats(
 
 
 def extract_momentum_features(
-    fight_history: pd.DataFrame
+    fight_history: pd.DataFrame,
+    as_of_date: Optional[Union[datetime, str]] = None,
 ) -> Dict[str, float]:
     """
     Extract momentum, recent form, and activity timing features.
@@ -127,8 +128,13 @@ def extract_momentum_features(
     try:
         if 'event_date_parsed' in fight_history.columns:
             last_date = fight_history['event_date_parsed'].iloc[0]
-            now = datetime.now()
-            days_since_last_fight = max(0.0, (now - last_date).days)
+            # Point-in-time safe reference: use as_of_date when provided (historical eval),
+            # otherwise use "now" (upcoming/live usage).
+            if as_of_date is not None:
+                ref = pd.to_datetime(as_of_date)
+            else:
+                ref = datetime.now()
+            days_since_last_fight = max(0.0, (ref - last_date).days)
             
             if len(fight_history) > 1:
                 prev_date = fight_history['event_date_parsed'].iloc[1]
@@ -152,7 +158,8 @@ def extract_momentum_features(
 
 
 def extract_decline_features(
-    fight_history: pd.DataFrame
+    fight_history: pd.DataFrame,
+    as_of_date: Optional[Union[datetime, str]] = None,
 ) -> Dict[str, float]:
     """
     Extract longer-horizon decline / slump patterns.
@@ -191,7 +198,7 @@ def extract_decline_features(
         last_win_idx = int(win_rows.index[0])
         last_win_date = df.loc[last_win_idx, "event_date_parsed"]
         
-        ref_date = datetime.now()
+        ref_date = pd.to_datetime(as_of_date) if as_of_date is not None else datetime.now()
         fights_since_last_win = last_win_idx
         years_since_last_win = max(0.0, (ref_date - last_win_date).days / 365.25)
         has_ever_won = 1.0
@@ -228,8 +235,8 @@ def extract_decline_features(
     recent_vs_career_win_rate = recent_win_rate_last_5 - career_win_rate
     
     # Time-windowed (3-year) recent performance
-    now = datetime.now()
-    three_years_ago = now - pd.DateOffset(years=3)
+    ref_date = pd.to_datetime(as_of_date) if as_of_date is not None else datetime.now()
+    three_years_ago = ref_date - pd.DateOffset(years=3)
     
     recent_window = df[df["event_date_parsed"] >= three_years_ago] if "event_date_parsed" in df.columns else pd.DataFrame()
     
@@ -331,7 +338,8 @@ def extract_recent_damage_features(
 
 def extract_time_decayed_features(
     fight_history: pd.DataFrame,
-    lambda_decay: float = 0.3
+    lambda_decay: float = 0.3,
+    as_of_date: Optional[Union[datetime, str]] = None,
 ) -> Dict[str, float]:
     """
     Compute time-decayed performance metrics where recent fights are weighted more heavily.
@@ -362,7 +370,7 @@ def extract_time_decayed_features(
             "time_decayed_ko_rate": 0.0,
         }
     
-    now = datetime.now()
+    now = pd.to_datetime(as_of_date) if as_of_date is not None else datetime.now()
     method_series = fight_history["method"].astype(str)
     finish_mask = method_series.str.contains("KO|TKO|SUB|Submission", case=False, na=False)
     ko_mask = method_series.str.contains("KO|TKO", case=False, na=False)
