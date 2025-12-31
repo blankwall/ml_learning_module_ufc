@@ -43,7 +43,6 @@ wheels/
 data/raw/
 data/processed/*.csv
 data/predictions/
-*.db
 *.sqlite
 *.sqlite3
 
