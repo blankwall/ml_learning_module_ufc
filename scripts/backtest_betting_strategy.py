@@ -138,12 +138,15 @@ def backtest_one_bet_per_fight(
     strategy: str = "best_ev",
     min_ev: float = 0.0,
     min_p: float = 0.0,
-    symmetric: bool = False,
+    min_edge: float = 0.0,
+    symmetric: bool = True,  # Default True: handle order-sensitive models by averaging both perspectives
     sizing: str = "flat",
     flat_stake: float = 1.0,
     bankroll: float = 100.0,
     kelly_multiplier: float = 0.25,
     max_bet_fraction: float = 0.02,
+    verbose: bool = False,
+    show_bets: bool = False,
 ) -> BacktestResult:
     """
     Build one decision per fight_key:
@@ -220,6 +223,14 @@ def backtest_one_bet_per_fight(
     if min_p > 0:
         bets = bets[bets[prob_col] >= min_p].copy()
 
+    # Optional edge filter (model prob - market prob)
+    try:
+        min_edge = float(min_edge)
+    except (TypeError, ValueError):
+        min_edge = 0.0
+    if min_edge > 0:
+        bets = bets[bets["edge_novig"] >= min_edge].copy()
+
     # Strategy-specific filters
     if strategy == "best_ev":
         bets = bets[bets["ev_per_unit"] > float(min_ev)].copy()
@@ -275,6 +286,279 @@ def backtest_one_bet_per_fight(
     roi = safe_div(profit, staked)
     win_rate = safe_div((bets["profit"] > 0).sum(), len(bets))
 
+    # Verbose diagnostics
+    if verbose:
+        print("\n" + "=" * 80)
+        print("VERBOSE DIAGNOSTICS")
+        print("=" * 80)
+        
+        # Check for order sensitivity (model is order-sensitive if p(A|A,B) + p(B|B,A) != 1.0)
+        if not symmetric:
+            order_sensitivity_check = df.groupby("fight_key").apply(
+                lambda g: abs(g["model_prob_f1"].sum() - 1.0) if len(g) == 2 else 0.0
+            )
+            avg_order_sensitivity = order_sensitivity_check.mean()
+            max_order_sensitivity = order_sensitivity_check.max()
+            
+            print(f"\nOrder sensitivity check (without --symmetric):")
+            print(f"  Average deviation from symmetry: {avg_order_sensitivity:.4f}")
+            print(f"  Max deviation:                  {max_order_sensitivity:.4f}")
+            if avg_order_sensitivity > 0.01:
+                print(f"  ⚠️  Model appears order-sensitive! Consider using --symmetric flag.")
+                print(f"     (When fighters are flipped, probabilities don't sum to 1.0)")
+            else:
+                print(f"  ✓ Model appears order-invariant (probabilities sum to ~1.0)")
+        
+        # Check if winner and best_ev would pick the same sides (diagnostic)
+        if strategy in {"best_ev", "winner"}:
+            # Compare what winner strategy would pick vs best_ev
+            winner_picks = (
+                df.sort_values(["fight_key", prob_col], ascending=[True, False])
+                .groupby("fight_key", as_index=False)
+                .head(1)
+                .copy()
+            )
+            best_ev_picks = (
+                df.sort_values(["fight_key", "ev_per_unit"], ascending=[True, False])
+                .groupby("fight_key", as_index=False)
+                .head(1)
+                .copy()
+            )
+            
+            # Merge to compare
+            winner_picks = winner_picks[["fight_key", "f1_name_norm", prob_col, "ev_per_unit"]].rename(
+                columns={"f1_name_norm": "winner_side", prob_col: "winner_prob", "ev_per_unit": "winner_ev"}
+            )
+            best_ev_picks = best_ev_picks[["fight_key", "f1_name_norm", prob_col, "ev_per_unit"]].rename(
+                columns={"f1_name_norm": "best_ev_side", prob_col: "best_ev_prob", "ev_per_unit": "best_ev_ev"}
+            )
+            
+            comparison = winner_picks.merge(best_ev_picks, on="fight_key", how="inner")
+            same_side = (comparison["winner_side"] == comparison["best_ev_side"]).sum()
+            total_comparable = len(comparison)
+            
+            print(f"\nStrategy comparison diagnostic:")
+            print(f"  Fights where 'winner' and 'best_ev' pick same side: {same_side}/{total_comparable} ({same_side/total_comparable:.1%})")
+            if same_side < total_comparable:
+                diff_fights = comparison[comparison["winner_side"] != comparison["best_ev_side"]]
+                print(f"  Fights where they differ: {len(diff_fights)}")
+                if len(diff_fights) > 0:
+                    print(f"  Example differences:")
+                    for idx, row in diff_fights.head(3).iterrows():
+                        print(f"    {row['fight_key']}: winner picks {row['winner_side']} (prob={row['winner_prob']:.2f}, EV={row['winner_ev']:.3f})")
+                        print(f"                      best_ev picks {row['best_ev_side']} (prob={row['best_ev_prob']:.2f}, EV={row['best_ev_ev']:.3f})")
+        
+        # Track filtering stages
+        n_after_pick = len(best_rows)
+        n_after_min_p = len(best_rows[best_rows[prob_col] >= min_p]) if min_p > 0 else n_after_pick
+        n_after_min_edge = len(best_rows[(best_rows[prob_col] >= min_p) & (best_rows["edge_novig"] >= min_edge)]) if (min_p > 0 or min_edge > 0) else (len(best_rows[best_rows["edge_novig"] >= min_edge]) if min_edge > 0 else n_after_min_p)
+        n_after_strategy = len(bets)
+        
+        print(f"\nFiltering stages:")
+        print(f"  Total fights in eval:        {n_fights}")
+        print(f"  After picking best side:     {n_after_pick}")
+        if min_p > 0:
+            print(f"  After min_p={min_p:.2f} filter:     {n_after_min_p} ({n_after_pick - n_after_min_p} skipped)")
+        if min_edge > 0:
+            prev_count = n_after_min_p if min_p > 0 else n_after_pick
+            print(f"  After min_edge={min_edge:.3f} filter:  {n_after_min_edge} ({prev_count - n_after_min_edge} skipped)")
+        if strategy == "best_ev" and min_ev > 0:
+            prev_for_ev = n_after_min_edge if min_edge > 0 else (n_after_min_p if min_p > 0 else n_after_pick)
+            n_after_ev = len(best_rows[
+                (best_rows[prob_col] >= min_p if min_p > 0 else True) &
+                (best_rows["edge_novig"] >= min_edge if min_edge > 0 else True) &
+                (best_rows["ev_per_unit"] > min_ev)
+            ])
+            print(f"  After min_ev={min_ev:.3f} filter:     {n_after_ev} ({prev_for_ev - n_after_ev} skipped)")
+        elif strategy == "winner_underdog_only":
+            prev_for_underdog = n_after_min_edge if min_edge > 0 else (n_after_min_p if min_p > 0 else n_after_pick)
+            n_after_underdog = len(best_rows[
+                (best_rows[prob_col] >= min_p if min_p > 0 else True) &
+                (best_rows["edge_novig"] >= min_edge if min_edge > 0 else True) &
+                (best_rows["market_prob_f1_novig"] < 0.5)
+            ])
+            print(f"  After underdog filter:        {n_after_underdog} ({prev_for_underdog - n_after_underdog} skipped)")
+        print(f"  Final bets placed:            {n_after_strategy}")
+        
+        # Underdog analysis (all fights, not just bets)
+        all_fights = best_rows.copy()
+        all_fights["is_underdog"] = all_fights["market_prob_f1_novig"] < 0.5
+        all_fights["is_favorite"] = all_fights["market_prob_f1_novig"] >= 0.5
+        
+        total_underdogs = all_fights["is_underdog"].sum()
+        underdog_wins = all_fights[all_fights["is_underdog"]]["target"].sum()
+        underdog_win_rate = safe_div(underdog_wins, total_underdogs)
+        
+        total_favorites = all_fights["is_favorite"].sum()
+        favorite_wins = all_fights[all_fights["is_favorite"]]["target"].sum()
+        favorite_win_rate = safe_div(favorite_wins, total_favorites)
+        
+        print(f"\nMarket-based underdog/favorite breakdown (all fights):")
+        print(f"  Total underdog fights:        {total_underdogs}")
+        print(f"  Underdog wins:                {underdog_wins} ({underdog_win_rate:.1%})")
+        print(f"  Total favorite fights:        {total_favorites}")
+        print(f"  Favorite wins:                {favorite_wins} ({favorite_win_rate:.1%})")
+        
+        # Bet-level underdog/favorite breakdown
+        if len(bets) > 0:
+            bet_underdogs = bets["market_prob_f1_novig"] < 0.5
+            bet_favorites = bets["market_prob_f1_novig"] >= 0.5
+            
+            n_bet_underdogs = bet_underdogs.sum()
+            n_bet_favorites = bet_favorites.sum()
+            
+            if n_bet_underdogs > 0:
+                underdog_bet_wins = bets[bet_underdogs]["profit"] > 0
+                underdog_bet_win_rate = safe_div(underdog_bet_wins.sum(), n_bet_underdogs)
+                underdog_bet_profit = bets[bet_underdogs]["profit"].sum()
+                underdog_bet_roi = safe_div(underdog_bet_profit, bets[bet_underdogs]["stake"].sum())
+                print(f"\nBet-level breakdown:")
+                print(f"  Underdog bets:                {n_bet_underdogs}")
+                print(f"    Win rate:                   {underdog_bet_win_rate:.1%}")
+                print(f"    Profit:                     {underdog_bet_profit:.3f} units")
+                print(f"    ROI:                        {underdog_bet_roi:.1%}")
+            
+            if n_bet_favorites > 0:
+                favorite_bet_wins = bets[bet_favorites]["profit"] > 0
+                favorite_bet_win_rate = safe_div(favorite_bet_wins.sum(), n_bet_favorites)
+                favorite_bet_profit = bets[bet_favorites]["profit"].sum()
+                favorite_bet_roi = safe_div(favorite_bet_profit, bets[bet_favorites]["stake"].sum())
+                print(f"  Favorite bets:                {n_bet_favorites}")
+                print(f"    Win rate:                   {favorite_bet_win_rate:.1%}")
+                print(f"    Profit:                     {favorite_bet_profit:.3f} units")
+                print(f"    ROI:                        {favorite_bet_roi:.1%}")
+        
+        # Model probability distribution
+        if len(bets) > 0:
+            print(f"\nModel probability distribution (bets only):")
+            print(f"  Min:                          {bets[prob_col].min():.3f}")
+            print(f"  25th percentile:              {bets[prob_col].quantile(0.25):.3f}")
+            print(f"  Median:                       {bets[prob_col].median():.3f}")
+            print(f"  75th percentile:              {bets[prob_col].quantile(0.75):.3f}")
+            print(f"  Max:                          {bets[prob_col].max():.3f}")
+            print(f"  Mean:                         {bets[prob_col].mean():.3f}")
+        
+        # Win rate by confidence bins
+        if len(bets) > 0:
+            print(f"\nWin rate by model confidence bins:")
+            bins = [0.0, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 1.0]
+            bets["prob_bin"] = pd.cut(bets[prob_col], bins=bins, include_lowest=True)
+            for bin_name, group in bets.groupby("prob_bin", observed=True):
+                n = len(group)
+                wins = (group["profit"] > 0).sum()
+                wr = safe_div(wins, n)
+                if n > 0:
+                    print(f"  {bin_name}: {n:3d} bets, {wins:3d} wins ({wr:.1%})")
+        
+        # Edge distribution
+        if len(bets) > 0:
+            print(f"\nEdge distribution (model prob - market prob, no-vig):")
+            print(f"  Min:                          {bets['edge_novig'].min():.4f}")
+            print(f"  25th percentile:              {bets['edge_novig'].quantile(0.25):.4f}")
+            print(f"  Median:                       {bets['edge_novig'].median():.4f}")
+            print(f"  75th percentile:              {bets['edge_novig'].quantile(0.75):.4f}")
+            print(f"  Max:                          {bets['edge_novig'].max():.4f}")
+            print(f"  Mean:                         {bets['edge_novig'].mean():.4f}")
+        
+        # EV distribution
+        if len(bets) > 0:
+            print(f"\nEV distribution (expected profit per unit):")
+            print(f"  Min:                          {bets['ev_per_unit'].min():.4f}")
+            print(f"  25th percentile:              {bets['ev_per_unit'].quantile(0.25):.4f}")
+            print(f"  Median:                       {bets['ev_per_unit'].median():.4f}")
+            print(f"  75th percentile:              {bets['ev_per_unit'].quantile(0.75):.4f}")
+            print(f"  Max:                          {bets['ev_per_unit'].max():.4f}")
+            print(f"  Mean:                         {bets['ev_per_unit'].mean():.4f}")
+        
+        print("=" * 80)
+
+    # Show individual bets for historical validation
+    if show_bets and len(bets) > 0:
+        print("\n" + "=" * 80)
+        print("INDIVIDUAL BETS (for historical validation)")
+        print("=" * 80)
+        
+        # Prepare display columns (use available columns from eval_data)
+        display_cols = []
+        if "event_day" in bets.columns:
+            display_cols.append("event_day")
+        elif "event_date" in bets.columns:
+            display_cols.append("event_date")
+        
+        if "f1_name" in bets.columns:
+            display_cols.append("f1_name")
+        if "f2_name" in bets.columns:
+            display_cols.append("f2_name")
+        
+        # Add bet details
+        bets_display = bets.copy()
+        bets_display["bet_side_name"] = bets_display.apply(
+            lambda r: r.get("f1_name", "Fighter 1") if pd.notna(r.get("f1_name")) else "Fighter 1",
+            axis=1
+        )
+        bets_display["opponent_name"] = bets_display.apply(
+            lambda r: r.get("f2_name", "Fighter 2") if pd.notna(r.get("f2_name")) else "Fighter 2",
+            axis=1
+        )
+        bets_display["bet_odds"] = bets_display["odds_for_f1"]
+        bets_display["model_prob"] = bets_display[prob_col]
+        bets_display["market_prob"] = bets_display["market_prob_f1_novig"]
+        bets_display["edge"] = bets_display["edge_novig"]
+        bets_display["ev"] = bets_display["ev_per_unit"]
+        bets_display["won"] = (bets_display["profit"] > 0).astype(int)
+        bets_display["outcome"] = bets_display["won"].map({1: "WIN", 0: "LOSS"})
+        bets_display["profit_display"] = bets_display["profit"]
+        
+        # Sort by date (if available) then by profit
+        sort_cols = []
+        if "event_day" in bets_display.columns:
+            sort_cols.append("event_day")
+        elif "event_date" in bets_display.columns:
+            sort_cols.append("event_date")
+        sort_cols.append("profit")
+        
+        bets_display = bets_display.sort_values(sort_cols, ascending=[True, False])
+        
+        # Build display dataframe
+        display_df = pd.DataFrame({
+            "Date": bets_display.get("event_day", bets_display.get("event_date", "N/A")),
+            "Bet On": bets_display["bet_side_name"],
+            "vs": bets_display["opponent_name"],
+            "Odds": bets_display["bet_odds"].astype(int),
+            "Model Prob": bets_display["model_prob"].apply(lambda x: f"{x:.1%}"),
+            "Market Prob": bets_display["market_prob"].apply(lambda x: f"{x:.1%}"),
+            "Edge": bets_display["edge"].apply(lambda x: f"{x:+.3f}"),
+            "EV": bets_display["ev"].apply(lambda x: f"{x:+.4f}"),
+            "Outcome": bets_display["outcome"],
+            "Profit": bets_display["profit_display"].apply(lambda x: f"{x:+.3f}u"),
+        })
+        
+        print(f"\nTotal bets: {len(display_df)}")
+        print(f"Wins: {(bets_display['won'] == 1).sum()}, Losses: {(bets_display['won'] == 0).sum()}")
+        print("\n" + display_df.to_string(index=False))
+        
+        # Summary by outcome
+        print("\n" + "-" * 80)
+        print("Summary by outcome:")
+        wins_df = bets_display[bets_display["won"] == 1]
+        losses_df = bets_display[bets_display["won"] == 0]
+        
+        if len(wins_df) > 0:
+            print(f"\nWINS ({len(wins_df)} bets):")
+            print(f"  Total profit: {wins_df['profit'].sum():.3f} units")
+            print(f"  Avg profit per win: {wins_df['profit'].mean():.3f} units")
+            print(f"  Avg odds: {wins_df['bet_odds'].mean():.1f}")
+            print(f"  Avg model prob: {wins_df['model_prob'].mean():.3f}")
+        
+        if len(losses_df) > 0:
+            print(f"\nLOSSES ({len(losses_df)} bets):")
+            print(f"  Total loss: {losses_df['profit'].sum():.3f} units")
+            print(f"  Avg loss per bet: {losses_df['profit'].mean():.3f} units")
+            print(f"  Avg odds: {losses_df['bet_odds'].mean():.1f}")
+            print(f"  Avg model prob: {losses_df['model_prob'].mean():.3f}")
+        
+        print("=" * 80)
+
     return BacktestResult(
         n_fights=n_fights,
         n_bets=int(len(bets)),
@@ -309,6 +593,12 @@ def main() -> None:
         default=0.0,
         help="Only bet if chosen side model_prob >= this (confidence filter). For winner-strategies, this is your main 'hold off' knob.",
     )
+    p.add_argument(
+        "--min-edge",
+        type=float,
+        default=0.0,
+        help="Only bet if edge (model_prob - market_prob, no-vig) >= this threshold. Useful for filtering out bets where model and market agree closely.",
+    )
     p.add_argument("--sizing", type=str, default="flat", choices=["flat", "kelly"], help="Stake sizing method")
     p.add_argument("--flat-stake", type=float, default=1.0, help="Stake per bet when sizing=flat")
     p.add_argument("--bankroll", type=float, default=100.0, help="Bankroll used for Kelly sizing")
@@ -324,10 +614,28 @@ def main() -> None:
     p.add_argument(
         "--symmetric",
         action="store_true",
+        default=True,
         help=(
             "Use symmetric probabilities per fight_key (reduces model order-sensitivity). "
-            "Computes model_prob_f1_sym from the two eval_data rows per fight and uses it for EV/selection."
+            "Computes model_prob_f1_sym from the two eval_data rows per fight and uses it for EV/selection. "
+            "DEFAULT: True. Use --no-symmetric to disable."
         ),
+    )
+    p.add_argument(
+        "--no-symmetric",
+        dest="symmetric",
+        action="store_false",
+        help="Disable symmetric probability computation (use raw model_prob_f1).",
+    )
+    p.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print extensive diagnostic statistics (underdog win rates, filtering stages, probability/edge distributions, etc.)",
+    )
+    p.add_argument(
+        "--show-bets",
+        action="store_true",
+        help="Print a detailed table of all individual bets with fighter names, odds, outcomes, and profit for historical validation",
     )
 
     args = p.parse_args()
@@ -346,9 +654,12 @@ def main() -> None:
                 strategy=str(args.strategy),
                 min_ev=float(t),
                 min_p=float(args.min_p),
+                min_edge=float(args.min_edge),
                 symmetric=bool(args.symmetric),
                 sizing="flat",
                 flat_stake=float(args.flat_stake),
+                verbose=False,  # Disable verbose during sweeps
+                show_bets=False,  # Disable show_bets during sweeps
             )
             rows.append(
                 {
@@ -373,12 +684,15 @@ def main() -> None:
         strategy=str(args.strategy),
         min_ev=float(args.min_ev),
         min_p=float(args.min_p),
+        min_edge=float(args.min_edge),
         symmetric=bool(args.symmetric),
         sizing=str(args.sizing),
         flat_stake=float(args.flat_stake),
         bankroll=float(args.bankroll),
         kelly_multiplier=float(args.kelly_multiplier),
         max_bet_fraction=float(args.max_bet_fraction),
+        verbose=bool(args.verbose),
+        show_bets=bool(args.show_bets),
     )
 
     print("\n" + "=" * 80)

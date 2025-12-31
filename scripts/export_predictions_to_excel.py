@@ -44,6 +44,8 @@ from features.matchup_features import MatchupFeatureExtractor
 from features.feature_pipeline import FeaturePipeline
 from models.xgboost_model import XGBoostModel
 
+EDGE = 3.0
+
 
 def american_to_implied_prob(odds: int) -> float:
     """Convert American odds to implied probability (without vig adjustment)."""
@@ -318,7 +320,7 @@ def add_model_predictions(
             edge_f2_pct = round(edge_f2 * 100.0, 1)
 
             # Simple recommended bet rule (can tweak later)
-            threshold = 0.05  # 5% edge
+            threshold = 0.02  # 5% edge
             side = None
             if edge_f1 >= threshold and ev_f1 > 0:
                 side = "fighter_1"
@@ -378,7 +380,7 @@ def add_model_predictions(
                 risk_notes = _detect_risk_notes(features, side, f1.name, f2.name)
 
             # Only size a bet if we have edge, no major risk flags, and sufficient margin
-            if side is not None and edge_pct_side >= 5.0 and not risk_notes:
+            if side is not None and edge_pct_side >= EDGE:
                 bankroll = 1_000.0
                 odds_side = f1_odds if side == "fighter_1" else f2_odds
                 k = kelly_fraction(prob_side, odds_side)

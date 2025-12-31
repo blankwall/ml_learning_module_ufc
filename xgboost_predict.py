@@ -100,6 +100,7 @@ def xgboost_predict(
     fighter_1_ufcstats_id: str | None = None,
     fighter_2_ufcstats_id: str | None = None,
     allow_ambiguous: bool = False,
+    symmetric: bool = True,
 ):
     """Make a prediction using XGBoost model"""
     
@@ -159,10 +160,58 @@ def xgboost_predict(
     if not quiet:
         logger.info(f"Matched: {fighter_1.name} vs {fighter_2.name}")
     
-    # Extract features
+    # Extract features and make predictions
     extractor = MatchupFeatureExtractor(session)
-    features = extractor.extract_matchup_features(fighter_1.id, fighter_2.id)
-    features['is_title_fight'] = 1 if title_fight else 0
+    
+    if symmetric:
+        # Compute predictions for both fighter orders and average them
+        # This makes the prediction order-invariant
+        features_1 = extractor.extract_matchup_features(fighter_1.id, fighter_2.id)
+        features_1['is_title_fight'] = 1 if title_fight else 0
+        
+        features_2 = extractor.extract_matchup_features(fighter_2.id, fighter_1.id)
+        features_2['is_title_fight'] = 1 if title_fight else 0
+        
+        # Prepare both feature sets
+        X_df_1 = pd.DataFrame([features_1])
+        X_scaled_1, _ = pipeline.prepare_features(X_df_1, fit_scaler=False)
+        
+        X_df_2 = pd.DataFrame([features_2])
+        X_scaled_2, _ = pipeline.prepare_features(X_df_2, fit_scaler=False)
+        
+        # Predict for both orders
+        proba_1 = xgb_model.predict(X_scaled_1, use_calibrated=False)
+        proba_2 = xgb_model.predict(X_scaled_2, use_calibrated=False)
+        
+        # p_1 = P(fighter_1 wins | fighter_1, fighter_2)
+        # p_2 = P(fighter_2 wins | fighter_2, fighter_1)
+        # Symmetric probability: 0.5 * (p_1 + (1 - p_2))
+        p_f1_raw = float(proba_1[0])
+        p_f2_raw = float(proba_2[0])
+        p_f1 = 0.5 * (p_f1_raw + (1.0 - p_f2_raw))
+        p_f2 = 1.0 - p_f1
+        
+        # Use features_1 for display (fighter_1 as f1)
+        features = features_1
+        
+        if not quiet:
+            logger.info(f"Using symmetric mode: p({fighter_1.name}|{fighter_1.name},{fighter_2.name})={p_f1_raw:.3f}, "
+                       f"p({fighter_2.name}|{fighter_2.name},{fighter_1.name})={p_f2_raw:.3f}, "
+                       f"symmetric={p_f1:.3f}")
+    else:
+        # Non-symmetric: use raw prediction from single order
+        features = extractor.extract_matchup_features(fighter_1.id, fighter_2.id)
+        features['is_title_fight'] = 1 if title_fight else 0
+        
+        # Prepare features
+        X_df = pd.DataFrame([features])
+        X_scaled, _ = pipeline.prepare_features(X_df, fit_scaler=False)
+        
+        # Predict
+        proba = xgb_model.predict(X_scaled, use_calibrated=False)
+        p_f1 = float(proba[0])
+        p_f2 = 1.0 - p_f1
+    
     debug_keys = []
 
     if not quiet:
@@ -209,15 +258,6 @@ def xgboost_predict(
             print(f"  {k}: {features[k]}")
         print("")
 
-    
-    # Prepare features
-    X_df = pd.DataFrame([features])
-    X_scaled, _ = pipeline.prepare_features(X_df, fit_scaler=False)
-    
-    # Predict
-    proba = xgb_model.predict(X_scaled, use_calibrated=False)
-    p_f1 = float(proba[0])
-    p_f2 = 1.0 - p_f1
     
     prediction = 1 if p_f1 > 0.5 else 0
     
@@ -383,6 +423,11 @@ if __name__ == '__main__':
                         help='Model name to use (default: xgboost_model, e.g., xgboost_model_with_2025)')
     parser.add_argument('--allow-ambiguous', action='store_true',
                         help='Allow ambiguous name matches by picking a best guess (prints candidates).')
+    parser.add_argument('--symmetric', action='store_true', default=True,
+                        help='Use symmetric probabilities by averaging both fighter orders (DEFAULT: True). '
+                             'Makes prediction order-invariant (flipping fighters gives same result).')
+    parser.add_argument('--no-symmetric', dest='symmetric', action='store_false',
+                        help='Disable symmetric mode (use raw prediction from single fighter order).')
     
     args = parser.parse_args()
     
@@ -397,5 +442,6 @@ if __name__ == '__main__':
         fighter_1_ufcstats_id=args.fighter_1_ufcstats_id,
         fighter_2_ufcstats_id=args.fighter_2_ufcstats_id,
         allow_ambiguous=args.allow_ambiguous,
+        symmetric=args.symmetric,
     )
 
