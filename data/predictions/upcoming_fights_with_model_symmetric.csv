@@ -1,0 +1,6 @@
+event,fight_date,fighter_1_name,fighter_2_name,fighter_1_odds,fighter_2_odds,is_title_fight,model_p_f1_pct,model_p_f2_pct,model_p_f1_raw_pct,model_p_f2_raw_pct,symmetric_mode,implied_p_f1_pct,implied_p_f2_pct,edge_f1_pct,edge_f2_pct,market_favorite,model_favorite,recommended_bet,bet_amount,risk_notes,profit_if_win,payout_if_win,fighter_1_closing_odds,fighter_2_closing_odds
+UFC 324,,Justin Gaethje,Paddy Pimblett,170,-200,0,23.8,76.2,16.8,83.2,1,37.0,66.7,-13.3,9.6,Paddy Pimblett,Paddy Pimblett,Paddy Pimblett,143.31,,71.66,214.97,,
+UFC 324,,Kayla Harrison,Amanda Nunes,-177,130,0,64.1,35.9,59.8,40.2,1,63.9,43.5,0.2,-7.6,Kayla Harrison,Kayla Harrison,none,0.0,,0.0,0.0,,
+UFC 324,,Sean O'Malley,Song Yadong,-190,150,0,69.4,30.6,68.4,31.6,1,65.5,40.0,3.9,-9.4,Sean O'Malley,Sean O'Malley,none,0.0,,0.0,0.0,,
+UFC 324,,Waldo Cortes Acosta,Derrick Lewis,-265,225,0,80.0,20.0,76.6,23.4,1,72.6,30.8,7.4,-10.8,Waldo Cortes Acosta,Waldo Cortes Acosta,Waldo Cortes Acosta,135.27,,51.05,186.32,,
+UFC 324,,Arnold Allen,Jean Silva,170,-210,0,98.3,1.7,98.4,1.6,1,37.0,67.7,61.3,-66.1,Jean Silva,Arnold Allen,none,0.0,NO BET: Opponent Jean Silva has very limited or no recorded fight history (debut / low sample size). Avoid high-confidence bets in this matchup.,0.0,0.0,,

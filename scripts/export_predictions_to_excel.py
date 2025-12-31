@@ -24,8 +24,8 @@ Output:
         - model_p_f1, model_p_f2
         - implied_p_f1, implied_p_f2
         - edge_f1, edge_f2
-        - ev_f1, ev_f2                (expected value per $1 stake)
-        - recommended_bet             ("fighter_1", "fighter_2", "none")
+    - ev_f1, ev_f2                (expected value per $1 stake)
+    - risk_notes                  (warnings about limited history)
 """
 
 import sys
@@ -118,77 +118,29 @@ def _detect_risk_notes(
     f2_name: str,
 ) -> str:
     """
-    Detect high-level risk patterns that should trigger a "no bet" recommendation
-    even when the raw edge is positive.
-
-    Initial rules (can be extended later):
-      - If the would-be bet side has:
-          * no wins in their last 3 fights (with at least 3 total fights), AND
-          * no win in the last 2+ years,
-        AND their opponent profiles as a heavy KO finisher,
-        then flag this as a "NO BET" with an explanatory note.
-      - If the opponent appears to be a debutant / very low-sample fighter
-        (no fight history or very few total fights), flag as "NO BET" due to
-        high uncertainty and limited data.
+    Detect limited history warnings.
+    
+    Only checks for limited fight history - no other risk factors.
     """
     if side not in ("fighter_1", "fighter_2"):
         return ""
 
     if side == "fighter_1":
         pfx = "f1_"
-        opp_pfx = "f2_"
         name_side = f1_name
-        name_opp = f2_name
     else:
         pfx = "f2_"
-        opp_pfx = "f1_"
         name_side = f2_name
-        name_opp = f1_name
 
     total_fights = int(features.get(f"{pfx}total_fights", 0) or 0)
-    win_rate_last_3 = float(features.get(f"{pfx}win_rate_last_3", 0.0) or 0.0)
-    years_since_last_win = float(features.get(f"{pfx}years_since_last_win", 0.0) or 0.0)
-
-    # Slump conditions for the would-be bet side
-    no_wins_last_3 = total_fights >= 3 and win_rate_last_3 == 0.0
-    no_win_2plus_years = years_since_last_win >= 2.0
-
-    # Opponent KO / early-finish profile
-    opp_ko_rate = float(features.get(f"{opp_pfx}ko_rate", 0.0) or 0.0)
-    opp_first_round_ko_rate = float(features.get(f"{opp_pfx}first_round_ko_rate", 0.0) or 0.0)
-    opp_early_finish_rate_last_3 = float(features.get(f"{opp_pfx}early_finish_rate_last_3", 0.0) or 0.0)
-
-    # Heuristic: heavy KO/finisher if any of these are large.
-    opp_power = max(opp_ko_rate, opp_first_round_ko_rate, opp_early_finish_rate_last_3)
-    heavy_ko = opp_power >= 0.4
-
-    # 1) Aging/slumping fighter vs heavy KO opponent (Cejudo-style case)
-    if no_wins_last_3 and no_win_2plus_years and heavy_ko:
+    has_history = int(features.get(f"{pfx}has_fight_history", 0) or 0)
+    
+    # Check for limited history
+    MIN_FIGHTS_REQUIRED = 3
+    if has_history == 0 or total_fights < MIN_FIGHTS_REQUIRED:
         return (
-            f"NO BET: {name_side} has not won in the last 3 fights and over 2 years, "
-            f"while opponent {name_opp} profiles as a heavy KO finisher."
-        )
-
-    # 2) Avoid betting AGAINST a clear heavy KO finisher when they have much more power
-    side_ko_rate = float(features.get(f"{pfx}ko_rate", 0.0) or 0.0)
-    side_first_round_ko_rate = float(features.get(f"{pfx}first_round_ko_rate", 0.0) or 0.0)
-    side_early_finish_rate_last_3 = float(features.get(f"{pfx}early_finish_rate_last_3", 0.0) or 0.0)
-    side_power = max(side_ko_rate, side_first_round_ko_rate, side_early_finish_rate_last_3)
-
-    # If opponent has clearly higher KO/early-finish power, don't fade them blindly.
-    if heavy_ko and (opp_power - side_power) >= 0.2:
-        return (
-            f"NO BET: Opponent {name_opp} has significantly higher KO/early-finish power "
-            f"than {name_side}. Avoid betting against a proven heavy finisher in this spot."
-        )
-
-    # 3) Debut / very low-sample opponent: avoid overconfident bets against unknowns.
-    opp_total_fights = int(features.get(f"{opp_pfx}total_fights", 0) or 0)
-    opp_has_history = int(features.get(f"{opp_pfx}has_fight_history", 0) or 0)
-    if opp_has_history == 0 or opp_total_fights < 3:
-        return (
-            f"NO BET: Opponent {name_opp} has very limited or no recorded fight history "
-            f"(debut / low sample size). Avoid high-confidence bets in this matchup."
+            f"Limited history: {name_side} has {int(total_fights)} fights "
+            f"(minimum {MIN_FIGHTS_REQUIRED} recommended for reliable predictions)."
         )
 
     return ""
@@ -319,22 +271,6 @@ def add_model_predictions(
             edge_f1_pct = round(edge_f1 * 100.0, 1)
             edge_f2_pct = round(edge_f2 * 100.0, 1)
 
-            # Determine model favorite (predicted winner)
-            model_predicted_winner = "fighter_1" if p_f1 > 0.5 else "fighter_2"
-            
-            # Simple recommended bet rule
-            # IMPORTANT: Only recommend bets on the predicted winner, regardless of edge
-            threshold = 0.02  # 2% edge minimum
-            side = None
-            
-            # Only consider the predicted winner for betting
-            if model_predicted_winner == "fighter_1":
-                if edge_f1 >= threshold and ev_f1 > 0:
-                    side = "fighter_1"
-            else:  # model_predicted_winner == "fighter_2"
-                if edge_f2 >= threshold and ev_f2 > 0:
-                    side = "fighter_2"
-
             # Determine favourite by market / model, using actual names
             if imp_f1_r > imp_f2_r:
                 market_fav = f1.name
@@ -350,65 +286,24 @@ def add_model_predictions(
             else:
                 model_fav = "even"
 
-            # Decide bet amount using 1/2 Kelly on a notional $10k bankroll
-            bet_amount = 0
-            profit_if_win = 0.0
-            payout_if_win = 0.0
-            recommended_label = "none"
-
-            def kelly_fraction(prob: float, odds: int) -> float:
-                """
-                Standard Kelly fraction for a single outcome, returning the
-                optimal fraction of bankroll to bet. We then use 1/2 Kelly.
-                """
-                dec = american_to_decimal(odds)
-                b = dec - 1.0
-                p = prob
-                q = 1.0 - p
-                k = (b * p - q) / b
-                return max(k, 0.0)
-
-            # Determine which side (if any) has sufficient edge and apply risk notes
+            # Check for limited history warnings (for both fighters)
             risk_notes = ""
-            edge_pct_side = 0.0
-            prob_side = 0.0
-            name_side = ""
-
-            if side == "fighter_1":
-                edge_pct_side = edge_f1_pct
-                prob_side = p_f1
-                name_side = f1.name
-            elif side == "fighter_2":
-                edge_pct_side = edge_f2_pct
-                prob_side = p_f2
-                name_side = f2.name
-
-            # Compute risk notes if there's a candidate side
-            if side is not None:
-                risk_notes = _detect_risk_notes(features, side, f1.name, f2.name)
-
-            # Only size a bet if we have edge, no major risk flags, and sufficient margin
-            if side is not None and edge_pct_side >= EDGE:
-                bankroll = 1_000.0
-                odds_side = f1_odds if side == "fighter_1" else f2_odds
-                k = kelly_fraction(prob_side, odds_side)
-                half_k = 0.5 * k
-                bet_amount = round(bankroll * half_k, 2)
-
-                if bet_amount > 0:
-                    # Label very large edges (big disagreement) with "??"
-                    if edge_pct_side > 20.0:
-                        recommended_label = f"?? {name_side}"
-                    else:
-                        recommended_label = name_side
-
-                    dec_side = american_to_decimal(odds_side)
-                    profit_if_win = round(bet_amount * (dec_side - 1.0), 2)
-                    payout_if_win = round(bet_amount + profit_if_win, 2)
-                else:
-                    recommended_label = "none"
-                    profit_if_win = 0.0
-                    payout_if_win = 0.0
+            f1_total_fights = int(features.get("f1_total_fights", 0) or 0)
+            f2_total_fights = int(features.get("f2_total_fights", 0) or 0)
+            f1_has_history = int(features.get("f1_has_fight_history", 0) or 0)
+            f2_has_history = int(features.get("f2_has_fight_history", 0) or 0)
+            
+            MIN_FIGHTS_REQUIRED = 3
+            warnings = []
+            
+            if f1_has_history == 0 or f1_total_fights < MIN_FIGHTS_REQUIRED:
+                warnings.append(f"{f1.name} has limited history ({int(f1_total_fights)} fights)")
+            
+            if f2_has_history == 0 or f2_total_fights < MIN_FIGHTS_REQUIRED:
+                warnings.append(f"{f2.name} has limited history ({int(f2_total_fights)} fights)")
+            
+            if warnings:
+                risk_notes = "; ".join(warnings)
 
             results.append(
                 {
@@ -431,12 +326,7 @@ def add_model_predictions(
                     "edge_f2_pct": edge_f2_pct,
                     "market_favorite": market_fav,
                     "model_favorite": model_fav,
-                    "recommended_bet": recommended_label,
-                    "bet_amount": bet_amount,
                     "risk_notes": risk_notes,
-                    # Single-bet outcome if this one wins
-                    "profit_if_win": profit_if_win,
-                    "payout_if_win": payout_if_win,
                     # For CLV tracking – you can fill these in later by hand
                     "fighter_1_closing_odds": None,
                     "fighter_2_closing_odds": None,
@@ -482,56 +372,6 @@ def export_to_excel(
     logger.info(f"Adding model probabilities and edges using '{model_name}'...")
     df_out = add_model_predictions(df_in, model_name=model_name, symmetric=symmetric)
 
-    # Cap total exposure across all fights to a maximum stake (e.g. $500)
-    max_total_stake = 500.0
-    total_stake = float(df_out.get("bet_amount", []).sum()) if "bet_amount" in df_out.columns else 0.0
-
-    if total_stake > max_total_stake and total_stake > 0:
-        scale = max_total_stake / total_stake
-        logger.info(
-            f"Scaling bet amounts by factor {scale:.3f} to cap total stake "
-            f"at ${max_total_stake:.2f} (was ${total_stake:.2f})"
-        )
-
-        scaled_bets = []
-        scaled_profit = []
-        scaled_payout = []
-
-        for _, row in df_out.iterrows():
-            bet = float(row.get("bet_amount", 0.0))
-            label = str(row.get("recommended_bet", "") or "")
-
-            if bet <= 0.0 or not label:
-                scaled_bets.append(0.0)
-                scaled_profit.append(0.0)
-                scaled_payout.append(0.0)
-                continue
-
-            new_bet = round(bet * scale, 2)
-
-            # Determine which side this bet is on to get correct odds
-            clean_label = label.replace("??", "").strip()
-            odds_side = None
-            if clean_label == str(row.get("fighter_1_name", "")).strip():
-                odds_side = int(row.get("fighter_1_odds", 0))
-            elif clean_label == str(row.get("fighter_2_name", "")).strip():
-                odds_side = int(row.get("fighter_2_odds", 0))
-
-            if new_bet > 0 and odds_side is not None:
-                dec_side = american_to_decimal(odds_side)
-                prof = round(new_bet * (dec_side - 1.0), 2)
-                pay = round(new_bet + prof, 2)
-            else:
-                prof = 0.0
-                pay = 0.0
-
-            scaled_bets.append(new_bet)
-            scaled_profit.append(prof)
-            scaled_payout.append(pay)
-
-        df_out["bet_amount"] = scaled_bets
-        df_out["profit_if_win"] = scaled_profit
-        df_out["payout_if_win"] = scaled_payout
 
     logger.info(f"Writing Excel to {out_path} ...")
     df_out.to_excel(out_path, index=False)

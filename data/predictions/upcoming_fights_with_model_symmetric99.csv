@@ -1,0 +1,13 @@
+event,fight_date,fighter_1_name,fighter_2_name,fighter_1_odds,fighter_2_odds,is_title_fight,model_p_f1_pct,model_p_f2_pct,model_p_f1_raw_pct,model_p_f2_raw_pct,symmetric_mode,implied_p_f1_pct,implied_p_f2_pct,edge_f1_pct,edge_f2_pct,market_favorite,model_favorite,recommended_bet,bet_amount,risk_notes,profit_if_win,payout_if_win,fighter_1_closing_odds,fighter_2_closing_odds
+UFC 323: Dvalishvili vs. Yan 2,,Merab Dvalishvili,Petr Yan,-396,375,0,82.2,17.8,83.1,16.9,1,79.8,21.1,2.4,-3.2,Merab Dvalishvili,Merab Dvalishvili,none,0.0,,0.0,0.0,,
+UFC 323: Dvalishvili vs. Yan 2,,Brandon Moreno,Tatsuro Taira,120,-125,0,23.9,76.1,21.1,78.9,1,45.5,55.6,-21.5,20.5,Tatsuro Taira,Tatsuro Taira,?? Tatsuro Taira,230.72,,184.58,415.3,,
+UFC 323: Dvalishvili vs. Yan 2,,Henry Cejudo,Payton Talbott,235,-265,0,16.9,83.1,20.7,79.3,1,29.9,72.6,-12.9,10.5,Payton Talbott,Payton Talbott,Payton Talbott,191.13,,72.12,263.25,,
+UFC 323: Dvalishvili vs. Yan 2,,Jan Blachowicz,Bogdan Guskov,-125,125,0,25.7,74.3,20.6,79.4,1,55.6,44.4,-29.8,29.8,Jan Blachowicz,Bogdan Guskov,?? Bogdan Guskov,268.55,,335.69,604.24,,
+UFC 323: Dvalishvili vs. Yan 2,,Grant Dawson,Manuel Torres,-200,185,0,50.4,49.6,49.0,51.0,1,66.7,35.1,-16.2,14.5,Grant Dawson,Grant Dawson,Manuel Torres,111.52,,206.31,317.83,,
+UFC 323: Dvalishvili vs. Yan 2,,Terrance McKinney,Chris Duncan,163,-155,0,79.8,20.2,79.5,20.5,1,38.0,60.8,41.8,-40.6,Chris Duncan,Terrance McKinney,?? Terrance McKinney,337.21,,549.65,886.86,,
+UFC 323: Dvalishvili vs. Yan 2,,Maycee Barber,Karine Silva,-163,164,0,81.8,18.2,83.3,16.7,1,62.0,37.9,19.9,-19.7,Maycee Barber,Maycee Barber,Maycee Barber,261.26,,160.28,421.54,,
+UFC 323: Dvalishvili vs. Yan 2,,Fares Ziam,Nazim Sadykhov,-128,125,0,84.7,15.3,89.0,11.0,1,56.1,44.4,28.5,-29.1,Fares Ziam,Fares Ziam,none,0.0,NO BET: Opponent Nazim Sadykhov has significantly higher KO/early-finish power than Fares Ziam. Avoid betting against a proven heavy finisher in this spot.,0.0,0.0,,
+UFC 323: Dvalishvili vs. Yan 2,,Marvin Vettori,Brunno Ferreira,-110,100,0,46.1,53.9,52.4,47.6,1,52.4,50.0,-6.2,3.9,Marvin Vettori,Brunno Ferreira,none,0.0,,0.0,0.0,,
+UFC 323: Dvalishvili vs. Yan 2,,Edson Barboza,Jalin Turner,250,-250,0,31.1,68.9,30.0,70.0,1,28.6,71.4,2.5,-2.5,Jalin Turner,Jalin Turner,none,0.0,,0.0,0.0,,
+UFC 323: Dvalishvili vs. Yan 2,,Ibo Aslan,Iwo Baraniewski,170,-180,0,68.7,31.3,63.8,36.2,1,37.0,64.3,31.6,-33.0,Iwo Baraniewski,Ibo Aslan,none,0.0,NO BET: Opponent Iwo Baraniewski has very limited or no recorded fight history (debut / low sample size). Avoid high-confidence bets in this matchup.,0.0,0.0,,
+UFC 323: Dvalishvili vs. Yan 2,,Mansur Abdul-Malik,Antonio Trocoli,-1000,800,0,95.4,4.6,96.0,4.0,1,90.9,11.1,4.5,-6.5,Mansur Abdul-Malik,Mansur Abdul-Malik,none,0.0,,0.0,0.0,,

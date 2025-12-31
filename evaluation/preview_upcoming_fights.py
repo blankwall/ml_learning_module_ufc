@@ -119,7 +119,6 @@ def main() -> None:
             best_implied_pct = imp2
             best_edge_pct = e2
 
-        recommended = str(row.get("recommended_bet", "") or "")
         risk_notes = str(row.get("risk_notes", "") or "")
 
         summary_rows.append(
@@ -133,7 +132,6 @@ def main() -> None:
                 "best_model_prob_pct": round(best_model_pct, 1),
                 "best_market_prob_pct": round(best_implied_pct, 1),
                 "best_edge_pct": round(best_edge_pct, 1),
-                "recommended_bet": recommended,
                 "risk_notes": risk_notes,
             }
         )
@@ -164,7 +162,7 @@ def main() -> None:
                 "best_model_prob_pct",
                 "best_market_prob_pct",
                 "best_edge_pct",
-                "recommended_bet",
+                "risk_notes",
             ]
         ].to_string(index=False)
     )

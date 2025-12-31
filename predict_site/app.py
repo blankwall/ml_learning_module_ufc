@@ -69,16 +69,63 @@ with tab1:
         """
     )
     
+    # Example CSV files
+    example_files = {
+        "UFC 325": "data/predictions/upcoming_fights_ufc325.csv",
+        "UFC 324": "data/predictions/upcoming_fights_ufc324.csv",
+        "UFC 323": "data/predictions/upcoming_fights_ufc323.csv",
+        "Fight Night: Royval vs. Kape": "data/predictions/upcoming_fights_fight_night_royval_kape.csv",
+    }
+    
+    # Initialize session state for selected example
+    if "selected_example" not in st.session_state:
+        st.session_state.selected_example = None
+    
+    st.markdown("### 📋 Example Files")
+    example_cols = st.columns(len(example_files))
+    
+    for idx, (name, path) in enumerate(example_files.items()):
+        with example_cols[idx]:
+            if st.button(f"📄 {name}", key=f"example_{idx}", use_container_width=True):
+                st.session_state.selected_example = path
+                st.rerun()
+    
     # CSV input methods
     input_method = st.radio(
         "Input Method",
-        ["Upload CSV File", "Paste CSV Data"],
+        ["Use Example File", "Upload CSV File", "Paste CSV Data"],
         horizontal=True
     )
     
     csv_data = None
     
-    if input_method == "Upload CSV File":
+    if input_method == "Use Example File" or st.session_state.selected_example:
+        # Use selected example or let user choose
+        if st.session_state.selected_example:
+            example_path = st.session_state.selected_example
+        else:
+            example_path = st.selectbox(
+                "Select Example File",
+                options=list(example_files.values()),
+                format_func=lambda x: [k for k, v in example_files.items() if v == x][0]
+            )
+            st.session_state.selected_example = example_path
+        
+        example_file = Path(example_path)
+        if example_file.exists():
+            csv_data = example_file.read_text()
+            st.success(f"✅ Loaded: {[k for k, v in example_files.items() if v == example_path][0]}")
+            with st.expander("Preview Example File", expanded=False):
+                st.dataframe(pd.read_csv(StringIO(csv_data)), use_container_width=True)
+        else:
+            st.warning(f"Example file not found: {example_path}")
+            st.info("Make sure the file is committed to your repository for Streamlit Cloud deployment.")
+    
+    # Clear selection if switching to other input methods
+    if input_method != "Use Example File":
+        st.session_state.selected_example = None
+    
+    elif input_method == "Upload CSV File":
         uploaded_file = st.file_uploader(
             "Choose a CSV file",
             type=["csv"],
@@ -162,7 +209,7 @@ with tab1:
                                 "fighter_1_name", "fighter_2_name",
                                 "best_fighter",
                                 "best_model_prob_pct", "best_market_prob_pct", "best_edge_pct",
-                                "recommended_bet", "risk_notes"
+                                "risk_notes"
                             ]
                             available_summary_cols = [col for col in summary_cols if col in df_results.columns]
                             
@@ -209,12 +256,16 @@ with tab1:
                                 model_prob = row.get("best_model_prob_pct", 0)
                                 market_prob = row.get("best_market_prob_pct", 0)
                                 edge = row.get("best_edge_pct", 0)
-                                recommended = row.get("recommended_bet", "")
+                                risk_notes = row.get("risk_notes", "")
                                 
-                                # Determine if this is a strong bet
-                                is_strong_bet = edge > 10 and recommended and recommended != "none"
-                                border_color = "#28a745" if is_strong_bet else "#6c757d"
-                                bg_color = "#d4edda" if is_strong_bet else "#f8f9fa"
+                                # Determine if this is a strong edge
+                                is_strong_edge = edge > 10
+                                border_color = "#28a745" if is_strong_edge else "#6c757d"
+                                bg_color = "#d4edda" if is_strong_edge else "#f8f9fa"
+                                
+                                risk_html = ""
+                                if risk_notes:
+                                    risk_html = f'<p style="margin: 5px 0; color: #856404;"><strong>⚠️ Note:</strong> {risk_notes}</p>'
                                 
                                 st.markdown(f"""
                                 <div style="padding: 15px; margin: 10px 0; border: 2px solid {border_color}; border-radius: 8px; background-color: {bg_color};">
@@ -237,10 +288,8 @@ with tab1:
                                         <div>
                                             <strong>Edge:</strong> <span style="color: {'#28a745' if edge > 0 else '#dc3545'}; font-weight: bold;">{edge:+.1f}%</span>
                                         </div>
-                                        <div>
-                                            <strong>Bet:</strong> {recommended if recommended else 'none'}
-                                        </div>
                                     </div>
+                                    {risk_html}
                                 </div>
                                 """, unsafe_allow_html=True)
                             
