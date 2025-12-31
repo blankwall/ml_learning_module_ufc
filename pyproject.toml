@@ -43,3 +43,14 @@ dependencies = [
     "tqdm>=4.65.0",
     "xgboost>=2.0.0",
 ]
+
+[tool.setuptools]
+packages = [
+    "features",
+    "evaluation",
+    "database",
+    "models",
+    "scripts",
+    "schema",
+    "config",
+]

@@ -319,13 +319,21 @@ def add_model_predictions(
             edge_f1_pct = round(edge_f1 * 100.0, 1)
             edge_f2_pct = round(edge_f2 * 100.0, 1)
 
-            # Simple recommended bet rule (can tweak later)
-            threshold = 0.02  # 5% edge
+            # Determine model favorite (predicted winner)
+            model_predicted_winner = "fighter_1" if p_f1 > 0.5 else "fighter_2"
+            
+            # Simple recommended bet rule
+            # IMPORTANT: Only recommend bets on the predicted winner, regardless of edge
+            threshold = 0.02  # 2% edge minimum
             side = None
-            if edge_f1 >= threshold and ev_f1 > 0:
-                side = "fighter_1"
-            elif edge_f2 >= threshold and ev_f2 > 0:
-                side = "fighter_2"
+            
+            # Only consider the predicted winner for betting
+            if model_predicted_winner == "fighter_1":
+                if edge_f1 >= threshold and ev_f1 > 0:
+                    side = "fighter_1"
+            else:  # model_predicted_winner == "fighter_2"
+                if edge_f2 >= threshold and ev_f2 > 0:
+                    side = "fighter_2"
 
             # Determine favourite by market / model, using actual names
             if imp_f1_r > imp_f2_r:
