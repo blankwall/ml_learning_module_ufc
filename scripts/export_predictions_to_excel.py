@@ -99,8 +99,30 @@ def load_input(path: Path) -> pd.DataFrame:
     return df
 
 
-def resolve_fighter(session, name: str) -> Fighter:
-    """Simple name lookup with ILIKE match."""
+def resolve_fighter(session, name: str, fighter_id: Optional[int] = None) -> Fighter:
+    """
+    Resolve fighter by ID (if provided) or by name lookup.
+    
+    Args:
+        session: Database session
+        name: Fighter name (for fallback or error messages)
+        fighter_id: Optional fighter ID to use directly
+    
+    Returns:
+        Fighter object
+    """
+    # If fighter_id is provided, use it directly
+    if fighter_id is not None:
+        try:
+            fighter = session.query(Fighter).filter(Fighter.id == int(fighter_id)).first()
+            if fighter:
+                return fighter
+            else:
+                logger.warning(f"Fighter ID {fighter_id} not found, falling back to name lookup for '{name}'")
+        except (ValueError, TypeError):
+            logger.warning(f"Invalid fighter_id '{fighter_id}', falling back to name lookup for '{name}'")
+    
+    # Fall back to name lookup
     fighter = (
         session.query(Fighter)
         .filter(Fighter.name.ilike(f"%{name}%"))
@@ -204,9 +226,30 @@ def add_model_predictions(
             f2_odds = int(row["fighter_2_odds"])
             is_title = bool(row.get("is_title_fight", False))
 
-            # Resolve fighters
-            f1 = resolve_fighter(session, f1_name)
-            f2 = resolve_fighter(session, f2_name)
+            # Get optional fighter IDs (if provided in CSV)
+            f1_id = row.get("fighter_1_id")
+            f2_id = row.get("fighter_2_id")
+            
+            # Convert to int if not None/NaN
+            if f1_id is not None and pd.notna(f1_id):
+                try:
+                    f1_id = int(f1_id)
+                except (ValueError, TypeError):
+                    f1_id = None
+            else:
+                f1_id = None
+                
+            if f2_id is not None and pd.notna(f2_id):
+                try:
+                    f2_id = int(f2_id)
+                except (ValueError, TypeError):
+                    f2_id = None
+            else:
+                f2_id = None
+
+            # Resolve fighters (use ID if provided, otherwise use name)
+            f1 = resolve_fighter(session, f1_name, fighter_id=f1_id)
+            f2 = resolve_fighter(session, f2_name, fighter_id=f2_id)
 
             # Build features
             # NOTE: as_of_date=None (default) uses ALL available data up to today.

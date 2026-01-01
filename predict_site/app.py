@@ -17,6 +17,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 import pandas as pd
 import streamlit as st
 from io import StringIO
+from typing import Optional
 from loguru import logger
 
 # Import project modules (after adding PROJECT_ROOT to path)
@@ -69,13 +70,24 @@ with tab1:
         """
     )
     
-    # Example CSV files
-    example_files = {
-        "UFC 325": "data/predictions/upcoming_fights_ufc325.csv",
-        "UFC 324": "data/predictions/upcoming_fights_ufc324.csv",
-        "UFC 323": "data/predictions/upcoming_fights_ufc323.csv",
-        "Fight Night: Royval vs. Kape": "data/predictions/upcoming_fights_fight_night_royval_kape.csv",
-    }
+    # Example CSV files with dates
+    from datetime import datetime
+    example_files_data = [
+        {"name": "UFC 325", "path": "data/predictions/upcoming_fights_ufc325.csv", "date": datetime(2026, 1, 31)},
+        {"name": "UFC 324", "path": "data/predictions/upcoming_fights_ufc324.csv", "date": datetime(2026, 1, 24)},
+        {"name": "Fight Night: Royval vs. Kape", "path": "data/predictions/upcoming_fights_fight_night_royval_kape.csv", "date": datetime(2025, 12, 13)},
+        {"name": "UFC 323", "path": "data/predictions/upcoming_fights_ufc323.csv", "date": datetime(2025, 12, 6)},
+    ]
+    
+    # Sort by date (ascending - earliest first)
+    example_files_data.sort(key=lambda x: x["date"])
+    
+    # Create display dictionary with dates
+    example_files = {}
+    for item in example_files_data:
+        date_str = item["date"].strftime("%b %d, %Y")
+        display_name = f"{item['name']} ({date_str})"
+        example_files[display_name] = item["path"]
     
     # Initialize session state for selected example
     if "selected_example" not in st.session_state:
@@ -84,9 +96,9 @@ with tab1:
     st.markdown("### 📋 Example Files")
     example_cols = st.columns(len(example_files))
     
-    for idx, (name, path) in enumerate(example_files.items()):
+    for idx, (display_name, path) in enumerate(example_files.items()):
         with example_cols[idx]:
-            if st.button(f"📄 {name}", key=f"example_{idx}", use_container_width=True):
+            if st.button(f"📄 {display_name}", key=f"example_{idx}", use_container_width=True):
                 st.session_state.selected_example = path
                 st.rerun()
     
@@ -111,10 +123,14 @@ with tab1:
             )
             st.session_state.selected_example = example_path
         
-        example_file = Path(example_path)
+        example_file = Path(PROJECT_ROOT / example_path)
         if example_file.exists():
             csv_data = example_file.read_text()
-            st.success(f"✅ Loaded: {[k for k, v in example_files.items() if v == example_path][0]}")
+            # Get display name (remove date part for cleaner display)
+            display_name = [k for k, v in example_files.items() if v == example_path][0]
+            # Extract just the event name without date
+            event_name = display_name.split(" (")[0] if " (" in display_name else display_name
+            st.success(f"✅ Loaded: {event_name}")
             with st.expander("Preview Example File", expanded=False):
                 st.dataframe(pd.read_csv(StringIO(csv_data)), use_container_width=True)
         else:
@@ -158,6 +174,52 @@ with tab1:
             if missing_cols:
                 st.error(f"Missing required columns: {', '.join(missing_cols)}")
             else:
+                # Preprocess: Add fighter IDs for known ambiguous fighters
+                # This handles cases where name matching might pick the wrong fighter
+                def resolve_ambiguous_fighter(name: str, context: str = "") -> Optional[int]:
+                    """
+                    Return fighter ID for known ambiguous fighters.
+                    context can be used for additional disambiguation (e.g., opponent name, event)
+                    """
+                    name_lower = name.lower().strip()
+                    
+                    # Jean Silva 'Lord' (ID: 3707) - the active UFC fighter
+                    # This is the one we want for UFC 324 (vs Arnold Allen)
+                    if "jean silva" in name_lower or name_lower == "jean silva":
+                        # Check if opponent is Arnold Allen (UFC 324 context)
+                        if "arnold allen" in context.lower() or "arnold" in context.lower():
+                            return 3707  # Jean Silva 'Lord'
+                        # Default to the active one (Lord) for now
+                        return 3707
+                    
+                    return None
+                
+                # Add fighter IDs if not already present
+                if "fighter_1_id" not in df.columns:
+                    df["fighter_1_id"] = None
+                if "fighter_2_id" not in df.columns:
+                    df["fighter_2_id"] = None
+                
+                # Apply special handling for ambiguous fighters
+                for idx, row in df.iterrows():
+                    f1_name = str(row.get("fighter_1_name", "")).strip()
+                    f2_name = str(row.get("fighter_2_name", "")).strip()
+                    
+                    # Create context from opponent and event
+                    context = f"{f1_name} {f2_name} {row.get('event', '')}"
+                    
+                    # Check fighter 1
+                    if pd.isna(df.at[idx, "fighter_1_id"]) or df.at[idx, "fighter_1_id"] is None:
+                        resolved_id = resolve_ambiguous_fighter(f1_name, context)
+                        if resolved_id is not None:
+                            df.at[idx, "fighter_1_id"] = resolved_id
+                    
+                    # Check fighter 2
+                    if pd.isna(df.at[idx, "fighter_2_id"]) or df.at[idx, "fighter_2_id"] is None:
+                        resolved_id = resolve_ambiguous_fighter(f2_name, context)
+                        if resolved_id is not None:
+                            df.at[idx, "fighter_2_id"] = resolved_id
+                
                 st.success(f"✅ Loaded {len(df)} fights")
                 
                 # Show preview
