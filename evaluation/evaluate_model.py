@@ -191,6 +191,22 @@ def main() -> None:
             "This helps quantify how much optimistic lift those features provide in backtests."
         ),
     )
+    parser.add_argument(
+        "--symmetric",
+        action="store_true",
+        default=True,
+        help=(
+            "Use symmetric probabilities by averaging both fighter orders (DEFAULT: True). "
+            "Makes prediction order-invariant (flipping fighters gives same result). "
+            "This matches the behavior of xgboost_predict.py with --symmetric flag."
+        ),
+    )
+    parser.add_argument(
+        "--no-symmetric",
+        dest="symmetric",
+        action="store_false",
+        help="Disable symmetric mode (use raw prediction from single fighter order).",
+    )
 
     args = parser.parse_args()
 
@@ -428,6 +444,68 @@ def main() -> None:
     merged["target"] = merged.get("target", y_eval)
 
     # ------------------------------------------------------------------
+    # 4b) Apply symmetric averaging if requested (matches xgboost_predict.py behavior)
+    # ------------------------------------------------------------------
+    if args.symmetric:
+        logger.info("Applying symmetric probability averaging (matching xgboost_predict.py --symmetric)...")
+        # For each unique fight (identified by fight_key), we have 2 rows (both perspectives)
+        # We need to compute symmetric probability: p_f1 = 0.5 * (p_f1_raw + (1.0 - p_f2_raw))
+        
+        # Create a symmetric probability column
+        merged["model_prob_f1_symmetric"] = np.nan
+        
+        # Group by fight_key to get both perspectives of the same fight
+        for fight_key, group in merged.groupby("fight_key"):
+            if len(group) < 2:
+                # Only one perspective available, use raw prediction
+                merged.loc[group.index, "model_prob_f1_symmetric"] = group["model_prob_f1"].values
+                continue
+            
+            # Get both rows - they should be the two perspectives (f1, f2) and (f2, f1)
+            if len(group) != 2:
+                # Unexpected number of rows, use raw predictions
+                merged.loc[group.index, "model_prob_f1_symmetric"] = group["model_prob_f1"].values
+                continue
+            
+            # Get the two rows as Series
+            idx_list = list(group.index)
+            row1_idx = idx_list[0]
+            row2_idx = idx_list[1]
+            row1 = group.loc[row1_idx]
+            row2 = group.loc[row2_idx]
+            
+            # Verify these are the two perspectives of the same fight
+            # (fighter_1_id and fighter_2_id should be swapped)
+            f1_id_1 = int(row1["fighter_1_id"]) if "fighter_1_id" in row1 else None
+            f2_id_1 = int(row1["fighter_2_id"]) if "fighter_2_id" in row1 else None
+            f1_id_2 = int(row2["fighter_1_id"]) if "fighter_1_id" in row2 else None
+            f2_id_2 = int(row2["fighter_2_id"]) if "fighter_2_id" in row2 else None
+            
+            if (f1_id_1 is not None and f2_id_1 is not None and 
+                f1_id_2 is not None and f2_id_2 is not None and
+                f1_id_1 == f2_id_2 and f2_id_1 == f1_id_2):
+                # These are the two perspectives: (f1, f2) and (f2, f1)
+                p_f1_raw = float(row1["model_prob_f1"])  # P(f1 wins | f1, f2)
+                p_f2_raw = float(row2["model_prob_f1"])  # P(f2 wins | f2, f1)
+                
+                # Symmetric probability for fighter_1 (from row1's perspective)
+                p_f1_symmetric = 0.5 * (p_f1_raw + (1.0 - p_f2_raw))
+                p_f2_symmetric = 1.0 - p_f1_symmetric
+                
+                # Apply to both rows
+                merged.loc[row1_idx, "model_prob_f1_symmetric"] = p_f1_symmetric
+                merged.loc[row2_idx, "model_prob_f1_symmetric"] = p_f2_symmetric
+            else:
+                # Not matching perspectives, use raw predictions
+                merged.loc[group.index, "model_prob_f1_symmetric"] = group["model_prob_f1"].values
+        
+        # Use symmetric probabilities if available, otherwise fall back to raw
+        merged["model_prob_f1"] = merged["model_prob_f1_symmetric"].fillna(merged["model_prob_f1"])
+        logger.info("Applied symmetric probability averaging.")
+    else:
+        logger.info("Using raw predictions (symmetric mode disabled).")
+
+    # ------------------------------------------------------------------
     # 5) Compute metrics vs market
     # ------------------------------------------------------------------
     y_true = merged["target"].astype(int).values
@@ -559,33 +637,44 @@ def main() -> None:
     def _print_fight_table(df: pd.DataFrame, title: str) -> None:
         if df.empty:
             return
+        
+        # Create a simplified dataframe focused on the winner
+        display_df = df.copy()
+        
+        # Calculate edge as percentage difference (model - market)
+        display_df["edge_pct"] = (
+            (display_df["winner_model_prob"] - display_df["winner_market_prob"]) * 100
+        )
+        
+        # Format probabilities as percentages
+        display_df["model_pct"] = (display_df["winner_model_prob"] * 100).round(1)
+        display_df["market_pct"] = (display_df["winner_market_prob"] * 100).round(1)
+        display_df["edge_pct"] = display_df["edge_pct"].round(1)
+        
+        # Select only the columns we want to show
         cols = [
             "event_date",
             "fighter_winner",
-            "fighter_loser",
-            "winner_model_prob",
-            "winner_market_prob",
-            "loser_model_prob",
-            "loser_market_prob",
-            "edge_best",
-            "edge_worst",
+            "model_pct",
+            "market_pct",
+            "edge_pct",
         ]
-        safe_cols = [c for c in cols if c in df.columns]
+        safe_cols = [c for c in cols if c in display_df.columns]
+        
+        # Rename columns for better display
+        display_df = display_df[safe_cols].copy()
+        display_df.columns = [
+            "Date",
+            "Winner",
+            "Model %",
+            "Market %",
+            "Edge %",
+        ]
+        
         print("\n" + "=" * 80)
         print(title)
         print("=" * 80)
-        print(
-            df[safe_cols]
-            .assign(
-                winner_model_prob=lambda x: x.get("winner_model_prob").round(3),
-                winner_market_prob=lambda x: x.get("winner_market_prob").round(3),
-                loser_model_prob=lambda x: x.get("loser_model_prob").round(3),
-                loser_market_prob=lambda x: x.get("loser_market_prob").round(3),
-                edge_best=lambda x: x.get("edge_best").round(3),
-                edge_worst=lambda x: x.get("edge_worst").round(3),
-            )
-            .to_string(index=False)
-        )
+        print(display_df.to_string(index=False))
 
     if not fight_df.empty:
         # Top 10 fights where the best side (by edge) looks most underpriced

@@ -51,7 +51,7 @@ use_symmetric = st.sidebar.checkbox(
 )
 
 # Main tabs
-tab1, tab2 = st.tabs(["📊 Batch Predictions (CSV)", "⚔️ Fighter Comparison"])
+tab1, tab2, tab3 = st.tabs(["📊 Batch Predictions (CSV)", "⚔️ Fighter Comparison", "📈 Model Evaluation"])
 
 # Tab 1: Batch Predictions
 with tab1:
@@ -691,6 +691,35 @@ with tab2:
                 except Exception as e:
                     st.error(f"Error running prediction: {str(e)}")
                     logger.exception("Fighter comparison error")
+
+# Tab 3: Model Evaluation
+with tab3:
+    st.header("📈 Model Evaluation Report")
+    st.markdown("View the latest model evaluation metrics and performance analysis.")
+    
+    evaluation_file = PROJECT_ROOT / "reports_strict" / "model_evaluation_latest.html"
+    
+    if evaluation_file.exists():
+        try:
+            # Read HTML content
+            html_content = evaluation_file.read_text()
+            
+            # Display HTML
+            st.components.v1.html(html_content, height=800, scrolling=True)
+            
+            # Download button
+            st.download_button(
+                label="📥 Download Report",
+                data=html_content,
+                file_name="model_evaluation_latest.html",
+                mime="text/html"
+            )
+        except Exception as e:
+            st.error(f"Error loading evaluation report: {str(e)}")
+            logger.exception(e)
+    else:
+        st.warning(f"Evaluation report not found at: {evaluation_file}")
+        st.info("Make sure the file exists and is committed to your repository for Streamlit Cloud deployment.")
 
 # Footer
 st.markdown("---")

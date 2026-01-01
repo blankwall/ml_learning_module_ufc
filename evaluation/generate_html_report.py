@@ -378,8 +378,8 @@ def generate_html_report(
         }}
         
         .row-close {{
-            background: #fff3e0 !important;
-            border-left: 4px solid #ff9800;
+            background: #e8f5e9 !important;
+            border-left: 4px solid #4caf50;
         }}
         
         .prob-bar {{
@@ -506,9 +506,10 @@ def generate_html_report(
                             <tr>
                                 <th>Fight</th>
                                 <th>Model Prediction</th>
-                                <th>Market Odds</th>
-                                <th>Edge</th>
-                                <th>Actual Winner</th>
+                                <th>Winner</th>
+                                <th>Model %</th>
+                                <th>Market %</th>
+                                <th>Edge %</th>
                                 <th>Result</th>
                             </tr>
                         </thead>
@@ -526,8 +527,6 @@ def generate_html_report(
             market_prob_f1 = fight.get("market_prob_f1", 0.5)
             market_prob_f2 = 1.0 - market_prob_f1
             
-            edge = fight.get("edge", 0.0)
-            
             predicted_winner = fight["predicted_winner"]
             actual_winner = fight["actual_winner"]
             
@@ -543,8 +542,19 @@ def generate_html_report(
             else:
                 row_class = "row-incorrect"
             
+            # Get the actual winner's probabilities
+            if actual_winner == f1_name:
+                winner_model_prob = model_prob_f1
+                winner_market_prob = market_prob_f1
+            else:
+                winner_model_prob = model_prob_f2
+                winner_market_prob = market_prob_f2
+            
+            # Calculate edge for the winner
+            winner_edge = winner_model_prob - winner_market_prob
+            edge_pct = winner_edge * 100
+            
             # Edge formatting
-            edge_pct = edge * 100
             if abs(edge_pct) < 2:
                 edge_class = "neutral"
                 edge_symbol = ""
@@ -555,23 +565,13 @@ def generate_html_report(
                 edge_class = "negative"
                 edge_symbol = ""
             
-            # Result icon
+            # Result icon - simple: green check if correct, X if wrong
             if is_correct:
-                result_icon = "✓" if confidence > 0.4 else "~"
-                result_color = "#4caf50" if confidence > 0.4 else "#ff9800"
+                result_icon = "✓"
+                result_color = "#4caf50"  # Green
             else:
                 result_icon = "✗"
-                result_color = "#f44336"
-            
-            # Determine who to show as predicted (the higher prob fighter)
-            if model_prob_f1 > model_prob_f2:
-                pred_fighter = f1_name
-                pred_prob = model_prob_f1
-                market_implied = market_prob_f1
-            else:
-                pred_fighter = f2_name
-                pred_prob = model_prob_f2
-                market_implied = market_prob_f2
+                result_color = "#f44336"  # Red
             
             html += f"""
                             <tr class="{row_class}">
@@ -581,23 +581,19 @@ def generate_html_report(
                                     <div class="fighter-name">{f2_name}</div>
                                 </td>
                                 <td>
-                                    <strong>{pred_fighter}</strong><br>
-                                    <div class="prob-bar" style="margin-top: 5px;">
-                                        <div class="prob-fill" style="width: {pred_prob*100}%;"></div>
-                                        <div class="prob-text">{pred_prob:.1%}</div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="prob-bar">
-                                        <div class="prob-fill" style="width: {market_implied*100}%; background: #757575;"></div>
-                                        <div class="prob-text">{market_implied:.1%}</div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="edge {edge_class}">{edge_symbol}{edge_pct:.1f}%</span>
+                                    <strong>{predicted_winner}</strong>
                                 </td>
                                 <td>
                                     <strong>{actual_winner}</strong>
+                                </td>
+                                <td style="text-align: center; font-size: 1.1em; font-weight: 600;">
+                                    {winner_model_prob:.1%}
+                                </td>
+                                <td style="text-align: center; font-size: 1.1em; font-weight: 600; color: #757575;">
+                                    {winner_market_prob:.1%}
+                                </td>
+                                <td style="text-align: center;">
+                                    <span class="edge {edge_class}">{edge_symbol}{edge_pct:.1f}%</span>
                                 </td>
                                 <td style="text-align: center;">
                                     <span style="font-size: 1.5em; color: {result_color};">{result_icon}</span>
