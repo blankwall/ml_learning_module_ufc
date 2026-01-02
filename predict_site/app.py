@@ -52,7 +52,7 @@ use_symmetric = st.sidebar.checkbox(
 )
 
 # Main tabs
-tab1, tab2, tab3 = st.tabs(["📊 Batch Predictions (CSV)", "⚔️ Fighter Comparison", "📈 Model Evaluation"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Batch Predictions (CSV)", "⚔️ Fighter Comparison", "📈 Model Evaluation", "🔍 Fighter Search"])
 
 # Tab 1: Batch Predictions
 with tab1:
@@ -782,6 +782,631 @@ with tab3:
     else:
         st.warning(f"Evaluation report not found at: {evaluation_file}")
         st.info("Make sure the file exists and is committed to your repository for Streamlit Cloud deployment.")
+
+# Tab 4: Fighter Search
+with tab4:
+    st.header("🔍 Fighter Search & Statistics")
+    st.markdown("Search for a fighter to view their statistics and complete fight history.")
+    
+    # Comparison mode toggle
+    comparison_mode = st.checkbox(
+        "🔀 Enable Comparison Mode",
+        value=False,
+        key="comparison_mode_tab4",
+        help="Enable to compare two fighters side-by-side"
+    )
+    
+    # Initialize database connection
+    db = get_db()
+    
+    def search_fighters_for_tab(query: str, limit: int = 20):
+        """Search for fighters matching the query."""
+        if not query or len(query) < 2:
+            return []
+        
+        from database.schema import Fighter, Fight
+        from sqlalchemy import or_
+        
+        session = db.get_session()
+        try:
+            # Search by name (case-insensitive)
+            fighters = session.query(Fighter).filter(
+                Fighter.name.ilike(f"%{query}%")
+            ).limit(limit).all()
+            
+            # Get fight counts for each fighter
+            results = []
+            for fighter in fighters:
+                fight_count = session.query(Fight).filter(
+                    or_(Fight.fighter_1_id == fighter.id, Fight.fighter_2_id == fighter.id)
+                ).count()
+                
+                record = f"{fighter.wins or 0}-{fighter.losses or 0}-{fighter.draws or 0}"
+                results.append({
+                    'id': fighter.id,
+                    'name': fighter.name,
+                    'nickname': fighter.nickname or '',
+                    'record': record,
+                    'ufcstats_id': fighter.fighter_id,
+                    'age': fighter.age,
+                    'fight_count': fight_count
+                })
+            
+            # Sort by fight count (most active first), then by name
+            results.sort(key=lambda x: (-x['fight_count'], x['name']))
+            return results
+        finally:
+            session.close()
+    
+    def display_fighter_info(fighter_id: int, fighter_name: str, col=None):
+        """Display fighter information in a column or full width."""
+        from database.schema import Fighter, Fight, Event
+        from sqlalchemy import or_
+        
+        session = db.get_session()
+        try:
+            fighter = session.query(Fighter).filter(Fighter.id == fighter_id).first()
+            
+            if not fighter:
+                if col:
+                    col.error("Fighter not found.")
+                else:
+                    st.error("Fighter not found.")
+                return
+            
+            # Fighter Statistics Section
+            if col:
+                col.markdown(f"### 🥊 {fighter.name}")
+            else:
+                st.markdown("---")
+                st.subheader(f"🥊 {fighter.name}")
+            
+            if fighter.nickname:
+                if col:
+                    col.markdown(f"*'{fighter.nickname}'*")
+                else:
+                    st.markdown(f"*'{fighter.nickname}'*")
+            
+            # Basic Info
+            if col:
+                info_cols = col.columns(4)
+            else:
+                info_cols = st.columns(4)
+            
+            with info_cols[0]:
+                st.metric("Record", f"{fighter.wins or 0}-{fighter.losses or 0}-{fighter.draws or 0}")
+            
+            with info_cols[1]:
+                total_fights = (fighter.wins or 0) + (fighter.losses or 0) + (fighter.draws or 0)
+                st.metric("Total Fights", total_fights)
+            
+            with info_cols[2]:
+                win_rate = (fighter.wins or 0) / total_fights * 100 if total_fights > 0 else 0
+                st.metric("Win Rate", f"{win_rate:.1f}%")
+            
+            with info_cols[3]:
+                if fighter.age:
+                    st.metric("Age", fighter.age)
+            
+            # Physical Attributes
+            if col:
+                col.markdown("#### Physical Attributes")
+                phys_cols = col.columns(4)
+            else:
+                st.markdown("### Physical Attributes")
+                phys_cols = st.columns(4)
+            
+            with phys_cols[0]:
+                if fighter.height_cm:
+                    height_ft = fighter.height_cm / 30.48
+                    st.metric("Height", f"{height_ft:.1f} ft ({fighter.height_cm:.0f} cm)")
+            
+            with phys_cols[1]:
+                if fighter.weight_lbs:
+                    st.metric("Weight", f"{fighter.weight_lbs:.1f} lbs")
+            
+            with phys_cols[2]:
+                if fighter.reach_inches:
+                    st.metric("Reach", f"{fighter.reach_inches:.1f} in")
+            
+            with phys_cols[3]:
+                if fighter.stance:
+                    st.metric("Stance", fighter.stance)
+            
+            # Career Statistics
+            if col:
+                col.markdown("#### Career Statistics")
+                stats_cols = col.columns(4)
+            else:
+                st.markdown("### Career Statistics")
+                stats_cols = st.columns(4)
+            
+            with stats_cols[0]:
+                if fighter.sig_strikes_landed_per_min:
+                    st.metric("Sig Strikes/Min", f"{fighter.sig_strikes_landed_per_min:.2f}")
+            
+            with stats_cols[1]:
+                if fighter.striking_accuracy:
+                    st.metric("Striking Accuracy", f"{fighter.striking_accuracy:.1f}%")
+            
+            with stats_cols[2]:
+                if fighter.takedown_avg_per_15min:
+                    st.metric("Takedowns/15min", f"{fighter.takedown_avg_per_15min:.2f}")
+            
+            with stats_cols[3]:
+                if fighter.takedown_accuracy:
+                    st.metric("TD Accuracy", f"{fighter.takedown_accuracy:.1f}%")
+            
+            # Fight History
+            if col:
+                col.markdown("---")
+                col.subheader("📋 Fight History")
+            else:
+                st.markdown("---")
+                st.subheader("📋 Fight History")
+            
+            # Get all fights for this fighter
+            fights = session.query(Fight).join(Event).filter(
+                or_(Fight.fighter_1_id == fighter.id, Fight.fighter_2_id == fighter.id)
+            ).order_by(Event.date).all()
+            
+            if fights:
+                # Create fight history dataframe
+                fight_data = []
+                for fight in fights:
+                    # Determine opponent
+                    if fight.fighter_1_id == fighter.id:
+                        opponent = fight.fighter_2
+                        was_fighter_1 = True
+                    else:
+                        opponent = fight.fighter_1
+                        was_fighter_1 = False
+                    
+                    # Determine result
+                    if fight.result == 'draw':
+                        result = "Draw"
+                        result_icon = "🤝"
+                    elif fight.result == 'no_contest':
+                        result = "No Contest"
+                        result_icon = "❌"
+                    elif fight.winner_id == fighter.id:
+                        result = "Win"
+                        result_icon = "✅"
+                    elif fight.winner_id == opponent.id if opponent else None:
+                        result = "Loss"
+                        result_icon = "❌"
+                    else:
+                        result = "Unknown"
+                        result_icon = "❓"
+                    
+                    # Store date as-is (will convert to datetime later for sorting)
+                    event_date = None
+                    if fight.event and fight.event.date:
+                        event_date = fight.event.date
+                    
+                    fight_data.append({
+                        "Date": event_date,
+                        "Event": fight.event.name if fight.event else "N/A",
+                        "Opponent": opponent.name if opponent else "Unknown",
+                        "Weight Class": fight.weight_class or "N/A",
+                        "Result": f"{result_icon} {result}",
+                        "Method": fight.method or "N/A",
+                        "Round": fight.round_finished if fight.round_finished else "N/A",
+                    })
+                
+                fight_df = pd.DataFrame(fight_data)
+                
+                # Convert Date column to datetime for proper sorting
+                if "Date" in fight_df.columns:
+                    # Convert to datetime, handling both string and datetime objects
+                    fight_df["Date"] = pd.to_datetime(fight_df["Date"], errors='coerce')
+                    # Sort by date (chronological order - oldest first)
+                    fight_df = fight_df.sort_values("Date", na_position='last')
+                    # Keep as datetime so Streamlit can sort it properly
+                    # Streamlit will display datetime objects nicely
+                
+                if col:
+                    col.dataframe(fight_df, use_container_width=True, hide_index=True)
+                else:
+                    st.dataframe(fight_df, use_container_width=True, hide_index=True)
+                
+                # Summary statistics
+                if col:
+                    col.markdown("#### Fight History Summary")
+                    summary_cols = col.columns(3)
+                else:
+                    st.markdown("### Fight History Summary")
+                    summary_cols = st.columns(3)
+                
+                wins = sum(1 for f in fights if f.winner_id == fighter.id)
+                losses = sum(1 for f in fights if f.winner_id and f.winner_id != fighter.id and (f.fighter_1_id == fighter.id or f.fighter_2_id == fighter.id))
+                draws = sum(1 for f in fights if f.result == 'draw')
+                
+                with summary_cols[0]:
+                    st.metric("Wins in Database", wins)
+                
+                with summary_cols[1]:
+                    st.metric("Losses in Database", losses)
+                
+                with summary_cols[2]:
+                    st.metric("Draws/NC", draws)
+            else:
+                if col:
+                    col.info("No fight history found in database for this fighter.")
+                else:
+                    st.info("No fight history found in database for this fighter.")
+        finally:
+            session.close()
+    
+    # Search interface - single or dual depending on comparison mode
+    if comparison_mode:
+        col1_search, col2_search = st.columns(2)
+        
+        with col1_search:
+            st.subheader("Fighter 1")
+            fighter_1_query = st.text_input(
+                "Search Fighter 1",
+                value="",
+                key="fighter_1_search_tab4",
+                help="Type to search for the first fighter"
+            )
+        
+        with col2_search:
+            st.subheader("Fighter 2")
+            fighter_2_query = st.text_input(
+                "Search Fighter 2",
+                value="",
+                key="fighter_2_search_tab4",
+                help="Type to search for the second fighter"
+            )
+        
+        selected_fighter_1_id = None
+        selected_fighter_1_name = None
+        selected_fighter_2_id = None
+        selected_fighter_2_name = None
+        
+        # Fighter 1 selection
+        if fighter_1_query:
+            matches = search_fighters_for_tab(fighter_1_query)
+            if matches:
+                fighter_options = []
+                for f in matches:
+                    display = f"{f['name']}"
+                    if f['nickname']:
+                        display += f" '{f['nickname']}'"
+                    display += f" (ID: {f['id']}, Record: {f['record']}"
+                    if f['fight_count'] > 0:
+                        display += f", {f['fight_count']} fights"
+                    display += ")"
+                    fighter_options.append((f['id'], display, f['name']))
+                
+                if len(matches) == 1:
+                    selected = fighter_options[0]
+                    selected_fighter_1_id = selected[0]
+                    selected_fighter_1_name = selected[2]
+                else:
+                    selected_display = st.selectbox(
+                        "Select Fighter 1",
+                        options=[opt[1] for opt in fighter_options],
+                        key="fighter_1_select_tab4"
+                    )
+                    for opt in fighter_options:
+                        if opt[1] == selected_display:
+                            selected_fighter_1_id = opt[0]
+                            selected_fighter_1_name = opt[2]
+                            break
+        
+        # Fighter 2 selection
+        if fighter_2_query:
+            matches = search_fighters_for_tab(fighter_2_query)
+            if matches:
+                fighter_options = []
+                for f in matches:
+                    display = f"{f['name']}"
+                    if f['nickname']:
+                        display += f" '{f['nickname']}'"
+                    display += f" (ID: {f['id']}, Record: {f['record']}"
+                    if f['fight_count'] > 0:
+                        display += f", {f['fight_count']} fights"
+                    display += ")"
+                    fighter_options.append((f['id'], display, f['name']))
+                
+                if len(matches) == 1:
+                    selected = fighter_options[0]
+                    selected_fighter_2_id = selected[0]
+                    selected_fighter_2_name = selected[2]
+                else:
+                    selected_display = st.selectbox(
+                        "Select Fighter 2",
+                        options=[opt[1] for opt in fighter_options],
+                        key="fighter_2_select_tab4"
+                    )
+                    for opt in fighter_options:
+                        if opt[1] == selected_display:
+                            selected_fighter_2_id = opt[0]
+                            selected_fighter_2_name = opt[2]
+                            break
+        
+        # Display both fighters side-by-side
+        if selected_fighter_1_id and selected_fighter_2_id:
+            st.markdown("---")
+            col1_display, col2_display = st.columns(2)
+            with col1_display:
+                display_fighter_info(selected_fighter_1_id, selected_fighter_1_name, col=col1_display)
+            with col2_display:
+                display_fighter_info(selected_fighter_2_id, selected_fighter_2_name, col=col2_display)
+            
+            # Common Opponents Analysis
+            st.markdown("---")
+            st.subheader("🔗 Common Opponents & Transitive Analysis")
+            
+            def analyze_common_opponents(fighter_1_id: int, fighter_2_id: int):
+                """Find common opponents and transitive connections."""
+                from database.schema import Fighter, Fight, Event
+                from sqlalchemy import or_
+                from collections import defaultdict
+                
+                session = db.get_session()
+                try:
+                    # Get all fights for both fighters
+                    f1_fights = session.query(Fight).filter(
+                        or_(Fight.fighter_1_id == fighter_1_id, Fight.fighter_2_id == fighter_1_id)
+                    ).all()
+                    
+                    f2_fights = session.query(Fight).filter(
+                        or_(Fight.fighter_1_id == fighter_2_id, Fight.fighter_2_id == fighter_2_id)
+                    ).all()
+                    
+                    # Build opponent sets and results
+                    f1_opponents = {}  # opponent_id -> (result, fight)
+                    f2_opponents = {}  # opponent_id -> (result, fight)
+                    
+                    for fight in f1_fights:
+                        if fight.fighter_1_id == fighter_1_id:
+                            opponent_id = fight.fighter_2_id
+                        else:
+                            opponent_id = fight.fighter_1_id
+                        
+                        if fight.winner_id == fighter_1_id:
+                            result = "Win"
+                        elif fight.winner_id == opponent_id:
+                            result = "Loss"
+                        elif fight.result == 'draw':
+                            result = "Draw"
+                        else:
+                            result = "Unknown"
+                        
+                        f1_opponents[opponent_id] = (result, fight)
+                    
+                    for fight in f2_fights:
+                        if fight.fighter_1_id == fighter_2_id:
+                            opponent_id = fight.fighter_2_id
+                        else:
+                            opponent_id = fight.fighter_1_id
+                        
+                        if fight.winner_id == fighter_2_id:
+                            result = "Win"
+                        elif fight.winner_id == opponent_id:
+                            result = "Loss"
+                        elif fight.result == 'draw':
+                            result = "Draw"
+                        else:
+                            result = "Unknown"
+                        
+                        f2_opponents[opponent_id] = (result, fight)
+                    
+                    # Find common opponents
+                    common_opponent_ids = set(f1_opponents.keys()) & set(f2_opponents.keys())
+                    
+                    # Build fight graph for transitive analysis
+                    # Get all fights to build a win/loss graph
+                    all_fights = session.query(Fight).filter(
+                        Fight.winner_id.isnot(None)
+                    ).all()
+                    
+                    # Build adjacency list: fighter_id -> {opponents they beat}
+                    win_graph = defaultdict(set)
+                    loss_graph = defaultdict(set)
+                    
+                    for fight in all_fights:
+                        if fight.winner_id:
+                            if fight.fighter_1_id == fight.winner_id:
+                                loser_id = fight.fighter_2_id
+                            else:
+                                loser_id = fight.fighter_1_id
+                            
+                            win_graph[fight.winner_id].add(loser_id)
+                            loss_graph[loser_id].add(fight.winner_id)
+                    
+                    # Find transitive connections (up to 3 degrees of separation)
+                    # We want to find paths like: Fighter1 beat A, A beat B, B beat Fighter2
+                    def find_transitive_paths(start_id: int, target_id: int, max_depth: int = 3):
+                        """Find paths from start to target through fight history."""
+                        paths = []
+                        visited = set()
+                        
+                        def dfs(current_id: int, path: list, depth: int):
+                            if depth > max_depth or current_id in visited:
+                                return
+                            
+                            visited.add(current_id)
+                            
+                            if current_id == target_id and len(path) > 0:
+                                paths.append(path.copy())
+                                visited.remove(current_id)
+                                return
+                            
+                            # Follow wins: if current fighter beat someone, that someone might have connections
+                            for beaten_id in win_graph.get(current_id, []):
+                                if beaten_id not in visited:
+                                    path.append(('beat', beaten_id))
+                                    dfs(beaten_id, path, depth + 1)
+                                    path.pop()
+                            
+                            # Follow losses: if current fighter lost to someone, that someone might have connections
+                            for lost_to_id in loss_graph.get(current_id, []):
+                                if lost_to_id not in visited:
+                                    path.append(('lost_to', lost_to_id))
+                                    dfs(lost_to_id, path, depth + 1)
+                                    path.pop()
+                            
+                            visited.remove(current_id)
+                        
+                        dfs(start_id, [], 0)
+                        # Sort by path length (shorter paths first)
+                        paths.sort(key=len)
+                        return paths[:10]  # Return top 10 shortest paths
+                    
+                    transitive_paths = find_transitive_paths(fighter_1_id, fighter_2_id)
+                    
+                    return common_opponent_ids, f1_opponents, f2_opponents, transitive_paths, session
+                except Exception as e:
+                    logger.exception(f"Error analyzing common opponents: {e}")
+                    return set(), {}, {}, [], session
+            
+            common_opp_ids, f1_opps, f2_opps, transitive_paths, session = analyze_common_opponents(
+                selected_fighter_1_id, selected_fighter_2_id
+            )
+            
+            try:
+                from database.schema import Fighter
+                
+                # Display common opponents
+                if common_opp_ids:
+                    st.markdown("### 📊 Direct Common Opponents")
+                    
+                    common_opp_data = []
+                    for opp_id in common_opp_ids:
+                        opp = session.query(Fighter).filter(Fighter.id == opp_id).first()
+                        if opp:
+                            f1_result, f1_fight = f1_opps[opp_id]
+                            f2_result, f2_fight = f2_opps[opp_id]
+                            
+                            # Get fight dates
+                            f1_date = "N/A"
+                            f2_date = "N/A"
+                            if f1_fight and f1_fight.event:
+                                f1_date = f1_fight.event.date if isinstance(f1_fight.event.date, str) else f1_fight.event.date.strftime("%Y-%m-%d") if hasattr(f1_fight.event.date, 'strftime') else str(f1_fight.event.date)
+                            if f2_fight and f2_fight.event:
+                                f2_date = f2_fight.event.date if isinstance(f2_fight.event.date, str) else f2_fight.event.date.strftime("%Y-%m-%d") if hasattr(f2_fight.event.date, 'strftime') else str(f2_fight.event.date)
+                            
+                            # Determine advantage
+                            if f1_result == "Win" and f2_result == "Loss":
+                                advantage = f"{selected_fighter_1_name} (beat opponent, {selected_fighter_2_name} lost)"
+                            elif f1_result == "Loss" and f2_result == "Win":
+                                advantage = f"{selected_fighter_2_name} (beat opponent, {selected_fighter_1_name} lost)"
+                            elif f1_result == "Win" and f2_result == "Win":
+                                advantage = "Both won"
+                            elif f1_result == "Loss" and f2_result == "Loss":
+                                advantage = "Both lost"
+                            else:
+                                advantage = "Inconclusive"
+                            
+                            common_opp_data.append({
+                                "Common Opponent": opp.name,
+                                f"{selected_fighter_1_name} Result": f1_result,
+                                f"{selected_fighter_1_name} Date": f1_date,
+                                f"{selected_fighter_2_name} Result": f2_result,
+                                f"{selected_fighter_2_name} Date": f2_date,
+                                "Analysis": advantage
+                            })
+                    
+                    if common_opp_data:
+                        common_opp_df = pd.DataFrame(common_opp_data)
+                        st.dataframe(common_opp_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No direct common opponents found in fight history.")
+                
+                # Display transitive connections
+                if transitive_paths:
+                    st.markdown("### 🔄 Transitive Connections")
+                    st.markdown("These show how the fighters are connected through their fight history (e.g., Fighter 1 beat A, A beat B, B beat Fighter 2).")
+                    
+                    transitive_data = []
+                    for path in transitive_paths[:10]:  # Limit to top 10 paths
+                        path_str_parts = [selected_fighter_1_name]
+                        for i, (relation, fighter_id) in enumerate(path):
+                            fighter = session.query(Fighter).filter(Fighter.id == fighter_id).first()
+                            if fighter:
+                                if relation == 'beat':
+                                    path_str_parts.append(f"beat {fighter.name}")
+                                else:
+                                    path_str_parts.append(f"lost to {fighter.name}")
+                        
+                        path_str_parts.append(selected_fighter_2_name)
+                        path_str = " → ".join(path_str_parts)
+                        
+                        transitive_data.append({
+                            "Connection Path": path_str,
+                            "Path Length": len(path) + 1
+                        })
+                    
+                    if transitive_data:
+                        transitive_df = pd.DataFrame(transitive_data)
+                        st.dataframe(transitive_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No transitive connections found (fighters are not connected through common opponents in fight history).")
+                    
+            finally:
+                session.close()
+        elif selected_fighter_1_id:
+            st.markdown("---")
+            display_fighter_info(selected_fighter_1_id, selected_fighter_1_name)
+        elif selected_fighter_2_id:
+            st.markdown("---")
+            display_fighter_info(selected_fighter_2_id, selected_fighter_2_name)
+    else:
+        # Single fighter search (original behavior)
+        fighter_query = st.text_input(
+            "Search for a fighter",
+            value="",
+            key="fighter_search_tab4",
+            help="Type to search for a fighter (e.g., 'Jon Jones', 'Silva', etc.)"
+        )
+        
+        selected_fighter_id = None
+        selected_fighter_name = None
+        
+        if fighter_query:
+            matches = search_fighters_for_tab(fighter_query)
+            
+            if matches:
+                # Create display strings for selectbox
+                fighter_options = []
+                for f in matches:
+                    display = f"{f['name']}"
+                    if f['nickname']:
+                        display += f" '{f['nickname']}'"
+                    display += f" (ID: {f['id']}, Record: {f['record']}"
+                    if f['fight_count'] > 0:
+                        display += f", {f['fight_count']} fights"
+                    display += ")"
+                    fighter_options.append((f['id'], display, f['name']))
+                
+                if len(matches) == 1:
+                    # Auto-select if only one match
+                    selected = fighter_options[0]
+                    selected_fighter_id = selected[0]
+                    selected_fighter_name = selected[2]
+                else:
+                    # Show selectbox for multiple matches
+                    selected_display = st.selectbox(
+                        "Select Fighter",
+                        options=[opt[1] for opt in fighter_options],
+                        key="fighter_select_tab4",
+                        help=f"Found {len(matches)} matches. Select the fighter to view."
+                    )
+                    
+                    # Find selected fighter
+                    for opt in fighter_options:
+                        if opt[1] == selected_display:
+                            selected_fighter_id = opt[0]
+                            selected_fighter_name = opt[2]
+                            break
+        
+        # Display fighter information
+        if selected_fighter_id:
+            display_fighter_info(selected_fighter_id, selected_fighter_name)
 
 # Footer
 st.markdown("---")
