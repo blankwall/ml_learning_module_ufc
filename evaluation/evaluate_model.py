@@ -214,6 +214,7 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp_short = datetime.now().strftime("%Y%m%d")
 
     # ------------------------------------------------------------------
     # 1) Load odds and build index
@@ -926,22 +927,112 @@ def main() -> None:
     # ------------------------------------------------------------------
     # Save JSON report and plots
     # ------------------------------------------------------------------
+    
+    # Calculate accuracy metrics
+    row_preds = (p_model >= 0.5).astype(int)
+    row_correct = (row_preds == y_true).sum()
+    row_total = len(y_true)
+    overall_accuracy = row_correct / row_total if row_total > 0 else float("nan")
+    
+    # Calculate accuracy by favorites/underdogs
+    # Determine if fighter_1 is favorite based on market odds
+    merged["is_favorite"] = merged["market_prob_f1"] >= 0.5
+    merged["prediction_correct"] = (row_preds == y_true)
+    
+    favorites_mask = merged["is_favorite"]
+    underdogs_mask = ~favorites_mask
+    
+    favorites_correct = merged.loc[favorites_mask, "prediction_correct"].sum()
+    favorites_total = favorites_mask.sum()
+    favorites_accuracy = favorites_correct / favorites_total if favorites_total > 0 else float("nan")
+    
+    underdogs_correct = merged.loc[underdogs_mask, "prediction_correct"].sum()
+    underdogs_total = underdogs_mask.sum()
+    underdogs_accuracy = underdogs_correct / underdogs_total if underdogs_total > 0 else float("nan")
+    
+    # Calculate accuracy by confidence buckets (percentile-based)
+    # Use the higher probability for each row (max of p_model and 1-p_model)
+    # since we want to look at the model's confidence in its pick
+    model_confidence = np.maximum(p_model, 1.0 - p_model)
+    
+    # Calculate percentiles to find top 10% and top 25% most confident predictions
+    top_10_threshold = np.percentile(model_confidence, 90)  # Top 10% = 90th percentile
+    top_25_threshold = np.percentile(model_confidence, 75)  # Top 25% = 75th percentile
+    
+    # Create masks for top percentiles
+    top_10_mask = model_confidence >= top_10_threshold
+    top_25_mask = model_confidence >= top_25_threshold
+    
+    by_confidence = {}
+    
+    # Top 10% bucket
+    if top_10_mask.sum() > 0:
+        top_10_correct = (row_preds[top_10_mask] == y_true[top_10_mask]).sum()
+        top_10_total = top_10_mask.sum()
+        top_10_accuracy = top_10_correct / top_10_total if top_10_total > 0 else None
+        by_confidence["top_10_pct"] = {
+            "min_p": round(float(top_10_threshold), 4),
+            "accuracy": round(top_10_accuracy, 4) if top_10_accuracy is not None else None,
+            "n": int(top_10_total)
+        }
+    else:
+        by_confidence["top_10_pct"] = {
+            "min_p": None,
+            "accuracy": None,
+            "n": 0
+        }
+    
+    # Top 25% bucket
+    if top_25_mask.sum() > 0:
+        top_25_correct = (row_preds[top_25_mask] == y_true[top_25_mask]).sum()
+        top_25_total = top_25_mask.sum()
+        top_25_accuracy = top_25_correct / top_25_total if top_25_total > 0 else None
+        by_confidence["top_25_pct"] = {
+            "min_p": round(float(top_25_threshold), 4),
+            "accuracy": round(top_25_accuracy, 4) if top_25_accuracy is not None else None,
+            "n": int(top_25_total)
+        }
+    else:
+        by_confidence["top_25_pct"] = {
+            "min_p": None,
+            "accuracy": None,
+            "n": 0
+        }
+    
+    # Build comprehensive report
     report = {
-        "timestamp": timestamp,
         "model_name": model_name,
-        "min_year": args.min_year,
+        "holdout_from_year": args.min_year,
+        "timestamp": timestamp_short,
+        "overall": {
+            "accuracy": round(overall_accuracy, 4) if not np.isnan(overall_accuracy) else None,
+            "n_correct": int(row_correct),
+            "n_total": int(row_total),
+            "brier": round(float(brier), 4) if not np.isnan(brier) else None,
+            "auc": round(float(auc), 4) if not np.isnan(auc) else None,
+            "log_loss": round(float(ll), 4) if not np.isnan(ll) else None,
+        },
+        "by_bucket": {
+            "favorites": {
+                "accuracy": round(favorites_accuracy, 4) if not np.isnan(favorites_accuracy) else None,
+                "n": int(favorites_total)
+            },
+            "underdogs": {
+                "accuracy": round(underdogs_accuracy, 4) if not np.isnan(underdogs_accuracy) else None,
+                "n": int(underdogs_total)
+            }
+        },
+        "by_confidence": by_confidence,
+        # Additional metrics for backward compatibility
         "n_eval_rows": int(len(merged)),
         "n_odds_rows": int(len(odds_df)),
-        "brier_score": float(brier),
-        "log_loss": float(ll),
-        "auc": float(auc),
         "n_bets_edge_gt_0": int(n_bets),
-        "roi_flat_edge_gt_0": float(roi_flat),
+        "roi_flat_edge_gt_0": round(float(roi_flat), 4) if not np.isnan(roi_flat) else None,
     }
 
     report_path = output_dir / f"model_eval_{timestamp}.json"
     with report_path.open("w") as f:
-        json.dump(report, f, indent=2)
+        json.dump(report, f, indent=2, allow_nan=False)
 
     logger.success(f"Saved evaluation report to {report_path}")
 

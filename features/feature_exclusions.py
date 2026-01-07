@@ -15,9 +15,10 @@ Usage:
     EXCLUDED_COLUMNS to drop only those.
 
 After changing this file:
-  1. Re-create the training dataset
-  2. Retrain the model
-  3. Re-export the feature schema
+  1. Re-create the training dataset: `python -m features.feature_pipeline --create --feature-set full`
+  2. Retrain the model: The schema will be automatically exported after training
+  3. (Optional) Export schema from dataset without training: 
+     `python scripts/export_schema_from_dataset.py --data-path data/processed/training_data.csv`
 """
 
 from typing import Iterable, List, Set
@@ -29,6 +30,43 @@ EXCLUDED_BASE_FEATURES: List[str] = [
     # "early_finish_advantage",
     "years_since_last_win",
     "age_x_years_since_last_win"
+
+
+# Striking stats
+    "sig_strikes_landed_per_min",
+    "striking_accuracy",
+    "striking_defense",
+    "striking_differential",
+    "defensive_efficiency",
+    "striking_volume_control",
+    "distance_accuracy_last_3",
+    "clinch_accuracy_last_3",
+    "ground_output_per_min_last_3",
+    "leg_strike_rate_last_3",
+    "knockdowns_last_3",
+    "striking_accuracy_last_3",
+    "sig_strikes_landed_per_min_last_3",
+    "head_strike_rate_last_3",
+    "body_strike_rate_last_3",
+    "ground_strike_rate_last_3",
+    "distance_strike_rate_last_3",
+    "distance_accuracy_lifetime",
+    "clinch_accuracy_lifetime",
+    "ground_output_per_min_lifetime",
+    "leg_strike_rate_lifetime",
+    "knockdowns_lifetime",
+    "head_strike_rate_lifetime",
+    "body_strike_rate_lifetime",
+    "ground_strike_rate_lifetime",
+    "distance_strike_rate_lifetime",
+    "sig_strikes_landed_per_min_lifetime",
+    "striking_accuracy_lifetime",
+    
+    # Grappling stats
+    "takedown_avg_per_15min",
+    "takedown_accuracy",
+    "takedown_defense",
+    "submission_avg_per_15min"
 ]
 
 # Exact column names in the final training DataFrame to drop.

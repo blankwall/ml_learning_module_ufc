@@ -160,14 +160,14 @@ class FeatureRegistry:
     @staticmethod
     def _extract_striking(context: Dict) -> Dict[str, float]:
         """Extract striking features"""
-        fighter = context["fighter"]
-        return extract_striking_features(fighter)
+        # Pass full context to ensure point-in-time safety
+        return extract_striking_features(context)
     
     @staticmethod
     def _extract_grappling(context: Dict) -> Dict[str, float]:
         """Extract grappling features"""
-        fighter = context["fighter"]
-        return extract_grappling_features(fighter)
+        # Pass full context to ensure point-in-time safety
+        return extract_grappling_features(context)
     
     @staticmethod
     def _extract_career_stats(context: Dict) -> Dict[str, float]:
@@ -556,9 +556,9 @@ class FeatureBuilder:
         # Get fight history
         fight_history = self.get_fight_history(fighter_id, as_of_date)
         
-        # Get fight stats if needed
+        # Get fight stats if needed (for striking, grappling, and recent features)
         fight_stats_by_fight_id = {}
-        if any(f in feature_set for f in ["recent_striking", "recent_grappling"]):
+        if any(f in feature_set for f in ["striking", "recent_striking", "grappling", "recent_grappling"]):
             # Check if fight_history has the fight_id column before accessing it
             if len(fight_history) > 0 and "fight_id" in fight_history.columns:
                 fight_ids = [
@@ -581,6 +581,7 @@ class FeatureBuilder:
             "lambda_decay": self.lambda_decay,
             "get_fighter_record": get_fighter_record_as_of,  # Pass wrapped version
             "fight_stats_by_fight_id": fight_stats_by_fight_id,
+            "session": self.session,  # Needed for querying Fight objects in striking features
         }
         
         # Extract features in order
