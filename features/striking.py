@@ -5,7 +5,7 @@ Striking statistics, accuracy, defense, and related metrics
 
 import pandas as pd
 from typing import Dict, Optional
-from database.schema import Fighter,Fight
+from database.schema import Fighter, Fight
 import numpy as np
 from datetime import datetime
 
@@ -39,6 +39,11 @@ def extract_fight_details(fight: Fight, fighter_number: str) -> Dict[str, float]
     sig_strikes = fight.fight_stats.significant_strikes[fighter_number]
     totals = fight.fight_stats.fighter_1_totals if fighter_number == "fighter_1" else fight.fight_stats.fighter_2_totals
     
+    # Get opponent's stats for defense/absorption calculation
+    opp_number = "fighter_2" if fighter_number == "fighter_1" else "fighter_1"
+    opp_sig_strikes = fight.fight_stats.significant_strikes.get(opp_number, {}) if fight.fight_stats.significant_strikes else {}
+    opp_totals = fight.fight_stats.fighter_2_totals if fighter_number == "fighter_1" else fight.fight_stats.fighter_1_totals
+    
     # Check if required keys exist, return None if data is incomplete
     required_keys = ["sig_strikes_total", "head_strikes", "body_strikes", "leg_strikes", 
                      "distance_strikes", "clinch_strikes", "ground_strikes"]
@@ -68,6 +73,17 @@ def extract_fight_details(fight: Fight, fighter_number: str) -> Dict[str, float]
 
     sig_strikes_landed_per_min = sig_total_landed / duration_min
     striking_accuracy = sig_total_landed / sig_total_attempted if sig_total_attempted > 0 else 0
+    
+    # Calculate opponent's striking stats (for defense/absorption)
+    opp_sig_total_landed, opp_sig_total_attempted = parse_strike_fraction(
+        opp_sig_strikes.get("sig_strikes_total", "0 of 0")
+    )
+    opp_sig_strikes_landed_per_min = opp_sig_total_landed / duration_min if duration_min > 0 else 0.0
+    opp_striking_accuracy = opp_sig_total_landed / opp_sig_total_attempted if opp_sig_total_attempted > 0 else 0.0
+    
+    # Striking defense = 1 - opponent's accuracy (percentage of opponent strikes avoided)
+    # Higher defense = opponent lands fewer strikes
+    striking_defense_fight = 1.0 - opp_striking_accuracy if opp_striking_accuracy > 0 else 0.0
 
     # Validate strike data consistency
     # Target areas (head/body/leg) should sum to sig_total_landed
@@ -104,44 +120,94 @@ def extract_fight_details(fight: Fight, fighter_number: str) -> Dict[str, float]
         "sig_strikes_landed_per_min": sig_strikes_landed_per_min,
         "sig_total_landed": sig_total_landed,
         "striking_accuracy": striking_accuracy,
+        # Opponent stats (for defense/absorption calculation)
+        "opp_sig_strikes_landed_per_min": opp_sig_strikes_landed_per_min,
+        "striking_defense": striking_defense_fight,
         "fight_key": key
     }
     # from pprint import pprint
     # pprint(fight_metrics)
     return fight_metrics
 
-def extract_striking_features(fighter: Fighter) -> Dict[str, float]:
+def extract_striking_features(context: Dict) -> Dict[str, float]:
     """
     Extract striking-related features from a fighter.
     
-    Pure function that takes a Fighter object and returns striking features.
+    POINT-IN-TIME SAFE: Uses fight_history filtered by as_of_date to ensure
+    features are computed strictly up to the fight date, not including future fights.
     
     Args:
-        fighter: Fighter database object
-        
+        context: Dictionary containing:
+            - fighter: Fighter database object
+            - fight_history: DataFrame with fight history (date-filtered by as_of_date)
+            - fight_stats_by_fight_id: Dictionary mapping fight_id to FightStats object
+            - fighter_id: Fighter ID
+            
     Returns:
         Dictionary of striking features
     """
-    # print(fighter.name)
-    # from pprint import pprint
-    # pprint(dir(fighter))
-    # exit(1)
+    fighter = context["fighter"]
+    fight_history = context.get("fight_history", pd.DataFrame())
+    fight_stats_by_fight_id = context.get("fight_stats_by_fight_id", {})
+    fighter_id = context.get("fighter_id", fighter.id)
+    
     recent_metrics = []
+    
+    # Fallback to global stats only if no fight history (for fighters with no fights)
+    # But prefer computing from fight_history for point-in-time safety
     sig_strikes_landed = fighter.sig_strikes_landed_per_min or 0.0
     striking_accuracy = fighter.striking_accuracy or 0.0
     sig_strikes_absorbed = fighter.sig_strikes_absorbed_per_min or 0.0
     striking_defense = fighter.striking_defense or 0.0
     
-    # Collect fight metrics from both fighter_1 and fighter_2 fights
-    for fight in fighter.fights_as_fighter_1:
-        fight_metrics = extract_fight_details(fight, "fighter_1")
-        if fight_metrics is not None:
-            recent_metrics.append(fight_metrics)
-    
-    for fight in fighter.fights_as_fighter_2:
-        fight_metrics = extract_fight_details(fight, "fighter_2")
-        if fight_metrics is not None:
-            recent_metrics.append(fight_metrics)
+    # POINT-IN-TIME SAFE: Use fight_history (already filtered by as_of_date) instead of
+    # fighter.fights_as_fighter_1/2 which includes ALL fights regardless of date
+    if len(fight_history) > 0 and "fight_id" in fight_history.columns:
+        # Get fight IDs from date-filtered fight_history
+        fight_ids = [
+            int(fid) for fid in fight_history["fight_id"].tolist()
+            if pd.notna(fid)
+        ]
+        
+        # Query Fight objects for these specific fights
+        from database.schema import Fight
+        session = context.get("session")
+        if session is not None:
+            fights = (
+                session.query(Fight)
+                .filter(Fight.id.in_(fight_ids))
+                .all()
+            )
+            
+            # Build a mapping of fight_id to Fight object
+            fight_by_id = {f.id: f for f in fights}
+            
+            # Extract metrics from each fight in chronological order
+            for _, row in fight_history.iterrows():
+                fight_id = int(row["fight_id"])
+                fight = fight_by_id.get(fight_id)
+                if fight is None:
+                    continue
+                
+                # Determine if this fighter was fighter_1 or fighter_2
+                is_fighter_1 = bool(row.get("is_fighter_1", False))
+                fighter_number = "fighter_1" if is_fighter_1 else "fighter_2"
+                
+                fight_metrics = extract_fight_details(fight, fighter_number)
+                if fight_metrics is not None:
+                    recent_metrics.append(fight_metrics)
+    else:
+        # Fallback: if no fight_history provided, use old method (for backward compatibility)
+        # This should rarely happen in normal usage
+        for fight in fighter.fights_as_fighter_1:
+            fight_metrics = extract_fight_details(fight, "fighter_1")
+            if fight_metrics is not None:
+                recent_metrics.append(fight_metrics)
+        
+        for fight in fighter.fights_as_fighter_2:
+            fight_metrics = extract_fight_details(fight, "fighter_2")
+            if fight_metrics is not None:
+                recent_metrics.append(fight_metrics)
     
     # print("Total fights", len(recent_metrics))
     
@@ -199,6 +265,10 @@ def extract_striking_features(fighter: Fighter) -> Dict[str, float]:
         sig_strikes_landed_per_min_lifetime = np.mean([m['sig_strikes_landed_per_min'] for m in recent_metrics])
         striking_accuracy_lifetime = np.mean([m['striking_accuracy'] for m in recent_metrics])
         sig_strikes_landed_lifetime_mean = np.mean([m['sig_total_landed'] for m in recent_metrics])
+        
+        # Compute defense and absorption from fight history
+        sig_strikes_absorbed_per_min_lifetime = np.mean([m.get('opp_sig_strikes_landed_per_min', 0) for m in recent_metrics])
+        striking_defense_lifetime = np.mean([m.get('striking_defense', 0) for m in recent_metrics])
     else:
         # No fight history - use defaults
         distance_accuracy_last_3 = 0.0
@@ -226,6 +296,8 @@ def extract_striking_features(fighter: Fighter) -> Dict[str, float]:
         sig_strikes_landed_per_min_lifetime = 0.0
         striking_accuracy_lifetime = 0.0
         sig_strikes_landed_lifetime_mean = 0.0
+        sig_strikes_absorbed_per_min_lifetime = 0.0
+        striking_defense_lifetime = 0.0
     # striking_differential_lifetime = np.mean([m['striking_differential'] for m in recent_metrics])
     # defensive_efficiency_lifetime = np.mean([m['defensive_efficiency'] for m in recent_metrics])
     # striking_volume_control_lifetime = np.mean([m['striking_volume_control'] for m in recent_metrics])
@@ -265,11 +337,6 @@ def extract_striking_features(fighter: Fighter) -> Dict[str, float]:
 
     # # Derived features
     
-    # Defensive efficiency: defense rate adjusted for volume absorbed
-    # Higher defense with lower absorption = better efficiency
-    defensive_efficiency = striking_defense * safe_divide(
-        1.0, max(0.1, sig_strikes_absorbed), default=0.0
-    )
     # NOTE:
     # `sig_strikes_landed` is a *per-minute* rate (career stat). For modeling we must keep
     # units consistent: anything compared to `sig_strikes_absorbed` (also per-minute) must
@@ -282,21 +349,40 @@ def extract_striking_features(fighter: Fighter) -> Dict[str, float]:
     sig_strikes_landed_per_min_effective = (
         sig_strikes_landed_per_min_lifetime if recent_metrics else sig_strikes_landed
     )
+    
+    # POINT-IN-TIME SAFE: Use computed values from fight_history if available
+    sig_strikes_absorbed_effective = (
+        sig_strikes_absorbed_per_min_lifetime if recent_metrics else sig_strikes_absorbed
+    )
+    striking_defense_effective = (
+        striking_defense_lifetime if recent_metrics else striking_defense
+    )
+    
+    # Use computed accuracy from fight_history if available
+    striking_accuracy_effective = (
+        striking_accuracy_lifetime if recent_metrics else striking_accuracy
+    )
+
+    # Defensive efficiency: defense rate adjusted for volume absorbed
+    # Higher defense with lower absorption = better efficiency
+    defensive_efficiency = striking_defense_effective * safe_divide(
+        1.0, max(0.1, sig_strikes_absorbed_effective), default=0.0
+    )
 
     # Striking volume control: output vs absorption ratio (both per-minute)
     # Higher ratio = more control of striking exchanges
     striking_volume_control = safe_divide(
-        sig_strikes_landed_per_min_effective, max(0.1, sig_strikes_absorbed), default=0.0
+        sig_strikes_landed_per_min_effective, max(0.1, sig_strikes_absorbed_effective), default=0.0
     )
     # Striking differential: output minus absorption (both per-minute)
-    striking_differential = sig_strikes_landed_per_min_effective - sig_strikes_absorbed
+    striking_differential = sig_strikes_landed_per_min_effective - sig_strikes_absorbed_effective
     
     features = {
         # Core striking stats (per-minute rates)
         "sig_strikes_landed_per_min": float(sig_strikes_landed_per_min_effective),
-        "striking_accuracy": float(striking_accuracy),
-        # "sig_strikes_absorbed_per_min": float(sig_strikes_absorbed),
-        "striking_defense": float(striking_defense),
+        "striking_accuracy": float(striking_accuracy_effective),
+        # "sig_strikes_absorbed_per_min": float(sig_strikes_absorbed_effective),  # Not exposed as feature, but used in calculations
+        "striking_defense": float(striking_defense_effective),
         
         # Derived striking metrics
         "striking_differential": float(striking_differential),

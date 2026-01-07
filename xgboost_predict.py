@@ -331,8 +331,46 @@ def xgboost_predict(
     
     print(f"\n  Top 3 favoring {fighter_2.name}:")
     for feat, val, desc in f2_favors[:3]:
-        print(f"    {feat}: {val:.4f} ({desc})")
+        # Special explanation for age_difference
+        if feat == 'age_difference':
+            f1_age_val = features.get('f1_age', 'N/A')
+            f2_age_val = features.get('f2_age', 'N/A')
+            if val < 0:
+                explanation = f"f2 advantage (f2 is {abs(val):.1f} years older: {f2_age_val} vs {f1_age_val})"
+            elif val > 0:
+                explanation = f"f1 advantage (f1 is {val:.1f} years older: {f1_age_val} vs {f2_age_val})"
+            else:
+                explanation = "f2 advantage (same age)"
+            print(f"    {feat}: {val:.4f} ({explanation})")
+        else:
+            print(f"    {feat}: {val:.4f} ({desc})")
     print("")
+    
+    # Age difference explanation
+    if 'age_difference' in top_features and 'age_difference' in features:
+        age_diff = features['age_difference']
+        f1_age = features.get('f1_age', None)
+        f2_age = features.get('f2_age', None)
+        if f1_age is not None and f2_age is not None:
+            print("[AGE_DIFFERENCE EXPLANATION]")
+            print(f"  Calculation: age_difference = f1_age - f2_age = {f1_age:.1f} - {f2_age:.1f} = {age_diff:.1f}")
+            if age_diff < 0:
+                print(f"  Interpretation: {fighter_1.name} (f1) is {abs(age_diff):.1f} years YOUNGER than {fighter_2.name} (f2)")
+                print(f"  Model learned: Negative age_difference often favors the OLDER fighter (f2) because:")
+                print(f"    - Older fighters typically have more experience")
+                print(f"    - Experience can offset age-related decline (especially in 20s-30s)")
+                print(f"    - The model considers other factors: opponent quality, recent form, etc.")
+            elif age_diff > 0:
+                print(f"  Interpretation: {fighter_1.name} (f1) is {age_diff:.1f} years OLDER than {fighter_2.name} (f2)")
+                print(f"  Model learned: Positive age_difference may favor f1 if age brings experience")
+                print(f"    - But age interaction features penalize older fighters who are declining/inactive")
+            else:
+                print(f"  Interpretation: Both fighters are the same age")
+            print(f"  Note: The model has NO monotone constraint on age_difference, so it learned")
+            print(f"        a nuanced relationship from training data (not simply 'younger = better')")
+            print(f"  Note: Some features (striking/grappling stats) were temporarily excluded due to")
+            print(f"        point-in-time leakage concerns, but will be restored once fixed.")
+            print("")
     
     # Contradiction analysis
     if p_f1 > 0.75:

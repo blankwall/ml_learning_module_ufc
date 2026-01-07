@@ -762,8 +762,8 @@ def main():
             )
             xgb_model.train(X_train, y_train, X_test, y_test, sample_weight=w_train)
         
-        # Save model (optionally export feature schema)
-        xgb_model.save_model(name=args.model_name, export_schema=args.export_schema)
+        # Save model (always export feature schema to keep it in sync)
+        xgb_model.save_model(name=args.model_name, export_schema=True)
         pipeline.save_pipeline(model_name=args.model_name)
     
     # Cross-validation
@@ -788,7 +788,7 @@ def main():
     # Calibrate model
     if args.calibrate:
         xgb_model.calibrate_model(X_train, y_train)
-        xgb_model.save_model(f"{args.model_name}_calibrated")
+        xgb_model.save_model(f"{args.model_name}_calibrated", export_schema=True)
     
     logger.success("Done!")
 

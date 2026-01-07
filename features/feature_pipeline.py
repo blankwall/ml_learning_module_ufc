@@ -310,6 +310,10 @@ def main():
                        choices=['base', 'advanced', 'full'],
                        default='full',
                        help='Feature set to use: base, advanced, or full (default: full)')
+    parser.add_argument('--export-schema', action='store_true',
+                       help='Export feature schema after preparing features (requires --prepare)')
+    parser.add_argument('--schema-version', type=str, default='1.0.0',
+                       help='Schema version string (default: 1.0.0)')
     
     args = parser.parse_args()
     
@@ -342,6 +346,10 @@ def main():
         pipeline.save_pipeline()
         
         logger.success(f"Prepared data saved to {args.output}")
+        
+        # Optionally export feature schema
+        if args.export_schema:
+            pipeline.export_feature_schema(version=args.schema_version)
 
 
 if __name__ == '__main__':
