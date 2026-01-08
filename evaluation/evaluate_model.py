@@ -951,17 +951,68 @@ def main() -> None:
     underdogs_accuracy = underdogs_correct / underdogs_total if underdogs_total > 0 else float("nan")
     
     # Calculate accuracy by confidence buckets (percentile-based)
-    # Use the higher probability for each row (max of p_model and 1-p_model)
-    # since we want to look at the model's confidence in its pick
-    model_confidence = np.maximum(p_model, 1.0 - p_model)
+    # Base confidence: abs(model_prob_f1 - 0.5) * 2, which maps [0.5, 1.0] -> [0, 1]
+    # This measures distance from 50/50 (larger = more confident)
+    base_conf = np.abs(p_model - 0.5) * 2  # [0, 1]
     
-    # Calculate percentiles to find top 10% and top 25% most confident predictions
-    top_10_threshold = np.percentile(model_confidence, 90)  # Top 10% = 90th percentile
-    top_25_threshold = np.percentile(model_confidence, 75)  # Top 25% = 75th percentile
+    # Odds-aware confidence adjustment (for ranking only, not for training)
+    adjusted_conf = np.full_like(base_conf, np.nan)
+    p_market = merged["market_prob_f1"].values
     
-    # Create masks for top percentiles
-    top_10_mask = model_confidence >= top_10_threshold
-    top_25_mask = model_confidence >= top_25_threshold
+    # Calculate finish rate for volatility gate
+    # Check if either fighter has high finish rate (> 0.55)
+    high_finish_rate = np.zeros(len(merged), dtype=bool)
+    if "f1_finish_rate" in merged.columns and "f2_finish_rate" in merged.columns:
+        f1_fr = merged["f1_finish_rate"].fillna(0).values
+        f2_fr = merged["f2_finish_rate"].fillna(0).values
+        # High finish rate if either fighter has > 0.55
+        high_finish_rate = (f1_fr > 0.55) | (f2_fr > 0.55)
+    elif "finish_rate_diff" in merged.columns:
+        # Fallback: use finish_rate_diff if individual rates not available
+        # This is less precise but better than nothing
+        finish_rate_abs = np.abs(merged["finish_rate_diff"].fillna(0).values)
+        high_finish_rate = finish_rate_abs > 0.3  # Threshold for high finish rate differential
+    # If no finish rate data available, high_finish_rate remains False
+    
+    for i in range(len(merged)):
+        if pd.notna(p_market[i]):
+            # Odds available: calculate market confidence and edge
+            market_conf = np.abs(p_market[i] - 0.5) * 2  # [0, 1]
+            market_edge = base_conf[i] - market_conf
+            
+            # Penalize ONLY when model is more confident than market
+            if market_edge > 0:
+                # Penalty: reduce confidence when model is overconfident vs market
+                # Cap penalty at 0.6 (60% reduction max)
+                penalty = min(market_edge * 1.5, 0.6)
+                adjusted_conf[i] = base_conf[i] * (1.0 - penalty)
+            else:
+                # Model is less confident than market: no penalty
+                adjusted_conf[i] = base_conf[i]
+        else:
+            # No odds available: use base confidence
+            adjusted_conf[i] = base_conf[i]
+        
+        # Volatility gate: penalize high-confidence predictions in high-finish-rate matchups
+        # This accounts for increased volatility/uncertainty in finisher vs finisher fights
+        if adjusted_conf[i] > 0.7 and high_finish_rate[i]:
+            adjusted_conf[i] *= 0.85  # Reduce by 15% (was 0.75 = 25% reduction)
+    
+    # For top 10%: use base confidence (no odds adjustment)
+    top_10_threshold = np.percentile(base_conf, 90)  # Top 10% = 90th percentile
+    top_10_mask = base_conf >= top_10_threshold
+    
+    # For top 25%: use odds-adjusted confidence (if available)
+    # This identifies predictions where model is both confident AND agrees with market
+    # Filter out NaN values for percentile calculation
+    valid_adjusted_conf = adjusted_conf[~np.isnan(adjusted_conf)]
+    if len(valid_adjusted_conf) > 0:
+        top_25_threshold = np.percentile(valid_adjusted_conf, 75)  # Top 25% = 75th percentile
+        top_25_mask = adjusted_conf >= top_25_threshold
+    else:
+        # Fallback to base confidence if no valid adjusted confidence
+        top_25_threshold = np.percentile(base_conf, 75)
+        top_25_mask = base_conf >= top_25_threshold
     
     by_confidence = {}
     
@@ -992,6 +1043,97 @@ def main() -> None:
             "accuracy": round(top_25_accuracy, 4) if top_25_accuracy is not None else None,
             "n": int(top_25_total)
         }
+        
+        # Export detailed top 25% predictions for investigation
+        top_25_df = merged[top_25_mask].copy()
+        top_25_df["base_confidence"] = base_conf[top_25_mask]
+        top_25_df["adjusted_confidence"] = adjusted_conf[top_25_mask]
+        top_25_df["prediction_correct"] = (row_preds[top_25_mask] == y_true[top_25_mask])
+        top_25_df["model_prob_f1"] = p_model[top_25_mask]
+        top_25_df["model_prob_f2"] = 1.0 - p_model[top_25_mask]
+        
+        # Get top 3 features for f1 and f2 from feature importance
+        try:
+            feature_importance = xgb_model.get_feature_importance(importance_type='weight', top_n=None)
+            # Get top 3 f1_ features
+            f1_features = feature_importance[feature_importance['feature'].str.startswith('f1_')].head(3)
+            f2_features = feature_importance[feature_importance['feature'].str.startswith('f2_')].head(3)
+            
+            # Add top 3 feature values for f1
+            for rank, (_, row) in enumerate(f1_features.iterrows(), 1):
+                feat_name = row['feature']
+                if feat_name in top_25_df.columns:
+                    feat_short_name = feat_name.replace('f1_', '')
+                    top_25_df[f"f1_top{rank}_{feat_short_name}"] = top_25_df[feat_name]
+            
+            # Add top 3 feature values for f2
+            for rank, (_, row) in enumerate(f2_features.iterrows(), 1):
+                feat_name = row['feature']
+                if feat_name in top_25_df.columns:
+                    feat_short_name = feat_name.replace('f2_', '')
+                    top_25_df[f"f2_top{rank}_{feat_short_name}"] = top_25_df[feat_name]
+        except Exception as e:
+            logger.warning(f"Could not extract top features: {e}")
+        
+        # Select relevant columns for investigation (excluding removed columns)
+        investigation_cols = [
+            "event_date", "f1_name", "f2_name", "weight_class",
+            "model_prob_f1", "model_prob_f2", "base_confidence", "adjusted_confidence",
+            "prediction_correct", "market_prob_f2", "fighter1_odds", "fighter2_odds",
+            "is_favorite"
+        ]
+        
+        # Add top feature columns if they exist
+        top_feature_cols = [col for col in top_25_df.columns if col.startswith('f1_top') or col.startswith('f2_top')]
+        investigation_cols.extend(top_feature_cols)
+        
+        # Only include columns that exist
+        available_cols = [col for col in investigation_cols if col in top_25_df.columns]
+        top_25_export = top_25_df[available_cols].copy()
+        
+        # Deduplicate: keep only one row per fight (f1 vs f2, not f2 vs f1)
+        # Create a canonical fight key from sorted fighter names
+        top_25_export["canonical_fight_key"] = top_25_export.apply(
+            lambda row: "|".join(sorted([str(row.get("f1_name", "")), str(row.get("f2_name", ""))])),
+            axis=1
+        )
+        
+        # Keep only rows where f1_name < f2_name (alphabetically) to avoid duplicates
+        # This ensures we keep (A vs B) but not (B vs A)
+        def _should_keep(row):
+            f1 = str(row.get("f1_name", ""))
+            f2 = str(row.get("f2_name", ""))
+            try:
+                return f1 < f2
+            except:
+                # If comparison fails, keep the row (better than dropping)
+                return True
+        
+        keep_mask = top_25_export.apply(_should_keep, axis=1)
+        top_25_export = top_25_export[keep_mask].copy()
+        
+        # Also drop duplicates by canonical key (in case there are still duplicates)
+        top_25_export = top_25_export.drop_duplicates(subset=["canonical_fight_key"], keep="first")
+        
+        # Drop the canonical key column (it was just for deduplication)
+        if "canonical_fight_key" in top_25_export.columns:
+            top_25_export = top_25_export.drop(columns=["canonical_fight_key"])
+        
+        # Sort by adjusted confidence (highest first) then by correctness (wrong predictions first)
+        top_25_export = top_25_export.sort_values(
+            ["prediction_correct", "adjusted_confidence"],
+            ascending=[True, False]  # Wrong predictions first, then by adjusted confidence descending
+        )
+        
+        # Save to CSV
+        top_25_export_path = output_dir / f"top_25_pct_investigation_{timestamp}.csv"
+        top_25_export.to_csv(top_25_export_path, index=False)
+        logger.success(f"Saved top 25% confidence bucket details to {top_25_export_path}")
+        logger.info(f"  Total predictions in top 25%: {top_25_total}")
+        logger.info(f"  After deduplication: {len(top_25_export)}")
+        logger.info(f"  Correct: {top_25_correct} ({top_25_accuracy:.1%})")
+        logger.info(f"  Incorrect: {top_25_total - top_25_correct} ({1.0 - top_25_accuracy:.1%})")
+        logger.info(f"  Confidence threshold: {top_25_threshold:.4f}")
     else:
         by_confidence["top_25_pct"] = {
             "min_p": None,
