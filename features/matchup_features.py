@@ -406,7 +406,15 @@ def create_training_dataset(
     matchup_extractor = MatchupFeatureExtractor(session)
     
     # Get all completed fights (with results)
-    fights = session.query(Fight).filter(Fight.result != None).join(Fight.event).all()
+    # CRITICAL: Use ORDER BY to ensure deterministic row ordering for reproducible train/test splits
+    # Order by fight ID (primary key) to guarantee consistent ordering across runs
+    fights = (
+        session.query(Fight)
+        .filter(Fight.result != None)
+        .join(Fight.event)
+        .order_by(Fight.id)
+        .all()
+    )
     
     training_data = []
     
