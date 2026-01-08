@@ -505,12 +505,12 @@ def generate_html_report(
                         <thead>
                             <tr>
                                 <th>Fight</th>
-                                <th>Model Prediction</th>
-                                <th>Winner</th>
-                                <th>Model %</th>
-                                <th>Market %</th>
-                                <th>Edge %</th>
-                                <th>Result</th>
+                                <th>Predicted Winner</th>
+                                <th>Actual Winner</th>
+                                <th>Model Prob</th>
+                                <th>Market Prob</th>
+                                <th>Edge</th>
+                                <th>Correct?</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -542,17 +542,17 @@ def generate_html_report(
             else:
                 row_class = "row-incorrect"
             
-            # Get the actual winner's probabilities
-            if actual_winner == f1_name:
-                winner_model_prob = model_prob_f1
-                winner_market_prob = market_prob_f1
+            # Get the PREDICTED winner's probabilities (not the actual winner's)
+            if predicted_winner == f1_name:
+                predicted_model_prob = model_prob_f1
+                predicted_market_prob = market_prob_f1
             else:
-                winner_model_prob = model_prob_f2
-                winner_market_prob = market_prob_f2
+                predicted_model_prob = model_prob_f2
+                predicted_market_prob = market_prob_f2
             
-            # Calculate edge for the winner
-            winner_edge = winner_model_prob - winner_market_prob
-            edge_pct = winner_edge * 100
+            # Calculate edge for the PREDICTED winner
+            predicted_edge = predicted_model_prob - predicted_market_prob
+            edge_pct = predicted_edge * 100
             
             # Edge formatting
             if abs(edge_pct) < 2:
@@ -582,15 +582,17 @@ def generate_html_report(
                                 </td>
                                 <td>
                                     <strong>{predicted_winner}</strong>
+                                    <span class="winner-badge predicted">Predicted</span>
                                 </td>
                                 <td>
                                     <strong>{actual_winner}</strong>
+                                    <span class="winner-badge actual">Actual</span>
                                 </td>
                                 <td style="text-align: center; font-size: 1.1em; font-weight: 600;">
-                                    {winner_model_prob:.1%}
+                                    {predicted_model_prob:.1%}
                                 </td>
                                 <td style="text-align: center; font-size: 1.1em; font-weight: 600; color: #757575;">
-                                    {winner_market_prob:.1%}
+                                    {predicted_market_prob:.1%}
                                 </td>
                                 <td style="text-align: center;">
                                     <span class="edge {edge_class}">{edge_symbol}{edge_pct:.1f}%</span>

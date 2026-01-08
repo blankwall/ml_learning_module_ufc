@@ -33,6 +33,8 @@ from .time_based import (
     extract_prospect_momentum_score,
     extract_early_finish_advantage,
     extract_power_striker_score,
+    extract_age_weighted_recent_damage,
+    extract_durability_collapse_score,
 )
 from .opponent_quality import extract_opponent_quality_features
 
@@ -147,6 +149,8 @@ class FeatureRegistry:
             "power_striker": cls._extract_power_striker,
             "recent_striking": cls._extract_recent_striking,
             "recent_grappling": cls._extract_recent_grappling,
+            "age_weighted_recent_damage": cls._extract_age_weighted_recent_damage,
+            "durability_collapse": cls._extract_durability_collapse,
         }
         return feature_map.get(feature_name)
     
@@ -299,6 +303,39 @@ class FeatureRegistry:
             time_decayed_ko_rate
         )
         return {"early_finish_advantage": score}
+    
+    @staticmethod
+    def _extract_age_weighted_recent_damage(context: Dict) -> Dict[str, float]:
+        """Extract age-weighted recent damage feature"""
+        physical_features = context.get("physical_features", {})
+        recent_striking_features = context.get("recent_striking_features", {})
+        
+        age = physical_features.get("age", 0.0)
+        recent_sig_strike_diff_last_3 = recent_striking_features.get("recent_sig_strike_diff_last_3", 0.0)
+        
+        score = extract_age_weighted_recent_damage(age, recent_sig_strike_diff_last_3)
+        return {"age_weighted_recent_damage": score}
+    
+    @staticmethod
+    def _extract_durability_collapse(context: Dict) -> Dict[str, float]:
+        """Extract durability collapse score"""
+        physical_features = context.get("physical_features", {})
+        recent_striking_features = context.get("recent_striking_features", {})
+        recent_damage_features = context.get("recent_damage_features", {})
+        rolling_features = context.get("rolling_features", {})
+        
+        age = physical_features.get("age", 0.0)
+        recent_knockdown_diff_last_3 = recent_striking_features.get("recent_knockdown_diff_last_3", 0.0)
+        recent_finish_losses_last_2 = recent_damage_features.get("recent_finish_losses_last_2", 0.0)
+        athleticism_decline = rolling_features.get("athleticism_decline", 0.0)
+        
+        score = extract_durability_collapse_score(
+            age,
+            recent_knockdown_diff_last_3,
+            recent_finish_losses_last_2,
+            athleticism_decline
+        )
+        return {"durability_collapse_score": score}
     
     @staticmethod
     def _extract_power_striker(context: Dict) -> Dict[str, float]:

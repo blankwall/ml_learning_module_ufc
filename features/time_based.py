@@ -650,6 +650,107 @@ def extract_prospect_momentum_score(
         return 0.0
 
 
+def extract_age_weighted_recent_damage(
+    age: float,
+    recent_sig_strike_diff_last_3: float
+) -> float:
+    """
+    Calculate age-weighted recent damage.
+    
+    Recent damage matters more when a fighter is old. This feature multiplies
+    recent striking differential by an age decline multiplier that activates
+    after age ~32 and ramps steeply after 35.
+    
+    Formula:
+        age_weighted_recent_damage = recent_sig_strike_diff_last_3 × age_decline_multiplier
+        where age_decline_multiplier = max(0, (age - 32) / 6)
+    
+    Args:
+        age: Fighter age
+        recent_sig_strike_diff_last_3: Average significant strike differential in last 3 fights
+        
+    Returns:
+        Age-weighted recent damage score
+    """
+    try:
+        age = float(age or 0.0)
+        recent_sig_strike_diff = float(recent_sig_strike_diff_last_3 or 0.0)
+        
+        # Age decline multiplier: activates after age 32, ramps steeply after 35
+        # At age 32: multiplier = 0
+        # At age 35: multiplier = 0.5
+        # At age 38: multiplier = 1.0
+        # At age 41: multiplier = 1.5
+        age_decline_multiplier = max(0.0, (age - 32.0) / 6.0)
+        
+        # Multiply recent damage by age penalty
+        age_weighted_damage = recent_sig_strike_diff * age_decline_multiplier
+        
+        return float(age_weighted_damage)
+    except Exception:
+        return 0.0
+
+
+def extract_durability_collapse_score(
+    age: float,
+    recent_knockdown_diff_last_3: float,
+    recent_finish_losses_last_2: float,
+    athleticism_decline: float
+) -> float:
+    """
+    Calculate durability collapse score.
+    
+    Heavily penalizes older fighters with recent damage, even if their career
+    stats are elite. Combines recent knockdowns, finish losses, and athleticism
+    decline, then age-gates it (reduces impact for fighters under 33).
+    
+    Formula:
+        durability_collapse_score = (
+            (recent_knockdowns_last_3 × 1.5) +
+            (recent_finish_losses_last_2 × 2.0) +
+            athleticism_decline
+        )
+        if age < 33: score *= 0.5
+    
+    Note: recent_knockdown_diff_last_3 is (my_kd - opp_kd), so negative values
+    mean the fighter got knocked down more. We use max(0, -recent_knockdown_diff)
+    to capture when the fighter was knocked down more (bad for durability).
+    
+    Args:
+        age: Fighter age
+        recent_knockdown_diff_last_3: Average knockdown differential in last 3 fights (my_kd - opp_kd)
+        recent_finish_losses_last_2: Number of finish losses in last 2 fights
+        athleticism_decline: Decline in KO rate (ko_rate - ko_rate_last_3)
+        
+    Returns:
+        Durability collapse score (higher = more concerning)
+    """
+    try:
+        age = float(age or 0.0)
+        recent_knockdown_diff = float(recent_knockdown_diff_last_3 or 0.0)
+        recent_finish_losses = float(recent_finish_losses_last_2 or 0.0)
+        athleticism_decline_val = float(athleticism_decline or 0.0)
+        
+        # Convert knockdown diff to "knockdowns against fighter" (negative diff = bad)
+        # If diff is negative, fighter got knocked down more, which is bad
+        recent_knockdowns_against = max(0.0, -recent_knockdown_diff)
+        
+        # Calculate base score
+        score = (
+            1.5 * recent_knockdowns_against +
+            2.0 * recent_finish_losses +
+            athleticism_decline_val
+        )
+        
+        # Age-gate: reduce impact for fighters under 33
+        if age < 33.0:
+            score *= 0.5
+        
+        return float(score)
+    except Exception:
+        return 0.0
+
+
 def extract_early_finish_advantage(
     first_round_finish_rate: float,
     early_finish_rate_last_3: float,

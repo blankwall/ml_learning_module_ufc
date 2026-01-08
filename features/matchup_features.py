@@ -199,6 +199,16 @@ class MatchupFeatureExtractor:
         differentials['recent_knockdown_diff_last_3_diff'] = (
             f1_features.get('recent_knockdown_diff_last_3', 0.0) - f2_features.get('recent_knockdown_diff_last_3', 0.0)
         )
+        
+        # Age-weighted recent damage: recent damage matters more for older fighters
+        differentials['age_weighted_recent_damage_diff'] = (
+            f1_features.get('age_weighted_recent_damage', 0.0) - f2_features.get('age_weighted_recent_damage', 0.0)
+        )
+        
+        # Durability collapse: heavily penalizes older fighters with recent damage
+        differentials['durability_collapse_diff'] = (
+            f1_features.get('durability_collapse_score', 0.0) - f2_features.get('durability_collapse_score', 0.0)
+        )
 
         # Recent control time / grappling dominance (last ~3 fights)
         differentials['recent_control_time_sec_last_3_diff'] = (

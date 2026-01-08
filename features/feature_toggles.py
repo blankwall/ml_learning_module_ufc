@@ -57,6 +57,8 @@ ENABLED_FEATURE_GROUPS: List[str] = [
     "prospect_momentum",
     "early_finish_advantage",
     "power_striker",
+    "age_weighted_recent_damage",
+    "durability_collapse",
 
     # --- Recent detailed stats (FightStats-based) ---
     "recent_striking",

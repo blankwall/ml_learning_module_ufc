@@ -40,7 +40,7 @@ st.markdown("---")
 st.sidebar.header("Model Settings")
 model_name = st.sidebar.selectbox(
     "Select Model",
-    options=["xgboost_model_with_2025", "xgboost_model"],
+    options=["baselin_jan_7_2026_model_monotone_quality_holdout_xx_super_jalin","baselin_jan_7_2026_model_monotone_quality_holdout_xx_super", "xgboost_model_with_2025", "xgboost_model"],
     index=0,
     help="Choose which trained model to use for predictions"
 )
@@ -242,13 +242,16 @@ with tab1:
                             # Display results
                             st.subheader("Prediction Results")
                             
-                            # Calculate best fighter and best edge columns if not present
+                            # Calculate predicted winner (fighter with highest model probability) and best edge columns if not present
                             # (preview_upcoming_fights creates these, but add_model_predictions might not)
-                            if "best_fighter" not in df_results.columns:
-                                df_results["best_fighter"] = df_results.apply(
+                            if "predicted_winner" not in df_results.columns:
+                                df_results["predicted_winner"] = df_results.apply(
                                     lambda row: row["fighter_1_name"] if row.get("model_p_f1_pct", 0) > row.get("model_p_f2_pct", 0) 
                                     else row["fighter_2_name"], axis=1
                                 )
+                            # Also check for legacy "best_fighter" column name and rename it
+                            if "best_fighter" in df_results.columns and "predicted_winner" not in df_results.columns:
+                                df_results["predicted_winner"] = df_results["best_fighter"]
                             
                             if "best_model_prob_pct" not in df_results.columns:
                                 df_results["best_model_prob_pct"] = df_results.apply(
@@ -265,23 +268,56 @@ with tab1:
                                     lambda row: max(row.get("edge_f1_pct", 0), row.get("edge_f2_pct", 0)), axis=1
                                 )
                             
+                            # Calculate market probability and edge for the predicted winner specifically
+                            # (the fighter with the highest model probability, not the market favorite)
+                            if "predicted_winner_market_prob_pct" not in df_results.columns:
+                                df_results["predicted_winner_market_prob_pct"] = df_results.apply(
+                                    lambda row: row.get("implied_p_f1_pct", 0) if row.get("model_p_f1_pct", 0) > row.get("model_p_f2_pct", 0)
+                                    else row.get("implied_p_f2_pct", 0), axis=1
+                                )
+                            
+                            if "predicted_winner_edge_pct" not in df_results.columns:
+                                df_results["predicted_winner_edge_pct"] = df_results.apply(
+                                    lambda row: row.get("edge_f1_pct", 0) if row.get("model_p_f1_pct", 0) > row.get("model_p_f2_pct", 0)
+                                    else row.get("edge_f2_pct", 0), axis=1
+                                )
+                            
                             # Create styled summary table
+                            # Prefer columns that show values for the predicted winner specifically
                             summary_cols = [
                                 "event", "fight_date",
                                 "fighter_1_name", "fighter_2_name",
-                                "best_fighter",
-                                "best_model_prob_pct", "best_market_prob_pct", "best_edge_pct",
+                                "predicted_winner",
+                                "best_model_prob_pct", "predicted_winner_market_prob_pct", "predicted_winner_edge_pct",
                                 "risk_notes"
                             ]
-                            available_summary_cols = [col for col in summary_cols if col in df_results.columns]
+                            # Fall back to best_* columns if predicted_winner_* columns don't exist
+                            available_summary_cols = []
+                            for col in summary_cols:
+                                if col in df_results.columns:
+                                    available_summary_cols.append(col)
+                                elif col == "predicted_winner_market_prob_pct" and "best_market_prob_pct" in df_results.columns:
+                                    available_summary_cols.append("best_market_prob_pct")
+                                elif col == "predicted_winner_edge_pct" and "best_edge_pct" in df_results.columns:
+                                    available_summary_cols.append("best_edge_pct")
                             
                             # Display with highlighting
                             df_display = df_results[available_summary_cols].copy()
                             
-                            # Create a styled dataframe with highlighted best_fighter
+                            # Ensure best_edge_pct exists in df_results for sorting (even if not displayed)
+                            if "best_edge_pct" not in df_results.columns:
+                                df_results["best_edge_pct"] = df_results.apply(
+                                    lambda row: max(row.get("edge_f1_pct", 0), row.get("edge_f2_pct", 0)), axis=1
+                                )
+                            
+                            # Create a styled dataframe with highlighted predicted_winner
                             def style_row(row):
                                 styles = [''] * len(row)
-                                if 'best_fighter' in df_display.columns:
+                                if 'predicted_winner' in df_display.columns:
+                                    predicted_winner_idx = df_display.columns.get_loc('predicted_winner')
+                                    styles[predicted_winner_idx] = 'background-color: #fff3cd; font-weight: bold; color: #856404; font-size: 1.1em;'
+                                # Also check for legacy column name
+                                elif 'best_fighter' in df_display.columns:
                                     best_fighter_idx = df_display.columns.get_loc('best_fighter')
                                     styles[best_fighter_idx] = 'background-color: #fff3cd; font-weight: bold; color: #856404; font-size: 1.1em;'
                                 # Also highlight best_edge_pct if positive
@@ -307,21 +343,53 @@ with tab1:
                             st.markdown("---")
                             st.subheader("📊 Summary by Edge")
                             
-                            # Sort by best_edge_pct descending
-                            df_sorted = df_display.sort_values("best_edge_pct", ascending=False)
+                            # Sort by edge - use best_edge_pct from df_results (for sorting), or calculate it
+                            # We need to sort from df_results to have access to all columns, then filter to display columns
+                            if "best_edge_pct" in df_results.columns:
+                                df_sorted = df_results.sort_values("best_edge_pct", ascending=False)
+                            elif "edge_f1_pct" in df_results.columns and "edge_f2_pct" in df_results.columns:
+                                df_results["_temp_best_edge"] = df_results.apply(
+                                    lambda row: max(row.get("edge_f1_pct", 0), row.get("edge_f2_pct", 0)), axis=1
+                                )
+                                df_sorted = df_results.sort_values("_temp_best_edge", ascending=False)
+                            else:
+                                df_sorted = df_results
+                            
+                            # Now filter to display columns for the summary display
+                            df_sorted_display = df_sorted[available_summary_cols].copy() if available_summary_cols else df_sorted
                             
                             # Create a more readable summary
+                            # df_sorted is df_results sorted by edge, so it has all columns
                             for idx, row in df_sorted.iterrows():
                                 fighter_1 = row.get("fighter_1_name", "N/A")
                                 fighter_2 = row.get("fighter_2_name", "N/A")
-                                best_fighter = row.get("best_fighter", "N/A")
-                                model_prob = row.get("best_model_prob_pct", 0)
-                                market_prob = row.get("best_market_prob_pct", 0)
-                                edge = row.get("best_edge_pct", 0)
+                                
+                                # Determine which fighter is the predicted winner based on model probabilities
+                                model_p_f1 = row.get("model_p_f1_pct", 0)
+                                model_p_f2 = row.get("model_p_f2_pct", 0)
+                                
+                                if model_p_f1 > model_p_f2:
+                                    predicted_winner = fighter_1
+                                    model_prob = model_p_f1
+                                    predicted_winner_market_prob = row.get("implied_p_f1_pct", 0)
+                                else:
+                                    predicted_winner = fighter_2
+                                    model_prob = model_p_f2
+                                    predicted_winner_market_prob = row.get("implied_p_f2_pct", 0)
+                                
+                                # Fallback to predicted_winner column if model probabilities aren't available
+                                if not predicted_winner or predicted_winner == "N/A":
+                                    predicted_winner = row.get("predicted_winner", row.get("best_fighter", "N/A"))
+                                    model_prob = row.get("best_model_prob_pct", 0)
+                                    predicted_winner_market_prob = row.get("predicted_winner_market_prob_pct", row.get("best_market_prob_pct", 0))
+                                
+                                # Calculate edge directly from model and market probabilities to ensure accuracy
+                                # Edge = model_probability - market_probability (for the predicted winner)
+                                predicted_winner_edge = model_prob - predicted_winner_market_prob
                                 risk_notes = row.get("risk_notes", "")
                                 
                                 # Determine if this is a strong edge
-                                is_strong_edge = edge > 10
+                                is_strong_edge = predicted_winner_edge > 10
                                 border_color = "#28a745" if is_strong_edge else "#6c757d"
                                 bg_color = "#d4edda" if is_strong_edge else "#f8f9fa"
                                 
@@ -337,18 +405,18 @@ with tab1:
                                     <p style="margin: 5px 0;">
                                         <strong>🏆 Predicted Winner:</strong> 
                                         <span style="background-color: #fff3cd; padding: 3px 8px; border-radius: 4px; font-weight: bold;">
-                                            {best_fighter}
+                                            {predicted_winner}
                                         </span>
                                     </p>
                                     <div style="display: flex; gap: 20px; margin-top: 10px;">
                                         <div>
-                                            <strong>Model:</strong> {model_prob:.1f}%
+                                            <strong>Model Probability:</strong> {model_prob:.1f}%
                                         </div>
                                         <div>
-                                            <strong>Market:</strong> {market_prob:.1f}%
+                                            <strong>Market Probability:</strong> {predicted_winner_market_prob:.1f}%
                                         </div>
                                         <div>
-                                            <strong>Edge:</strong> <span style="color: {'#28a745' if edge > 0 else '#dc3545'}; font-weight: bold;">{edge:+.1f}%</span>
+                                            <strong>Edge:</strong> <span style="color: {'#28a745' if predicted_winner_edge > 0 else '#dc3545'}; font-weight: bold;">{predicted_winner_edge:+.1f}%</span>
                                         </div>
                                     </div>
                                     {risk_html}
