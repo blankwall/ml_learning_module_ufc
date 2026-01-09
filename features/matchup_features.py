@@ -68,6 +68,11 @@ class MatchupFeatureExtractor:
         # Add style matchup features
         matchup_features.update(self._calculate_style_matchup(f1_features, f2_features))
         
+        # Add style volatility mismatch feature
+        matchup_features.update(self._calculate_style_volatility_mismatch(
+            fighter_1_id, fighter_2_id, as_of_date
+        ))
+        
         # Add common opponent analysis
         matchup_features.update(self._calculate_common_opponents(fighter_1_id, fighter_2_id, as_of_date))
         
@@ -350,6 +355,120 @@ class MatchupFeatureExtractor:
         matchup['defensive_fight'] = 1 if (f1_defensive and f2_defensive) else 0
         
         return matchup
+    
+    def _calculate_style_volatility_mismatch(
+        self,
+        fighter_1_id: int,
+        fighter_2_id: int,
+        as_of_date: Optional[Union[datetime, str]] = None
+    ) -> Dict:
+        """
+        Calculate style volatility mismatch feature.
+        
+        This is a directional mismatch score that captures:
+        - How much fighter 1 relies on finishes (KO/SUB wins)
+        - How susceptible fighter 2 is to finishes (KO/SUB losses)
+        - And vice versa
+        
+        Returns:
+            Dictionary with 'style_volatility_mismatch_diff' feature
+        """
+        from .utils import safe_divide, is_ko, is_submission
+        
+        # Get fight histories for both fighters
+        f1_history = self.fighter_extractor._get_fight_history(fighter_1_id, as_of_date)
+        f2_history = self.fighter_extractor._get_fight_history(fighter_2_id, as_of_date)
+        
+        # Helper function to calculate finish_reliance for a fighter
+        def calculate_finish_reliance(fight_history: pd.DataFrame) -> float:
+            """Calculate finish_reliance = (KO_wins + SUB_wins) / total_wins"""
+            wins = fight_history[fight_history['result'] == 'win']
+            if len(wins) == 0:
+                return 0.0
+            
+            method_series = wins['method'].astype(str)
+            ko_wins = method_series.apply(lambda m: is_ko(m)).sum()
+            sub_wins = method_series.apply(lambda m: is_submission(m)).sum()
+            total_wins = len(wins)
+            
+            finish_reliance = safe_divide(ko_wins + sub_wins, total_wins, default=0.0)
+            
+            # Optional refinement: weighted_finish_reliance
+            # (1.0 * KO_wins + 0.8 * SUB_wins) / total_wins
+            weighted_finish_reliance = safe_divide(
+                1.0 * ko_wins + 0.8 * sub_wins,
+                total_wins,
+                default=0.0
+            )
+            
+            # Use weighted version if available (better)
+            finish_reliance = weighted_finish_reliance
+            
+            # Cap extremes: finish_reliance ∈ [0.2, 0.9]
+            finish_reliance = max(0.2, min(0.9, finish_reliance))
+            
+            return finish_reliance
+        
+        # Helper function to calculate finish_loss_rate for a fighter
+        def calculate_finish_loss_rate(fight_history: pd.DataFrame) -> float:
+            """Calculate finish_loss_rate = (KO_losses + SUB_losses) / total_losses"""
+            losses = fight_history[fight_history['result'] == 'loss']
+            if len(losses) == 0:
+                return 0.0
+            
+            method_series = losses['method'].astype(str)
+            ko_losses = method_series.apply(lambda m: is_ko(m)).sum()
+            sub_losses = method_series.apply(lambda m: is_submission(m)).sum()
+            total_losses = len(losses)
+            
+            finish_loss_rate = safe_divide(ko_losses + sub_losses, total_losses, default=0.0)
+            
+            # Cap extremes: finish_loss_rate ∈ [0.2, 0.9]
+            finish_loss_rate = max(0.2, min(0.9, finish_loss_rate))
+            
+            return finish_loss_rate
+        
+        # Calculate finish_reliance for both fighters
+        finish_reliance_f1 = calculate_finish_reliance(f1_history)
+        finish_reliance_f2 = calculate_finish_reliance(f2_history)
+        
+        # Calculate finish_loss_rate for both fighters
+        finish_loss_rate_f1 = calculate_finish_loss_rate(f1_history)
+        finish_loss_rate_f2 = calculate_finish_loss_rate(f2_history)
+        
+        # Get total wins and losses for guardrails
+        f1_wins = len(f1_history[f1_history['result'] == 'win'])
+        f2_wins = len(f2_history[f2_history['result'] == 'win'])
+        f1_losses = len(f1_history[f1_history['result'] == 'loss'])
+        f2_losses = len(f2_history[f2_history['result'] == 'loss'])
+        
+        # Guardrails: Minimum sample thresholds
+        # Apply only if: total_wins >= 5 AND opponent_total_losses >= 5
+        # Else: style_volatility_mismatch_diff = 0
+        # 
+        # For svm_f1: need f1_wins >= 5 AND f2_losses >= 5
+        # For svm_f2: need f2_wins >= 5 AND f1_losses >= 5
+        # If either can't be calculated, return 0 for the entire feature
+        can_calculate_svm_f1 = (f1_wins >= 5 and f2_losses >= 5)
+        can_calculate_svm_f2 = (f2_wins >= 5 and f1_losses >= 5)
+        
+        if not (can_calculate_svm_f1 and can_calculate_svm_f2):
+            # Can't calculate both components reliably, return 0
+            style_volatility_mismatch_diff = 0.0
+        else:
+            # Calculate both components
+            # svm_f1 = finish_reliance_f1 * finish_loss_rate_f2
+            svm_f1 = finish_reliance_f1 * finish_loss_rate_f2
+            
+            # svm_f2 = finish_reliance_f2 * finish_loss_rate_f1
+            svm_f2 = finish_reliance_f2 * finish_loss_rate_f1
+            
+            # Final feature: style_volatility_mismatch_diff = svm_f1 - svm_f2
+            style_volatility_mismatch_diff = svm_f1 - svm_f2
+        
+        return {
+            'style_volatility_mismatch_diff': float(style_volatility_mismatch_diff)
+        }
     
     def _calculate_common_opponents(self, fighter_1_id: int, fighter_2_id: int,
                                      as_of_date: Optional[Union[datetime, str]] = None) -> Dict:

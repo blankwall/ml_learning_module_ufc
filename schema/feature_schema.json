@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "num_features": 232,
+  "num_features": 233,
   "features": [
     "age_difference",
     "age_weighted_recent_damage_diff",
@@ -224,6 +224,7 @@
     "southpaw_vs_southpaw",
     "striker_vs_grappler",
     "striking_output_diff",
+    "style_volatility_mismatch_diff",
     "takedown_ability_diff",
     "takedown_matchup",
     "time_decayed_finish_rate_diff",
