@@ -47,9 +47,9 @@ data/predictions/
 *.sqlite3
 
 # Models
-models/saved/*.pkl
-models/saved/*.pth
-models/saved/*.joblib
+# models/saved/*.pkl
+# models/saved/*.pth
+# models/saved/*.joblib
 
 # Logs
 logs/
