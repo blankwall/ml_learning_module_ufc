@@ -23,6 +23,8 @@ Phase 4 from `todo_1.md`:
 import argparse
 import json
 import re
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Tuple
@@ -206,6 +208,17 @@ def main() -> None:
         dest="symmetric",
         action="store_false",
         help="Disable symmetric mode (use raw prediction from single fighter order).",
+    )
+    parser.add_argument(
+        "--compare-to-baseline",
+        action="store_true",
+        help="Automatically run baseline comparison after generating evaluation report.",
+    )
+    parser.add_argument(
+        "--baseline-path",
+        type=str,
+        default="models/baseline.json",
+        help="Path to baseline JSON file for comparison (default: models/baseline.json)",
     )
 
     args = parser.parse_args()
@@ -1209,6 +1222,50 @@ def main() -> None:
     plt.close()
 
     logger.success(f"Saved ROC plot to {roc_path}")
+
+    # ------------------------------------------------------------------
+    # 8) Optionally run baseline comparison
+    # ------------------------------------------------------------------
+    if args.compare_to_baseline:
+        logger.info("Running baseline comparison...")
+        baseline_path = Path(args.baseline_path)
+        
+        if not baseline_path.exists():
+            logger.warning(f"Baseline file not found: {baseline_path}. Skipping comparison.")
+        else:
+            # Generate comparison report path
+            comparison_output = output_dir / f"comparison_report_{timestamp}.json"
+            
+            # Run compare_to_baseline as a subprocess
+            cmd = [
+                sys.executable,
+                "-m",
+                "evaluation.compare_to_baseline",
+                "--baseline",
+                str(baseline_path),
+                "--current",
+                str(report_path),
+                "--output",
+                str(comparison_output),
+            ]
+            
+            try:
+                result = subprocess.run(
+                    cmd,
+                    capture_output=False,  # Let output go to stdout/stderr
+                    check=False,  # Don't raise on non-zero exit
+                )
+                
+                if result.returncode == 0:
+                    logger.success(f"Baseline comparison completed successfully")
+                elif result.returncode == 1:
+                    logger.warning("Baseline comparison returned REJECT verdict")
+                elif result.returncode == 2:
+                    logger.warning("Baseline comparison returned REVIEW verdict")
+                else:
+                    logger.warning(f"Baseline comparison exited with code {result.returncode}")
+            except Exception as e:
+                logger.error(f"Failed to run baseline comparison: {e}")
 
 
 if __name__ == "__main__":
