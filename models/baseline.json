@@ -1,39 +1,39 @@
 {
-  "model_name": "baseline_jan_9_2026_age_feature_add",
+  "model_name": "baseline_jan_9_2026_age_feature_add_striking",
   "holdout_from_year": 2025,
   "timestamp": "20260109",
   "overall": {
-    "accuracy": 0.6479,
-    "n_correct": 368,
+    "accuracy": 0.6761,
+    "n_correct": 384,
     "n_total": 568,
-    "brier": 0.2228,
-    "auc": 0.6907,
-    "log_loss": 0.6362
+    "brier": 0.2124,
+    "auc": 0.731,
+    "log_loss": 0.6144
   },
   "by_bucket": {
     "favorites": {
-      "accuracy": 0.6486,
+      "accuracy": 0.6689,
       "n": 296
     },
     "underdogs": {
-      "accuracy": 0.6471,
+      "accuracy": 0.6838,
       "n": 272
     }
   },
   "by_confidence": {
     "top_10_pct": {
-      "min_p": 0.5005,
-      "accuracy": 0.7586,
+      "min_p": 0.5113,
+      "accuracy": 0.8276,
       "n": 58
     },
     "top_25_pct": {
-      "min_p": 0.3203,
-      "accuracy": 0.7483,
+      "min_p": 0.3299,
+      "accuracy": 0.8392,
       "n": 143
     }
   },
   "n_eval_rows": 568,
   "n_odds_rows": 3938,
-  "n_bets_edge_gt_0": 255,
-  "roi_flat_edge_gt_0": -0.01
+  "n_bets_edge_gt_0": 265,
+  "roi_flat_edge_gt_0": 0.026
 }

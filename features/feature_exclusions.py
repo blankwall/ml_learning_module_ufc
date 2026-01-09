@@ -36,9 +36,9 @@ EXCLUDED_BASE_FEATURES: List[str] = [
     "sig_strikes_landed_per_min",
     "striking_accuracy",
     "striking_defense",
-    "striking_differential",
+    # "striking_differential",
     "defensive_efficiency",
-    "striking_volume_control",
+    # "striking_volume_control",
     "distance_accuracy_last_3",
     "clinch_accuracy_last_3",
     "ground_output_per_min_last_3",
@@ -59,7 +59,7 @@ EXCLUDED_BASE_FEATURES: List[str] = [
     "body_strike_rate_lifetime",
     "ground_strike_rate_lifetime",
     "distance_strike_rate_lifetime",
-    "sig_strikes_landed_per_min_lifetime",
+    # "sig_strikes_landed_per_min_lifetime",
     "striking_accuracy_lifetime",
     
     # Grappling stats
