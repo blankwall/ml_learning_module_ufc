@@ -1,8 +1,9 @@
 {
   "version": "1.0.0",
-  "num_features": 230,
+  "num_features": 232,
   "features": [
     "age_difference",
+    "age_weighted_recent_damage_diff",
     "age_x_days_since_last_fight_diff",
     "age_x_fights_in_last_year_diff",
     "age_x_fights_since_last_win_diff",
@@ -17,6 +18,7 @@
     "common_opponent_performance_diff",
     "decision_losses_since_last_win_diff",
     "defensive_fight",
+    "durability_collapse_diff",
     "early_finish_advantage_diff",
     "early_finish_rate_last_3_diff",
     "early_finish_rate_last_5_diff",
