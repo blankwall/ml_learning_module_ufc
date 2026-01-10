@@ -40,7 +40,7 @@ st.markdown("---")
 st.sidebar.header("Model Settings")
 model_name = st.sidebar.selectbox(
     "Select Model",
-    options=["baseline_jan_9_2026_age_feature_add_striking", "baseline_jan_9_2026_age_feature_add", "baseline_jan_9_2026_age", "xgboost_model_with_2025", "xgboost_model"],
+    options=["baseline_jan_9_2026_age_feature_add_striking_landed", "baseline_jan_9_2026_age_feature_add_striking", "baseline_jan_9_2026_age_feature_add", "baseline_jan_9_2026_age", "xgboost_model_with_2025", "xgboost_model"],
     index=0,
     help="Choose which trained model to use for predictions"
 )

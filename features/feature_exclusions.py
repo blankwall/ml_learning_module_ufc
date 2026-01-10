@@ -33,7 +33,7 @@ EXCLUDED_BASE_FEATURES: List[str] = [
 
 
 # Striking stats
-    "sig_strikes_landed_per_min",
+    # "sig_strikes_landed_per_min",
     "striking_accuracy",
     "striking_defense",
     # "striking_differential",

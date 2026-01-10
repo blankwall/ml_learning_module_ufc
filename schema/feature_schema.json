@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "num_features": 240,
+  "num_features": 243,
   "features": [
     "age_difference",
     "age_weighted_recent_damage_diff",
@@ -93,6 +93,7 @@
     "f1_stance_orthodox",
     "f1_stance_southpaw",
     "f1_stance_switch",
+    "f1_striking_accuracy",
     "f1_striking_differential",
     "f1_striking_volume_control",
     "f1_submission_rate",
@@ -179,6 +180,7 @@
     "f2_stance_orthodox",
     "f2_stance_southpaw",
     "f2_stance_switch",
+    "f2_striking_accuracy",
     "f2_striking_differential",
     "f2_striking_volume_control",
     "f2_submission_rate",
@@ -229,6 +231,7 @@
     "round_3_win_rate_diff",
     "southpaw_vs_southpaw",
     "striker_vs_grappler",
+    "striking_accuracy_diff",
     "striking_differential",
     "striking_output_diff",
     "style_volatility_mismatch_diff",
