@@ -40,7 +40,7 @@ st.markdown("---")
 st.sidebar.header("Model Settings")
 model_name = st.sidebar.selectbox(
     "Select Model",
-    options=["baseline_jan_9_2026_age_feature_add_striking_landed", "baseline_jan_9_2026_age_feature_add_striking", "baseline_jan_9_2026_age_feature_add", "baseline_jan_9_2026_age", "xgboost_model_with_2025", "xgboost_model"],
+    options=["baseline_jan_11_2026_age_feature_add_striking_landed", "baseline_jan_9_2026_age_feature_add_striking", "baseline_jan_9_2026_age_feature_add", "baseline_jan_9_2026_age", "xgboost_model_with_2025", "xgboost_model"],
     index=0,
     help="Choose which trained model to use for predictions"
 )
@@ -825,31 +825,150 @@ with tab2:
 # Tab 3: Model Evaluation
 with tab3:
     st.header("📈 Model Evaluation Report")
-    st.markdown("View the latest model evaluation metrics and performance analysis.")
+    st.markdown("Generate and view model evaluation metrics and performance analysis for the selected model.")
     
-    evaluation_file = PROJECT_ROOT / "reports_strict" / "model_evaluation_latest.html"
+    # Configuration options
+    col1, col2 = st.columns(2)
+    with col1:
+        min_year = st.number_input(
+            "Minimum Year",
+            min_value=2020,
+            max_value=2030,
+            value=2025,
+            help="Minimum event year to include in evaluation"
+        )
+    with col2:
+        odds_date_tolerance = st.number_input(
+            "Odds Date Tolerance (days)",
+            min_value=0,
+            max_value=10,
+            value=5,
+            help="Allow matching odds rows even if date is off by N days"
+        )
     
-    if evaluation_file.exists():
-        try:
-            # Read HTML content
-            html_content = evaluation_file.read_text()
-            
-            # Display HTML
-            st.components.v1.html(html_content, height=800, scrolling=True)
-            
-            # Download button
-            st.download_button(
-                label="📥 Download Report",
-                data=html_content,
-                file_name="model_evaluation_latest.html",
-                mime="text/html"
-            )
-        except Exception as e:
-            st.error(f"Error loading evaluation report: {str(e)}")
-            logger.exception(e)
+    # Check if we have cached results for this model
+    cache_key = f"eval_report_{model_name}_{min_year}"
+    html_content = None
+    
+    # Check for cached HTML in session state
+    if cache_key in st.session_state:
+        st.info(f"📋 Using cached evaluation report for model: **{model_name}**")
+        html_content = st.session_state[cache_key]
+    
+    # Button to generate/regenerate report
+    if st.button("🚀 Generate Evaluation Report", type="primary"):
+        with st.spinner("Generating evaluation report... This may take a few minutes."):
+            try:
+                import tempfile
+                import subprocess
+                from datetime import datetime
+                from evaluation.generate_html_report import generate_html_report
+                
+                # Create temporary directory for outputs
+                temp_dir = Path(tempfile.mkdtemp())
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                # Prepare command to run evaluate_model
+                cmd = [
+                    sys.executable,
+                    "-m",
+                    "evaluation.evaluate_model",
+                    "--model-name", model_name,
+                    "--data-path", str(PROJECT_ROOT / "data" / "processed" / "training_data.csv"),
+                    "--odds-path", str(PROJECT_ROOT / "ufc_2025_odds.csv"),
+                    "--min-year", str(int(min_year)),
+                    "--output-dir", str(temp_dir),
+                    "--odds-date-tolerance-days", str(int(odds_date_tolerance)),
+                ]
+                
+                if use_symmetric:
+                    cmd.append("--symmetric")
+                else:
+                    cmd.append("--no-symmetric")
+                
+                # Run evaluation as subprocess
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    cwd=str(PROJECT_ROOT)
+                )
+                
+                # Check for errors
+                if result.returncode != 0:
+                    st.error(f"Evaluation failed with return code {result.returncode}")
+                    st.code(result.stderr)
+                    logger.error(f"Evaluation stderr: {result.stderr}")
+                else:
+                    # Find the generated eval data CSV
+                    eval_data_files = list(temp_dir.glob("eval_data_*.csv"))
+                    if not eval_data_files:
+                        st.error("Evaluation completed but no data file was generated.")
+                        st.code(result.stdout)
+                        logger.warning(f"Evaluation stdout: {result.stdout}")
+                    else:
+                        # Use the most recent eval data file
+                        eval_data_path = sorted(eval_data_files)[-1]
+                        
+                        # Generate HTML report
+                        html_path = temp_dir / f"model_evaluation_{timestamp}.html"
+                        generate_html_report(
+                            eval_data_path=eval_data_path,
+                            output_path=html_path,
+                            min_year=int(min_year)
+                        )
+                        
+                        # Read the generated HTML
+                        if html_path.exists():
+                            html_content = html_path.read_text()
+                            # Cache in session state
+                            st.session_state[cache_key] = html_content
+                            st.success(f"✅ Evaluation report generated successfully for model: **{model_name}**")
+                        else:
+                            st.error("HTML report file was not created.")
+                            
+            except Exception as e:
+                st.error(f"Error generating evaluation report: {str(e)}")
+                logger.exception("Evaluation report generation error")
+                import traceback
+                st.code(traceback.format_exc())
+    
+    # Re-check session state after potential generation (in case report was just generated)
+    if cache_key in st.session_state and html_content is None:
+        html_content = st.session_state[cache_key]
+    
+    # Display the report if available
+    if html_content:
+        st.markdown("---")
+        st.subheader(f"Evaluation Report: {model_name}")
+        
+        # Display HTML
+        st.components.v1.html(html_content, height=800, scrolling=True)
+        
+        # Download button
+        st.download_button(
+            label="📥 Download Report",
+            data=html_content,
+            file_name=f"model_evaluation_{model_name}_{min_year}.html",
+            mime="text/html"
+        )
     else:
-        st.warning(f"Evaluation report not found at: {evaluation_file}")
-        st.info("Make sure the file exists and is committed to your repository for Streamlit Cloud deployment.")
+        st.info("👆 Click 'Generate Evaluation Report' to create a report for the selected model.")
+        
+        # Show fallback to static file if it exists
+        evaluation_file = PROJECT_ROOT / "reports_strict" / "model_evaluation_latest.html"
+        if evaluation_file.exists():
+            st.markdown("---")
+            st.markdown("### 📄 Static Report (Fallback)")
+            st.info(f"Found a static report at: {evaluation_file}")
+            st.warning("This is a pre-generated report and may not match the selected model.")
+            
+            if st.button("📖 View Static Report"):
+                try:
+                    static_html = evaluation_file.read_text()
+                    st.components.v1.html(static_html, height=800, scrolling=True)
+                except Exception as e:
+                    st.error(f"Error loading static report: {str(e)}")
 
 # Tab 4: Fighter Search
 with tab4:
