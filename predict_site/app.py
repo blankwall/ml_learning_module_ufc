@@ -282,13 +282,50 @@ with tab1:
                                     else row.get("edge_f2_pct", 0), axis=1
                                 )
                             
+                            # Calculate model confidence metrics
+                            # model_confidence = max(model_prob_f1, model_prob_f2)
+                            df_results["model_confidence"] = df_results.apply(
+                                lambda row: max(row.get("model_p_f1_pct", 0), row.get("model_p_f2_pct", 0)), axis=1
+                            )
+                            
+                            # confidence_rank = rank by confidence (1 = highest confidence)
+                            df_results["confidence_rank"] = df_results["model_confidence"].rank(ascending=False, method="min").astype(int)
+                            
+                            # is_top_25 = True if in top 25% by confidence
+                            # Calculate 75th percentile threshold (top 25% means above 75th percentile)
+                            if len(df_results) > 0:
+                                threshold_75th = df_results["model_confidence"].quantile(0.75)
+                                df_results["is_top_25"] = df_results["model_confidence"] >= threshold_75th
+                            else:
+                                df_results["is_top_25"] = False
+                            
+                            # Calculate potential_underdog flag
+                            # Underdogs only if: Model ≥ 55% AND Market ≤ 45%
+                            # This identifies cases where model is confident in an underdog
+                            def check_potential_underdog(row):
+                                model_prob = row.get("model_confidence", 0)
+                                # Get market probability for the predicted winner
+                                market_prob = row.get("predicted_winner_market_prob_pct", 0)
+                                # If predicted_winner_market_prob_pct doesn't exist, calculate it
+                                if market_prob == 0 or pd.isna(market_prob):
+                                    if row.get("model_p_f1_pct", 0) > row.get("model_p_f2_pct", 0):
+                                        market_prob = row.get("implied_p_f1_pct", 0)
+                                    else:
+                                        market_prob = row.get("implied_p_f2_pct", 0)
+                                
+                                # Check conditions: Model ≥ 55% AND Market ≤ 45%
+                                return (model_prob >= 55.0) and (market_prob <= 45.0)
+                            
+                            df_results["potential_underdog"] = df_results.apply(check_potential_underdog, axis=1)
+                            
                             # Create styled summary table
                             # Prefer columns that show values for the predicted winner specifically
                             summary_cols = [
                                 "event", "fight_date",
                                 "fighter_1_name", "fighter_2_name",
                                 "predicted_winner",
-                                "best_model_prob_pct", "predicted_winner_market_prob_pct", "predicted_winner_edge_pct",
+                                "model_confidence", "confidence_rank", "is_top_25", "potential_underdog",
+                                "predicted_winner_market_prob_pct", "predicted_winner_edge_pct",
                                 "risk_notes"
                             ]
                             # Fall back to best_* columns if predicted_winner_* columns don't exist
@@ -826,6 +863,27 @@ with tab2:
 with tab3:
     st.header("📈 Model Evaluation Report")
     st.markdown("Generate and view model evaluation metrics and performance analysis for the selected model.")
+    
+    # Check if feature pipeline files exist for the selected model
+    models_dir = PROJECT_ROOT / "models" / "saved"
+    scaler_path = models_dir / f"{model_name}_feature_scaler.pkl"
+    features_path = models_dir / f"{model_name}_feature_names.pkl"
+    model_path = models_dir / f"{model_name}.json"
+    
+    if model_path.exists():
+        if not (scaler_path.exists() and features_path.exists()):
+            st.warning(
+                f"⚠️ **Feature pipeline files missing for model '{model_name}'**\n\n"
+                f"The model file exists, but the feature pipeline files are missing:\n"
+                f"- `{scaler_path.name}`\n"
+                f"- `{features_path.name}`\n\n"
+                f"**This will cause errors when generating the evaluation report.**\n\n"
+                f"**Solution:** Ensure these files are committed to your repository. "
+                f"They should be saved automatically when you train the model. "
+                f"If they're missing, you'll need to retrain the model or rebuild the feature pipeline."
+            )
+    else:
+        st.error(f"Model file not found: {model_path}")
     
     # Configuration options
     col1, col2 = st.columns(2)
