@@ -40,7 +40,7 @@ st.markdown("---")
 st.sidebar.header("Model Settings")
 model_name = st.sidebar.selectbox(
     "Select Model",
-    options=["baseline_jan_11_2026_age_feature_add_striking_landed", "baseline_jan_9_2026_age_feature_add_striking", "baseline_jan_9_2026_age_feature_add", "baseline_jan_9_2026_age", "xgboost_model_with_2025", "xgboost_model"],
+    options=["baseline_jan_28_clean", "baseline_jan_9_2026_age_feature_add_striking", "baseline_jan_9_2026_age_feature_add", "baseline_jan_9_2026_age", "xgboost_model_with_2025", "xgboost_model"],
     index=0,
     help="Choose which trained model to use for predictions"
 )
@@ -73,10 +73,12 @@ with tab1:
     # Example CSV files with dates
     from datetime import datetime
     example_files_data = [
+        {"name": "UFC 326", "path": "data/predictions/upcoming_fights_ufc326.csv", "date": datetime(2026, 3, 7)},
+        {"name": "UFC Stricklan", "path": "data/predictions/upcoming_fights_strickland.csv", "date": datetime(2026, 2, 21)},
         {"name": "UFC 325", "path": "data/predictions/upcoming_fights_ufc325.csv", "date": datetime(2026, 1, 31)},
         {"name": "UFC 324", "path": "data/predictions/upcoming_fights_ufc324.csv", "date": datetime(2026, 1, 24)},
         {"name": "Fight Night: Royval vs. Kape", "path": "data/predictions/upcoming_fights_fight_night_royval_kape.csv", "date": datetime(2025, 12, 13)},
-        {"name": "UFC 323", "path": "data/predictions/upcoming_fights_ufc323.csv", "date": datetime(2025, 12, 6)},
+        {"name": "Oliveria Fight Night", "path": "data/predictions/fight_night_oliveria.csv", "date": datetime(2026, 2, 7)},
     ]
     
     # Sort by date (ascending - earliest first)
